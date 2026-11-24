@@ -67,7 +67,7 @@ footer{background:var(--ink);color:var(--bg);text-align:center;padding:18px 14px
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import{initializeFirestore,persistentLocalCache,persistentMultipleTabManager,collection,doc,onSnapshot,setDoc,addDoc,updateDoc,deleteDoc,deleteField,query,where,writeBatch}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import{getAuth,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,GoogleAuthProvider,signInWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import{getAuth,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import{getStorage,ref,uploadBytes,getDownloadURL}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 /* ============ مفاتيح مشروع Alnoor Course في Firebase ============ */
@@ -98,7 +98,7 @@ if(ok){const app=initializeApp(firebaseConfig);
 
 /* ---------- بيانات أولية (تُحمَّل مرة واحدة في Firestore ثم تصبح قابلة للتعديل/الحذف من الإدارة) ---------- */
 const DEF_ABOUT="منصة النور منصة تطوعية وتعليمية تجمع الطلاب في مكان واحد: تطوّع في الحملات، تدرّب في الدورات الوجاهية، وتابع المحاضرات والبث المباشر.";
-const DEF_ADS=[{id:"welcome",type:"text",title:"أهلاً بك في منصة النور 🌟",desc:"سجّل دخولك بحساب Google، وأكمل ملفك الشخصي، وابدأ بالتطوع وحجز الدورات.",ts:1},
+const DEF_ADS=[{id:"welcome",type:"text",title:"أهلاً بك في منصة النور 🌟",desc:"سجّل دخولك بالبريد وكلمة المرور، وأكمل ملفك الشخصي، وابدأ بالتطوع وحجز الدورات.",ts:1},
 {id:"alert",type:"text",title:"تنبيه مهم",desc:"تابع الإعلانات باستمرار، وأكمل اسمك ورقم هاتفك في «لوحتي» قبل التسجيل في أي تطوع أو دورة.",ts:2}];
 const DEF_TEAM=["الأول","الثاني","الثالث","الرابع"].map((n,i)=>({id:"f"+(i+1),name:"المؤسس "+n,ig:"alnoor_course",photo:""}));
 const ads=()=>st.seeded?st.ads:DEF_ADS,team=()=>st.seeded?st.team:DEF_TEAM,about=()=>st.seeded?st.about:(st.about||DEF_ABOUT);
@@ -171,7 +171,7 @@ function vFb(){return`<h1>${A("الفيدباك","Feedback")}</h1><div class="ca
 const slot=(m,i)=>`<div class="card" style="text-align:center">${m.photo?`<img class="av" alt="" src="${esc(m.photo)}">`:`<div class="av">${A("صورة","Photo")}</div>`}<h3 style="margin:8px 0 2px;min-height:26px">${esc(m.name||"")}</h3>${m.ig?"📷 "+ig(m.ig):""}</div>`;
 const aboutBlock=()=>`<div class="card"><h2 style="margin-top:0">${A("عن النور","About")}</h2><p style="white-space:pre-wrap;margin:0">${esc(about())}</p></div><h2>${A("مؤسسو منصة النور","Al-Noor Founders")}</h2><div class="grid">${[1,2,3,4].map(i=>slot(team().find(x=>x.id=="f"+i)||{},i)).join("")}</div>`;
 const vAbout=()=>`<h1>${A("عن النور","About")}</h1>`+aboutBlock();
-function vLogin(){return`<div class="nl"><div class="nlc"><div style="font-size:32px;color:var(--red)">✚</div><h1 style="color:#fff">${A("تسجيل دخول الطالب","Student sign in")}</h1><p>${A("ادخل بحساب Google على جهازك","Sign in with the Google account on your device")}</p><button class="nlb main" data-a="google">${A("المتابعة عبر Google","Continue with Google")}</button><details${route()=="admin-secret-portal"?" open":""}><summary>${A("دخول الإدارة","Admin sign in")}</summary><input id="ae" type="email" dir="ltr" placeholder="Admin email" value="${esc(ADMIN_EMAIL)}"><input id="ac2" type="password" dir="ltr" placeholder="${A("الرمز","Password")}" data-e="adminin"><button class="nlb" data-a="adminin">${A("دخول الإدارة","Admin sign in")}</button></details></div></div>${aboutBlock()}`}
+function vLogin(){return`<div class="nl"><div class="nlc"><div style="font-size:32px;color:var(--red)">✚</div><h1 style="color:#fff">${A("تسجيل دخول الطالب","Student sign in")}</h1><p>${A("ادخل ببريدك الإلكتروني وكلمة المرور (6 أحرف فأكثر)","Sign in with your email and password (6+ chars)")}</p><input id="se" type="email" dir="ltr" placeholder="${A("البريد الإلكتروني","Email")}"><input id="sp" type="password" dir="ltr" placeholder="${A("كلمة المرور","Password")}" data-e="studin"><button class="nlb main" data-a="studin">${A("دخول الطالب","Student sign in")}</button><button class="nlb" data-a="studreg">${A("إنشاء حساب طالب جديد","Create student account")}</button><details${route()=="admin-secret-portal"?" open":""}><summary>${A("دخول الإدارة","Admin sign in")}</summary><input id="ae" type="email" dir="ltr" placeholder="Admin email" value="${esc(ADMIN_EMAIL)}"><input id="ac2" type="password" dir="ltr" placeholder="${A("الرمز","Password")}" data-e="adminin"><button class="nlb" data-a="adminin">${A("دخول الإدارة","Admin sign in")}</button></details></div></div>${aboutBlock()}`}
 
 /* ZOOM ALNOOR */
 const ZS={cam:null,scr:null,rec:null,ch:[],hand:0,mic:1,cam1:1},ZQ={2160:[3840,2160],1080:[1920,1080],720:[1280,720],480:[854,480],360:[640,360]};
@@ -215,7 +215,10 @@ const ACT={
  home(){go("dashboard")},lang(){st.lang=st.lang=="ar"?"en":"ar";ls("lang",st.lang);draw()},
  theme(){const d=document.documentElement.dataset.theme!="dark";ls("dark",d?1:0);document.documentElement.dataset.theme=d?"dark":"light"},
  out(){zStop();if(ok)signOut(auth).then(()=>{go("dashboard");toast(A("تم تسجيل الخروج","Signed out"))})},
- async google(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));try{await pers;await signInWithPopup(auth,new GoogleAuthProvider());go("dashboard")}catch(e){if(e.code!="auth/popup-closed-by-user")toast("⚠️ "+A("تعذر تسجيل الدخول: ","Sign-in failed: ")+e.code)}},
+ async studin(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));const e=$("se").value.trim(),p=$("sp").value;if(!e||!p)return toast(A("أدخل البريد وكلمة المرور","Enter email and password"));
+  try{await pers;await signInWithEmailAndPassword(auth,e,p);go("dashboard")}catch(err){toast("⚠️ "+A("تعذر الدخول: ","Sign-in failed: ")+(err.code||err.message))}},
+ async studreg(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));const e=$("se").value.trim(),p=$("sp").value;if(!e||p.length<6)return toast(A("أدخل بريداً صحيحاً وكلمة مرور 6 أحرف فأكثر","Enter a valid email and 6+ char password"));
+  try{await pers;await createUserWithEmailAndPassword(auth,e,p);go("dashboard");toast("✅ "+A("تم إنشاء الحساب","Account created"))}catch(err){toast("⚠️ "+A("تعذر إنشاء الحساب: ","Sign-up failed: ")+(err.code||err.message))}},
  async adminin(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));try{await pers;await signInWithEmailAndPassword(auth,$("ae").value.trim(),$("ac2").value);go("admin-secret-portal")}catch(e){toast("⚠️ "+A("البريد أو الرمز غير صحيح","Wrong email or password"))}},
  saveP(b){const d={email:st.user.email||"",last:Date.now()};["name","phone","major","uni"].forEach(k=>d[k]=$("p_"+k).value.trim());run(()=>setDoc(doc(db,"students",st.user.uid),d,{merge:true}),A("تم حفظ بياناتك","Profile saved"),b)},
  reg(id,b){const it=st.items.find(x=>x.id==id),m=st.me;if(!m.name||!m.phone){toast(A("أكمل اسمك ورقم هاتفك في لوحتي أولاً","Add your name and phone in My space first"));return go("dashboard")}
