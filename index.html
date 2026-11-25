@@ -63,39 +63,44 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-body{display:grid;grid-template-columns:1fr;min-height:420px;position:relative}
 .z-body.with-side{grid-template-columns:minmax(0,1fr) 320px}
 @media (max-width:820px){.z-body.with-side{grid-template-columns:1fr}}
-.z-stage{position:relative;background:#0d0e11;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;min-height:380px;gap:14px}
+.z-stage{position:relative;background:#0d0e11;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;min-height:380px;gap:12px;overflow:hidden}
 .z-stage.audio-only{background:radial-gradient(circle at center,#1f2330 0%,#0d0e11 75%)}
 .z-empty{text-align:center;max-width:340px;margin:auto}
 .z-empty h3{color:#fff;font-size:20px;margin-bottom:12px}
 .z-empty-btn{display:block;width:100%;padding:10px 14px;margin-bottom:8px;border-radius:10px;border:1px solid #3b3f4c;background:#232630;color:#e5e7eb;font-weight:600}
 .z-empty-btn:hover{background:#2d313e}
-.z-media-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;width:100%}
-.z-tile{position:relative;background:#1a1c23;border:1.5px solid #2e323d;border-radius:16px;overflow:hidden;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
-.z-tile.main-share{grid-column:1/-1;min-height:300px;aspect-ratio:auto}
-.z-tile.focused-share{min-height:68svh;border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,.35)}
-.z-tile video,.z-tile img{width:100%;height:100%;max-height:68svh;object-fit:contain;background:#090a0d}
-.z-tile.focused-share video,.z-tile.focused-share img{max-height:78svh}
+.z-media-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;width:100%;height:100%}
+.z-tile{position:relative;background:#161820;border:2px solid #343848;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%}
+.z-tile.main-share{min-height:280px;flex:1}
+.z-tile.focused-share{min-height:66svh;border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,.35)}
+.z-tile.landscape-mode{aspect-ratio:16/9;max-height:74svh;margin:auto}
+@media (max-width:720px){
+  .z-tile.landscape-mode{width:84vw;height:56vw;max-width:none;max-height:62svh;aspect-ratio:auto;overflow:hidden}
+  .z-tile.landscape-mode .z-land-rot{width:56vw;height:84vw;transform:rotate(90deg);transform-origin:center center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px}
+}
+.z-land-rot{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px;position:relative}
+.z-tile video,.z-tile img{width:100%;height:100%;max-height:66svh;object-fit:contain;background:#090a0d}
+.z-tile.focused-share video,.z-tile.focused-share img{max-height:76svh}
+.z-tile.landscape-mode video,.z-tile.landscape-mode img{max-height:100%;max-width:100%}
 .z-tile.cam-tile video{object-fit:cover}
-.z-doc-box{width:100%;display:flex;flex-direction:column;gap:10px;padding:14px}
-.z-doc-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;background:#171a22;padding:8px 12px;border-radius:10px;border:1px solid #2d3240}
-.z-pdf-wrap{width:100%;max-height:62svh;overflow:auto;background:#111318;border:1px solid #383c49;border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center}
-.z-tile.focused-share .z-pdf-wrap{max-height:74svh}
-#z-pdf-canvas{max-width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.45)}
-.z-slide-card{width:100%;min-height:280px;background:linear-gradient(145deg,#1b1f2b,#12151e);border:1px solid #363c4d;border-radius:14px;padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
-.z-slide-lines{max-width:820px;width:100%;text-align:start;background:rgba(10,12,18,.65);border:1px solid #2d3344;border-radius:12px;padding:14px 16px;white-space:pre-wrap;font-size:15px;line-height:1.75;color:#f1f5f9;max-height:42svh;overflow-y:auto}
+.z-doc-box{width:100%;height:100%;display:flex;flex-direction:column;gap:8px;padding:8px;overflow:hidden}
+.z-doc-toolbar{display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;background:#171a22;padding:6px 10px;border-radius:10px;border:1px solid #2d3240}
+.z-pdf-wrap{width:100%;flex:1;min-height:0;overflow:auto;background:#111318;border:1px solid #383c49;border-radius:12px;padding:8px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#z-pdf-canvas,.z-shared-page-img{max-width:100%;max-height:100%;width:auto;height:auto;border-radius:6px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.45);object-fit:contain}
+.z-slide-card{width:100%;height:100%;min-height:240px;background:linear-gradient(145deg,#1b1f2b,#12151e);border:1px solid #363c4d;border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;overflow:hidden}
+.z-slide-lines{max-width:820px;width:100%;text-align:start;background:rgba(10,12,18,.65);border:1px solid #2d3344;border-radius:12px;padding:12px 14px;white-space:pre-wrap;font-size:14px;line-height:1.7;color:#f1f5f9;max-height:38svh;overflow-y:auto}
 .z-avatar-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px}
 .z-avatar-circle{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#1e6fd9);color:#fff;display:grid;place-items:center;font-size:28px;font-weight:700;box-shadow:0 6px 18px rgba(79,70,229,.35)}
-.z-tag-lbl{position:absolute;bottom:8px;inset-inline-start:10px;background:rgba(15,17,22,.78);backdrop-filter:blur(6px);padding:3px 10px;border-radius:999px;font-size:12px;color:#f9fafb;border:1px solid rgba(255,255,255,.12)}
 .z-meter{display:inline-flex;align-items:center;gap:6px;background:#1f222b;border:1px solid #343844;border-radius:999px;padding:4px 10px;font-size:12px}
 .z-bar{width:64px;height:6px;background:#323642;border-radius:999px;overflow:hidden}
 .z-bar>i{display:block;height:100%;width:0%;background:#22c55e;transition:width .08s linear}
-.z-reactions-stack{position:absolute;top:14px;inset-inline-end:14px;display:flex;flex-direction:column;gap:6px;z-index:6;pointer-events:none}
-.z-reaction-pop{background:rgba(24,27,36,.94);border:1px solid #525a70;border-radius:999px;padding:6px 14px;font-size:16px;color:#fff;display:inline-flex;align-items:center;gap:8px;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.z-reactions-stack{position:absolute;top:10px;inset-inline-end:10px;display:flex;flex-direction:column;gap:6px;z-index:6;pointer-events:none}
+.z-reaction-pop{background:rgba(24,27,36,.94);border:1px solid #525a70;border-radius:999px;padding:5px 12px;font-size:14px;color:#fff;display:inline-flex;align-items:center;gap:6px;box-shadow:0 6px 18px rgba(0,0,0,.45)}
 
-/* القوائم المنبثقة فوق الشريط السفلي */
-.z-popover{position:absolute;bottom:76px;left:50%;transform:translateX(-50%);width:min(360px,92vw);background:#1e2028;border:1px solid #383c49;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.55);padding:10px;z-index:8;color:#f3f4f6}
+/* القوائم المنبثقة داخل الإطار فوق الشريط السفلي */
+.z-popover{position:absolute;bottom:68px;inset-inline:12px;margin:auto;width:min(340px,calc(100% - 24px));background:#1e2028;border:1px solid #383c49;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.55);padding:10px;z-index:8;color:#f3f4f6}
 .z-pop-handle{width:34px;height:4px;border-radius:999px;background:#4b5061;margin:0 auto 10px}
-.z-pop-item{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:10px;background:transparent;color:#f3f4f6;text-align:start;font-size:14px}
+.z-pop-item{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:9px 12px;border:0;border-radius:10px;background:transparent;color:#f3f4f6;text-align:start;font-size:14px}
 .z-pop-item:hover{background:#2a2d38}
 .z-pop-item small{display:block;color:#9ca3af;font-size:11px}
 .z-switch{width:38px;height:20px;border-radius:999px;background:#3f4454;position:relative;flex:none}
@@ -116,10 +121,10 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-chat-form{display:flex;gap:6px;padding:10px;border-top:1px solid #2b2e36;background:#15171c}
 .z-chat-form input{flex:1;background:#242731;border:1px solid #3a3e4b;color:#fff;border-radius:10px;padding:7px 10px;font-size:13px}
 
-/* شريط الأدوات السفلي العصري */
-.z-dock{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#191b20;border-top:1px solid #2a2d36;flex-wrap:wrap;overflow-x:auto}
+/* شريط الأدوات السفلي العصري داخل الإطار */
+.z-dock{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#191b20;border-top:1px solid #2a2d36;flex-wrap:wrap;max-width:100%}
 .z-divider{width:1px;height:28px;background:#323642;margin:0 4px}
-.z-btn{min-width:44px;height:42px;padding:0 10px;border-radius:11px;border:1px solid transparent;background:#252832;color:#f3f4f6;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:14px;font-weight:600;transition:background .15s,transform .12s}
+.z-btn{min-width:42px;height:40px;padding:0 10px;border-radius:11px;border:1px solid transparent;background:#252832;color:#f3f4f6;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:600;transition:background .15s,transform .12s}
 .z-btn:hover{background:#323644}
 .z-btn.on{background:#3b3f54;border-color:#818cf8;color:#c7d2fe}
 .z-btn.off{background:#7f1d1d;border-color:#ef4444;color:#fecaca}
@@ -282,7 +287,8 @@ const ZS={
   hand:0,mic:0,cam1:0,speaker:1,shareAudio:1,audioOnly:0,batterySaver:0,captions:0,expanded:0,
   sharedFocused:0,
   menu:null,side:null,
-  sharedImg:"",sharedVid:"",sharedUrl:"",sharedName:"",sharedType:"",
+  sharedImg:"",sharedVid:"",sharedUrl:"",sharedType:"",
+  pageDataUrl:"",
   pdfDoc:null,pdfNumPages:1,pdfPage:1,pdfRendering:false,
   slides:[],slideIdx:1,
   textContent:"",
@@ -297,14 +303,46 @@ const ZS={
 let zoomSubStarted=false;
 let lastRemoteStageTs=0;
 
+function applyDeviceLandscapeLock(enable){
+  try{
+    if(enable&&screen.orientation&&screen.orientation.lock){
+      screen.orientation.lock("landscape").catch(()=>{});
+    }else if(!enable&&screen.orientation&&screen.orientation.unlock){
+      screen.orientation.unlock();
+    }
+  }catch(e){}
+}
+
+function canvasToSyncedImage(canvas,maxLen=640000){
+  if(!canvas||!canvas.width||!canvas.height)return"";
+  const tmp=document.createElement("canvas");
+  let w=canvas.width,h=canvas.height;
+  const maxDim=1800;
+  if(w>maxDim||h>maxDim){
+    const k=Math.min(maxDim/w,maxDim/h);
+    w=Math.max(1,Math.round(w*k));
+    h=Math.max(1,Math.round(h*k));
+  }
+  let q=0.86,out="";
+  for(let i=0;i<6;i++){
+    tmp.width=w;tmp.height=h;
+    tmp.getContext("2d").drawImage(canvas,0,0,w,h);
+    out=tmp.toDataURL("image/jpeg",q);
+    if(out.length<=maxLen)return out;
+    q-=0.12;
+    if(q<0.45){w=Math.round(w*0.8);h=Math.round(h*0.8);q=0.72}
+  }
+  return out.length<=760000?out:"";
+}
+
 async function syncStageToCloud(extra={}){
   if(!db||!st.adm)return;
   const payload={
     sharedType:ZS.sharedType||"",
-    sharedName:ZS.sharedName||"",
-    sharedImg:(ZS.sharedImg&&ZS.sharedImg.length<650000)?ZS.sharedImg:"",
-    sharedVid:(ZS.sharedVid&&ZS.sharedVid.length<650000)?ZS.sharedVid:"",
-    sharedUrl:(ZS.sharedUrl&&ZS.sharedUrl.length<650000)?ZS.sharedUrl:"",
+    sharedImg:(ZS.sharedImg&&ZS.sharedImg.length<660000)?ZS.sharedImg:"",
+    pageDataUrl:(ZS.pageDataUrl&&ZS.pageDataUrl.length<660000)?ZS.pageDataUrl:"",
+    sharedVid:(ZS.sharedVid&&ZS.sharedVid.length<660000)?ZS.sharedVid:"",
+    sharedUrl:(ZS.sharedUrl&&ZS.sharedUrl.length<660000)?ZS.sharedUrl:"",
     pdfPage:ZS.pdfPage||1,
     pdfNumPages:ZS.pdfNumPages||1,
     slides:Array.isArray(ZS.slides)?ZS.slides.slice(0,120):[],
@@ -319,7 +357,7 @@ async function syncStageToCloud(extra={}){
   await setDoc(doc(db,"site","zoom_stage"),payload,{merge:true}).catch(e=>console.error(e));
 }
 
-async function renderPdfPageToCanvas(pageNum){
+async function renderPdfPageToCanvas(pageNum,shouldSync=false){
   const canvas=$("z-pdf-canvas");
   if(!canvas||!ZS.pdfDoc||ZS.pdfRendering)return;
   ZS.pdfRendering=true;
@@ -337,7 +375,11 @@ async function renderPdfPageToCanvas(pageNum){
     canvas.height=Math.round(viewport.height);
     await page.render({canvasContext:ctx,viewport}).promise;
     const lbl=$("z-pdf-page-lbl");
-    if(lbl)lbl.textContent=`${A("صفحة","Page")} ${ZS.pdfPage} / ${ZS.pdfNumPages}`;
+    if(lbl)lbl.textContent=`${ZS.pdfPage} / ${ZS.pdfNumPages}`;
+    if(st.adm){
+      ZS.pageDataUrl=canvasToSyncedImage(canvas);
+      if(shouldSync)await syncStageToCloud({pdfPage:ZS.pdfPage,pdfNumPages:ZS.pdfNumPages,pageDataUrl:ZS.pageDataUrl});
+    }
   }catch(e){
     console.error(e);
   }finally{
@@ -368,7 +410,7 @@ async function parsePptxSlides(file){
     }).filter(Boolean);
     slides.push({
       index:i+1,
-      text:lines.length?lines.join("\n"):A("شريحة تحتوي على عناصر بصرية/رسومية — استخدم مشاركة الشاشة لعرضها كاملة.","Slide contains visual/graphic elements — use screen share to view full visual layout.")
+      text:lines.length?lines.join("\n"):A("شريحة مرئية — استخدم مشاركة الشاشة لعرضها كاملة.","Visual slide — use screen share for full layout.")
     });
   }
   return slides;
@@ -435,12 +477,13 @@ function startZoomRealtimeSubs(){
     }else{
       ZS.sharedFocused=0;
     }
+    applyDeviceLandscapeLock(!!ZS.sharedFocused);
   },"zoom_focus"));
 
   un.push(sub(doc(db,"site","zoom_stage"),s=>{
     if(!s.exists()){
       if(!st.adm){
-        ZS.sharedType="";ZS.sharedName="";ZS.sharedImg="";ZS.sharedVid="";ZS.sharedUrl="";
+        ZS.sharedType="";ZS.sharedImg="";ZS.pageDataUrl="";ZS.sharedVid="";ZS.sharedUrl="";
         ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";ZS.screenActive=0;ZS.sharedFocused=0;
       }
       return;
@@ -449,8 +492,8 @@ function startZoomRealtimeSubs(){
     if(st.adm&&(d.ts||0)<=lastRemoteStageTs)return;
     lastRemoteStageTs=d.ts||Date.now();
     ZS.sharedType=d.sharedType||"";
-    ZS.sharedName=d.sharedName||"";
     ZS.sharedImg=d.sharedImg||"";
+    ZS.pageDataUrl=d.pageDataUrl||"";
     ZS.sharedVid=d.sharedVid||"";
     ZS.sharedUrl=d.sharedUrl||"";
     ZS.pdfPage=d.pdfPage||1;
@@ -461,6 +504,7 @@ function startZoomRealtimeSubs(){
     ZS.screenActive=d.screenActive?1:0;
     ZS.sharedFocused=d.focused?1:0;
     if(ZS.sharedType||ZS.screenActive)ZS.audioOnly=0;
+    applyDeviceLandscapeLock(!!ZS.sharedFocused);
   },"zoom_stage"));
 
   un.push(sub(collection(db,"zoom_reactions"),s=>{
@@ -573,7 +617,7 @@ function attachMediaElements(){
     zvv.play?.().catch(()=>{});
   }
   if(ZS.sharedType==="pdf"&&ZS.pdfDoc){
-    renderPdfPageToCanvas(ZS.pdfPage);
+    renderPdfPageToCanvas(ZS.pdfPage,false);
   }
 }
 
@@ -587,26 +631,26 @@ function zroom(){
   const raisedList=Object.values(ZS.hands||{}).filter(h=>h.raised);
   const presList=Object.values(ZS.presence||{});
   const totalCount=Math.max(1,presList.length);
-  const focusCls=ZS.sharedFocused?" focused-share":"";
+  const focusCls=(ZS.sharedFocused?" focused-share landscape-mode":"");
   const focusBtnHtml=st.adm
-    ?`<button type="button" class="z-btn${ZS.sharedFocused?" on":""}" style="height:30px;padding:0 10px;font-size:12px" data-a="ztogglefocus">${ZS.sharedFocused?"🗗 "+A("تصغير للجميع","Unfocus for all"):"⛶ "+A("تكبير الملف للجميع","Focus file for all")}</button>`
+    ?`<button type="button" class="z-btn${ZS.sharedFocused?" on":""}" style="height:28px;padding:0 10px;font-size:12px" data-a="ztogglefocus">${ZS.sharedFocused?"🗗 "+A("تصغير","Minimize"):"⛶ "+A("تكبير للعرض","Expand")}</button>`
     :"";
 
   let hostBar="";
   if(st.adm){
     hostBar=`<div class="z-host-bar">
-      <span>🎛 <b>${A("تحكم المحاضر بالصوت:","Host mic controls:")}</b></span>
+      <span>🎛 <b>${A("تحكم الصوت:","Audio control:")}</b></span>
       <button type="button" class="z-btn${!ZS.roomCtrl.allowMic?" off":""}" style="height:28px;padding:0 10px;font-size:12px" data-a="zmuteall">🔇 ${A("كتم الكل","Mute all")}</button>
-      <button type="button" class="z-btn${ZS.roomCtrl.allowMic?" on":""}" style="height:28px;padding:0 10px;font-size:12px" data-a="zunmuteall">🎙 ${A("السماح للكل بفتح المايك","Allow all to unmute")}</button>
-      <span class="z-pill">👥 ${totalCount} ${A("متواجد","in room")}</span>
+      <button type="button" class="z-btn${ZS.roomCtrl.allowMic?" on":""}" style="height:28px;padding:0 10px;font-size:12px" data-a="zunmuteall">🎙 ${A("السماح للكل","Allow all")}</button>
+      <span class="z-pill">👥 ${totalCount}</span>
     </div>`;
   }
 
   let handsBar="";
   if(st.adm&&raisedList.length){
     handsBar=`<div class="z-hands-alert">
-      <span>✋ <b>${A("أيدي مرفوعة","Raised hands")} (${raisedList.length}):</b></span>
-      ${raisedList.map(h=>`<span class="z-hand-chip">✋ ${esc(h.name||A("طالب","Student"))}${st.adm?`<button type="button" style="background:none;border:0;color:#fca5a5;font-weight:700;padding:0 2px" data-a="zlowerhand" data-p="${esc(h.uid)}" title="${A("إنزال اليد","Lower hand")}">✕</button>`:""}</span>`).join("")}
+      <span>✋ <b>(${raisedList.length}):</b></span>
+      ${raisedList.map(h=>`<span class="z-hand-chip">✋ ${esc(h.name||A("طالب","Student"))}<button type="button" style="background:none;border:0;color:#fca5a5;font-weight:700;padding:0 2px" data-a="zlowerhand" data-p="${esc(h.uid)}">✕</button></span>`).join("")}
     </div>`;
   }
 
@@ -616,23 +660,23 @@ function zroom(){
       <div class="z-pop-handle"></div>
       <button type="button" class="z-pop-item" data-a="zviewmode" data-p="gallery"><span>▦ ${A("معرض","Gallery")}</span><span>${!ZS.audioOnly?"✓":""}</span></button>
       <button type="button" class="z-pop-item" data-a="zviewmode" data-p="audio"><span>🎧 ${A("صوت فقط","Audio only")}</span><span>${ZS.audioOnly?"✓":""}</span></button>
-      <button type="button" class="z-pop-item" data-a="ztoggleopt" data-p="batterySaver"><span>🔋 ${A("تشغيل وضع موفر البطارية","Battery saver mode")}<small>${A("يقلل استهلاك الطاقة أثناء الجلسة","Reduces power usage during session")}</small></span><span class="z-switch${ZS.batterySaver?" on":""}"></span></button>
-      <button type="button" class="z-pop-item" data-a="ztoggleopt" data-p="captions"><span>CC ${A("إظهار نص الكلام مباشرة","Live captions")}</span><span class="z-switch${ZS.captions?" on":""}"></span></button>
-      <button type="button" class="z-pop-item" data-a="lang"><span>🌐 ${A("إعدادات اللغة","Language settings")}</span><span>${A("English","العربية")}</span></button>
-      <button type="button" class="z-pop-item" data-a="zreport"><span>⚠ ${A("الإبلاغ عن مشكلة","Report a problem")}</span></button>
+      <button type="button" class="z-pop-item" data-a="ztoggleopt" data-p="batterySaver"><span>🔋 ${A("موفر البطارية","Battery saver")}</span><span class="z-switch${ZS.batterySaver?" on":""}"></span></button>
+      <button type="button" class="z-pop-item" data-a="ztoggleopt" data-p="captions"><span>CC ${A("نص الكلام","Live captions")}</span><span class="z-switch${ZS.captions?" on":""}"></span></button>
+      <button type="button" class="z-pop-item" data-a="lang"><span>🌐 ${A("اللغة","Language")}</span><span>${A("English","العربية")}</span></button>
+      <button type="button" class="z-pop-item" data-a="zreport"><span>⚠ ${A("إبلاغ","Report")}</span></button>
     </div>`;
   }else if(ZS.menu==="share"){
     popover=`<div class="z-popover" data-zpop="1">
       <div class="z-pop-handle"></div>
-      <button type="button" class="z-pop-item" data-a="zscr"><span>🖥 ${A("مشاركة الشاشة كاملة (4K)","Share full screen (4K)")}</span><span>${hasScreen?A("إيقاف","Stop"):"↑"}</span></button>
-      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p=".pdf,application/pdf"><span>📕 ${A("مشاركة ملف PDF (4K)","Share PDF file (4K)")}</span></button>
-      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p=".pptx,.ppt,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.ms-powerpoint"><span>📊 ${A("مشاركة عرض PowerPoint","Share PowerPoint")}</span></button>
-      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p="image/*"><span>🖼 ${A("مشاركة صورة (4K)","Share photo (4K)")}</span></button>
-      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p="video/*"><span>🎬 ${A("مشاركة مقطع فيديو","Share video")}</span></button>
-      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p="*/*"><span>📁 ${A("مشاركة أي ملف آخر","Share any file")}</span></button>
+      <button type="button" class="z-pop-item" data-a="zscr"><span>🖥 ${A("مشاركة الشاشة","Share screen")}</span><span>${hasScreen?A("إيقاف","Stop"):"↑"}</span></button>
+      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p=".pdf,application/pdf"><span>📕 PDF</span><span>↑</span></button>
+      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p=".pptx,.ppt,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.ms-powerpoint"><span>📊 PowerPoint</span><span>↑</span></button>
+      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p="image/*"><span>🖼 ${A("صورة","Photo")}</span><span>↑</span></button>
+      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p="video/*"><span>🎬 ${A("فيديو","Video")}</span><span>↑</span></button>
+      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p="*/*"><span>📁 ${A("ملف","File")}</span><span>↑</span></button>
       <div style="height:1px;background:#323644;margin:4px 0"></div>
       <button type="button" class="z-pop-item" data-a="ztoggleopt" data-p="shareAudio"><span>🔊 ${A("الصوت","Audio")}</span><span class="z-switch${ZS.shareAudio?" on":""}"></span></button>
-      ${hasAnyVisual?`<button type="button" class="z-pop-item" style="color:#fca5a5" data-a="zclearshare"><span>✕ ${A("إيقاف المشاركة الحالية","Stop current share")}</span></button>`:""}
+      ${hasAnyVisual?`<button type="button" class="z-pop-item" style="color:#fca5a5" data-a="zclearshare"><span>✕ ${A("إيقاف المشاركة","Stop share")}</span></button>`:""}
     </div>`;
   }else if(ZS.menu==="react"){
     popover=`<div class="z-popover" data-zpop="1">
@@ -646,16 +690,16 @@ function zroom(){
   let sideHtml="";
   if(ZS.side==="chat"){
     sideHtml=`<aside class="z-side">
-      <div class="z-side-hd"><span>💬 ${A("الشات المباشر","Live chat")} (${ZS.msgs.length})</span><button type="button" class="z-btn" style="height:28px;padding:0 8px;font-size:12px" data-a="zside" data-p="">✕</button></div>
-      <div class="z-msgs">${ZS.msgs.map(m=>`<div class="z-msg${m.isAdmin?" admin-msg":""}"><b>${esc(m.who)}${m.isAdmin?" · "+A("الإدارة","Host"):""}</b><span>${esc(m.text)}</span></div>`).join("")||`<p class="sub" style="font-size:12px;margin:auto">${A("لا توجد رسائل بعد. ابدأ الدردشة الآن.","No messages yet. Start chatting now.")}</p>`}</div>
-      <div class="z-chat-form"><input id="z-chat-in" placeholder="${A("اكتب رسالة مباشرة...","Type a live message...")}" data-e="zsendmsg"><button type="button" class="z-btn on" style="height:34px;padding:0 10px" data-a="zsendmsg">➤</button></div>
+      <div class="z-side-hd"><span>💬 (${ZS.msgs.length})</span><button type="button" class="z-btn" style="height:28px;padding:0 8px;font-size:12px" data-a="zside" data-p="">✕</button></div>
+      <div class="z-msgs">${ZS.msgs.map(m=>`<div class="z-msg${m.isAdmin?" admin-msg":""}"><b>${esc(m.who)}</b><span>${esc(m.text)}</span></div>`).join("")||`<p class="sub" style="font-size:12px;margin:auto">…</p>`}</div>
+      <div class="z-chat-form"><input id="z-chat-in" placeholder="${A("اكتب رسالة...","Type a message...")}" data-e="zsendmsg"><button type="button" class="z-btn on" style="height:34px;padding:0 10px" data-a="zsendmsg">➤</button></div>
     </aside>`;
   }else if(ZS.side==="people"){
     const peopleBody=st.adm
-      ?presList.map(p=>`<div class="z-msg" style="${ZS.hands[p.uid]?.raised?"border-inline-start:3px solid #f59e0b":""}"><b>${esc(p.name||A("مشارك","Participant"))}${ZS.hands[p.uid]?.raised?" ✋":""}</b><span style="color:#9ca3af">${p.isAdmin?A("منظم الجلسة","Host"):A("طالب","Student")}</span></div>`).join("")||`<div class="z-msg"><b>${myName} ${ZS.hand?"✋":""}</b><span style="color:#9ca3af">${A("منظم الجلسة","Host")}</span></div>`
-      :`<div class="z-msg" style="text-align:center;padding:18px 12px"><div style="font-size:28px;margin-bottom:6px">👥</div><b style="font-size:16px">${totalCount}</b><span style="color:#9ca3af">${A("عدد المتواجدين في المحاضرة حالياً","Current participants in lecture")}</span></div>`;
+      ?presList.map(p=>`<div class="z-msg" style="${ZS.hands[p.uid]?.raised?"border-inline-start:3px solid #f59e0b":""}"><b>${esc(p.name||A("مشارك","Participant"))}${ZS.hands[p.uid]?.raised?" ✋":""}</b><span style="color:#9ca3af">${p.isAdmin?A("منظم الجلسة","Host"):A("طالب","Student")}</span></div>`).join("")||`<div class="z-msg"><b>${myName} ${ZS.hand?"✋":""}</b></div>`
+      :`<div class="z-msg" style="text-align:center;padding:18px 12px"><div style="font-size:28px;margin-bottom:6px">👥</div><b style="font-size:18px">${totalCount}</b></div>`;
     sideHtml=`<aside class="z-side">
-      <div class="z-side-hd"><span>👥 ${st.adm?A("المشاركون","Participants"):A("عدد الحضور","Participants count")} (${totalCount})</span><button type="button" class="z-btn" style="height:28px;padding:0 8px;font-size:12px" data-a="zside" data-p="">✕</button></div>
+      <div class="z-side-hd"><span>👥 ${totalCount}</span><button type="button" class="z-btn" style="height:28px;padding:0 8px;font-size:12px" data-a="zside" data-p="">✕</button></div>
       <div class="z-msgs">${peopleBody}</div>
     </aside>`;
   }
@@ -665,102 +709,77 @@ function zroom(){
     stageContent=`<div class="z-avatar-card">
       <div class="z-avatar-circle">🎧</div>
       <div style="font-weight:700">${myName}</div>
-      <div class="z-pill">${A("وضع الصوت فقط مفعّل","Audio-only mode active")}</div>
     </div>`;
   }else if(!hasAnyVisual){
     stageContent=`<div class="z-empty">
       <h3>${A("ادعُ أشخاصاً للانضمام إليك","Invite people to join you")}</h3>
-      <button type="button" class="z-empty-btn" data-a="zside" data-p="people">${st.adm?A("قائمة المشاركين","Participants"):A("عدد المتواجدين","Participants count")} (${totalCount})</button>
-      <button type="button" class="z-empty-btn" data-a="zinvite">${A("مشاركة دعوة الاجتماع","Share meeting invite")}</button>
+      <button type="button" class="z-empty-btn" data-a="zside" data-p="people">👥 ${totalCount}</button>
+      <button type="button" class="z-empty-btn" data-a="zinvite">🔗 ${A("مشاركة الدعوة","Share invite")}</button>
       <div class="row" style="justify-content:center;margin-top:10px">
-        <button type="button" class="btn t" style="padding:6px 12px;font-size:13px" data-a="zquickcam">⚡ ${A("تشغيل الكاميرا","Start camera")}</button>
-        <button type="button" class="btn g" style="padding:6px 12px;font-size:13px" data-a="zquickmic">🎙 ${A("تشغيل المايك","Start mic")}</button>
+        <button type="button" class="btn t" style="padding:6px 12px;font-size:13px" data-a="zquickcam">📷</button>
+        <button type="button" class="btn g" style="padding:6px 12px;font-size:13px" data-a="zquickmic">🎙</button>
       </div>
     </div>`;
   }else{
     const tiles=[];
     if(ZS.scr){
-      tiles.push(`<div class="z-tile main-share${focusCls}">
-        <div class="z-doc-toolbar" style="position:absolute;top:10px;inset-inline-end:10px;z-index:4;padding:4px 8px">
-          ${focusBtnHtml}
-        </div>
+      tiles.push(`<div class="z-tile main-share${focusCls}"><div class="z-land-rot">
+        ${focusBtnHtml?`<div class="z-doc-toolbar">${focusBtnHtml}</div>`:""}
         <video id="zsv" autoplay playsinline></video>
-        <span class="z-tag-lbl">🖥 ${A("مشاركة الشاشة 4K","4K Screen share")}</span>
-      </div>`);
-    }else if(ZS.screenActive&&!st.adm){
-      tiles.push(`<div class="z-tile main-share${focusCls}"><div class="z-slide-card">
-        <div class="z-pill">🖥 ${A("مشاركة الشاشة 4K","4K Screen share")}</div>
-        <div style="font-size:19px;font-weight:700">${A("الإدارة تشارك شاشتها الآن","Host is sharing their screen now")}</div>
-        <div class="sub">${A("تابع الملفات والشرائح المعروضة مباشرة أو اكتب سؤالك في الشات","Follow the shared files and slides live or ask in chat")}</div>
       </div></div>`);
+    }else if(ZS.screenActive&&!st.adm){
+      tiles.push(`<div class="z-tile main-share${focusCls}"><div class="z-land-rot"><div class="z-slide-card">
+        <div style="font-size:28px">🖥</div>
+        <div style="font-size:18px;font-weight:700">${A("بث مباشر","Live")}</div>
+      </div></div></div>`);
     }
     if(ZS.sharedVid){
-      tiles.push(`<div class="z-tile main-share${focusCls}"><div class="z-doc-box">
-        <div class="z-doc-toolbar">
-          <b>🎬 ${esc(ZS.sharedName||A("مقطع فيديو مشارك","Shared video"))}</b>
-          <div class="row" style="margin:0">${focusBtnHtml}</div>
-        </div>
+      tiles.push(`<div class="z-tile main-share${focusCls}"><div class="z-land-rot"><div class="z-doc-box">
+        ${focusBtnHtml?`<div class="z-doc-toolbar">${focusBtnHtml}</div>`:""}
         <video id="z-shared-vid" src="${esc(ZS.sharedVid)}" controls autoplay playsinline></video>
-      </div></div>`);
+      </div></div></div>`);
     }
     if(ZS.sharedImg){
-      tiles.push(`<div class="z-tile main-share${focusCls}"><div class="z-doc-box">
-        <div class="z-doc-toolbar">
-          <b>🖼 ${esc(ZS.sharedName||A("صورة مشاركة","Shared photo"))} · 4K</b>
-          <div class="row" style="margin:0">${focusBtnHtml}</div>
-        </div>
-        <img src="${esc(ZS.sharedImg)}" alt="${esc(ZS.sharedName||"")}">
-      </div></div>`);
+      tiles.push(`<div class="z-tile main-share${focusCls}"><div class="z-land-rot"><div class="z-doc-box">
+        ${focusBtnHtml?`<div class="z-doc-toolbar">${focusBtnHtml}</div>`:""}
+        <img src="${esc(ZS.sharedImg)}" alt="">
+      </div></div></div>`);
     }
     if(ZS.sharedType==="pdf"){
       const pdfNavHtml=st.adm
-        ?`<button type="button" class="z-btn on" style="height:30px;padding:0 10px;font-size:12px" data-a="zpdfpage" data-p="-1">◀ ${A("سابقة","Prev")}</button><button type="button" class="z-btn on" style="height:30px;padding:0 10px;font-size:12px" data-a="zpdfpage" data-p="1">${A("تالية","Next")} ▶</button>`
-        :"";
-      tiles.push(`<div class="z-tile main-share${focusCls}"><div class="z-doc-box">
-        <div class="z-doc-toolbar">
-          <b>📕 ${esc(ZS.sharedName||"PDF")} · <span id="z-pdf-page-lbl">${A("صفحة","Page")} ${ZS.pdfPage} / ${ZS.pdfNumPages}</span></b>
-          <div class="row" style="margin:0">
-            ${pdfNavHtml}
-            ${focusBtnHtml}
-            ${ZS.sharedUrl?`<a class="z-btn" style="height:30px;padding:0 10px;font-size:12px;text-decoration:none" href="${esc(ZS.sharedUrl)}" target="_blank" rel="noopener">↗ ${A("فتح في تبويب","Open tab")}</a>`:""}
-          </div>
-        </div>
-        <div id="z-pdf-wrap" class="z-pdf-wrap">
-          ${ZS.pdfDoc
-            ?`<canvas id="z-pdf-canvas"></canvas>`
-            :`<div class="z-slide-card" style="min-height:220px"><div class="z-pill">📕 ${A("صفحة","Page")} ${ZS.pdfPage} / ${ZS.pdfNumPages}</div><div style="font-size:18px;font-weight:700">${esc(ZS.sharedName||"PDF")}</div><div class="sub">${A("الإدارة تعرض هذا الملف حالياً","Host is currently presenting this PDF")}</div>${ZS.sharedUrl?`<a class="z-btn on" style="text-decoration:none" href="${esc(ZS.sharedUrl)}" target="_blank" rel="noopener">↗ ${A("فتح الملف","Open file")}</a>`:""}</div>`}
-        </div>
-      </div></div>`);
+        ?`<button type="button" class="z-btn on" style="height:28px;padding:0 10px;font-size:12px" data-a="zpdfpage" data-p="-1">◀</button><span class="z-pill" id="z-pdf-page-lbl">${ZS.pdfPage} / ${ZS.pdfNumPages}</span><button type="button" class="z-btn on" style="height:28px;padding:0 10px;font-size:12px" data-a="zpdfpage" data-p="1">▶</button>`
+        :`<span class="z-pill" id="z-pdf-page-lbl">${ZS.pdfPage} / ${ZS.pdfNumPages}</span>`;
+      const pdfBodyHtml=st.adm
+        ?`<canvas id="z-pdf-canvas"></canvas>`
+        :(ZS.pageDataUrl
+          ?`<img class="z-shared-page-img" src="${esc(ZS.pageDataUrl)}" alt="">`
+          :`<div class="z-slide-card" style="min-height:180px"><div class="z-pill">${ZS.pdfPage} / ${ZS.pdfNumPages}</div></div>`);
+      const showBar=st.adm||ZS.sharedFocused;
+      tiles.push(`<div class="z-tile main-share${focusCls}"><div class="z-land-rot"><div class="z-doc-box">
+        ${showBar?`<div class="z-doc-toolbar">${pdfNavHtml}${focusBtnHtml}</div>`:""}
+        <div id="z-pdf-wrap" class="z-pdf-wrap">${pdfBodyHtml}</div>
+      </div></div></div>`);
     }else if(ZS.sharedType==="pptx"){
-      const curSlide=ZS.slides[ZS.slideIdx-1]||{index:ZS.slideIdx,text:A("شريحة عرض تقديمي","Presentation slide")};
+      const curSlide=ZS.slides[ZS.slideIdx-1]||{index:ZS.slideIdx,text:""};
       const pptNavHtml=st.adm
-        ?`<button type="button" class="z-btn on" data-a="zslide" data-p="-1">◀ ${A("السابق","Prev")}</button><button type="button" class="z-btn on" data-a="zslide" data-p="1">${A("التالي","Next")} ▶</button>`
-        :"";
-      tiles.push(`<div class="z-tile main-share${focusCls}"><div class="z-slide-card">
-        <div class="z-pill">📊 PowerPoint · ${esc(ZS.sharedName||"")} · ${A("شريحة","Slide")} ${curSlide.index} / ${Math.max(1,ZS.slides.length)}</div>
+        ?`<button type="button" class="z-btn on" style="height:28px;padding:0 10px;font-size:12px" data-a="zslide" data-p="-1">◀</button><span class="z-pill">${curSlide.index} / ${Math.max(1,ZS.slides.length)}</span><button type="button" class="z-btn on" style="height:28px;padding:0 10px;font-size:12px" data-a="zslide" data-p="1">▶</button>`
+        :`<span class="z-pill">${curSlide.index} / ${Math.max(1,ZS.slides.length)}</span>`;
+      tiles.push(`<div class="z-tile main-share${focusCls}"><div class="z-land-rot"><div class="z-slide-card">
         <div class="z-slide-lines">${esc(curSlide.text)}</div>
-        <div class="row" style="justify-content:center">
-          ${pptNavHtml}
-          ${focusBtnHtml}
-          ${ZS.sharedUrl?`<a class="z-btn" style="text-decoration:none" href="${esc(ZS.sharedUrl)}" download="${esc(ZS.sharedName||"presentation.pptx")}">⬇ ${A("تنزيل الملف","Download")}</a>`:""}
-        </div>
-      </div></div>`);
+        <div class="row" style="justify-content:center">${pptNavHtml}${focusBtnHtml}</div>
+      </div></div></div>`);
     }else if(ZS.sharedType==="text"||ZS.sharedType==="other"){
-      tiles.push(`<div class="z-tile main-share${focusCls}"><div class="z-slide-card">
-        <div class="z-pill">📄 ${esc(ZS.sharedName||A("ملف مشارك","Shared file"))}</div>
-        ${ZS.textContent?`<div class="z-slide-lines">${esc(ZS.textContent)}</div>`:`<div class="sub">${A("تم إرفاق الملف بنجاح. يمكنك تنزيله أو مشاركة شاشتك لعرضه مباشرة.","File attached. Download it or use screen share to display it live.")}</div>`}
-        <div class="row" style="justify-content:center">
-          ${focusBtnHtml}
-          ${ZS.sharedUrl?`<a class="z-btn on" style="text-decoration:none" href="${esc(ZS.sharedUrl)}" target="_blank" rel="noopener">↗ ${A("فتح الملف","Open file")}</a><a class="z-btn" style="text-decoration:none" href="${esc(ZS.sharedUrl)}" download="${esc(ZS.sharedName||"file")}">⬇ ${A("تنزيل","Download")}</a>`:""}
-        </div>
-      </div></div>`);
+      tiles.push(`<div class="z-tile main-share${focusCls}"><div class="z-land-rot"><div class="z-slide-card">
+        ${ZS.textContent?`<div class="z-slide-lines">${esc(ZS.textContent)}</div>`:`<div style="font-size:24px">📄</div>`}
+        ${focusBtnHtml?`<div class="row" style="justify-content:center">${focusBtnHtml}</div>`:""}
+      </div></div></div>`);
     }
 
     if(!ZS.sharedFocused){
       if(hasCam){
-        tiles.push(`<div class="z-tile cam-tile"><video id="zv" autoplay playsinline muted></video><span class="z-tag-lbl">${myName}${ZS.hand?" ✋":""}</span></div>`);
+        tiles.push(`<div class="z-tile cam-tile"><div class="z-land-rot"><video id="zv" autoplay playsinline muted></video></div></div>`);
       }else if(!hasSharedDoc&&!ZS.sharedImg&&!ZS.sharedVid&&!hasScreen){
-        tiles.push(`<div class="z-tile"><div class="z-avatar-card"><div class="z-avatar-circle">${initial}</div><small>${myName}${ZS.hand?" ✋":""}</small></div></div>`);
+        tiles.push(`<div class="z-tile"><div class="z-land-rot"><div class="z-avatar-card"><div class="z-avatar-circle">${initial}</div></div></div></div>`);
       }
     }
     stageContent=`<div class="z-media-grid">${tiles.join("")}</div>`;
@@ -786,8 +805,8 @@ function zroom(){
           <option value="720">720p</option>
           <option value="480">480p</option>
         </select>
-        <button type="button" class="z-btn${ZS.expanded?" on":""}" style="height:30px;padding:0 10px;font-size:12px" data-a="zexpand" title="${ZS.expanded?A("تصغير الشاشة","Exit fullscreen"):A("تكبير الشاشة","Expand room")}">${ZS.expanded?"🗗 "+A("تصغير","Minimize"):"⛶ "+A("تكبير","Expand")}</button>
-        ${st.adm?`<button type="button" id="zrb" class="z-btn${ZS.rec?" off":""}" style="height:30px;padding:0 10px;font-size:12px" data-a="zrec">${ZS.rec?"⏹ "+A("إيقاف","Stop"):"⏺ "+A("تسجيل","Rec")}</button>`:""}
+        <button type="button" class="z-btn${ZS.expanded?" on":""}" style="height:30px;padding:0 10px;font-size:12px" data-a="zexpand">${ZS.expanded?"🗗 "+A("تصغير","Minimize"):"⛶ "+A("تكبير","Expand")}</button>
+        ${st.adm?`<button type="button" id="zrb" class="z-btn${ZS.rec?" off":""}" style="height:30px;padding:0 10px;font-size:12px" data-a="zrec">${ZS.rec?"⏹":"⏺"}</button>`:""}
       </div>
     </div>
     ${hostBar}
@@ -799,22 +818,22 @@ function zroom(){
       </div>
       ${sideHtml}
     </div>
-    ${ZS.captions?`<div class="z-caption-bar">CC · ${A("الترجمة المباشرة مفعّلة","Live captions active")}</div>`:""}
+    ${ZS.captions?`<div class="z-caption-bar">CC</div>`:""}
     ${popover}
     <input id="z-media-input" type="file" style="display:none">
     <div class="z-dock">
-      <button type="button" class="z-btn hang" data-a="zleave" title="${A("مغادرة","Leave")}">📞▾</button>
-      <button type="button" class="z-btn${ZS.menu==="more"?" on":""}" data-a="zmenu" data-p="more" title="${A("المزيد","More")}">•••</button>
-      <button type="button" class="z-btn${!ZS.speaker?" off":""}" data-a="ztoggleopt" data-p="speaker" title="${A("مكبر الصوت","Speaker")}">${ZS.speaker?"🔊":"🔇"}</button>
-      <button type="button" id="zb1" class="z-btn${ZS.mic?" on":" off"}" data-a="zt" data-p="mic" title="${A("الميكروفون","Microphone")}">${ZS.mic?"🎙":"🎙̸"}</button>
-      <button type="button" id="zb2" class="z-btn${ZS.cam1?" on":" off"}" data-a="zt" data-p="cam1" title="${A("الكاميرا","Camera")}">${ZS.cam1?"📷":"📷̸"}</button>
+      <button type="button" class="z-btn hang" data-a="zleave">📞▾</button>
+      <button type="button" class="z-btn${ZS.menu==="more"?" on":""}" data-a="zmenu" data-p="more">•••</button>
+      <button type="button" class="z-btn${!ZS.speaker?" off":""}" data-a="ztoggleopt" data-p="speaker">${ZS.speaker?"🔊":"🔇"}</button>
+      <button type="button" id="zb1" class="z-btn${ZS.mic?" on":" off"}" data-a="zt" data-p="mic">${ZS.mic?"🎙":"🎙̸"}</button>
+      <button type="button" id="zb2" class="z-btn${ZS.cam1?" on":" off"}" data-a="zt" data-p="cam1">${ZS.cam1?"📷":"📷̸"}</button>
       <div class="z-divider"></div>
-      <button type="button" class="z-btn${!ZS.audioOnly?" on":""}" data-a="zviewmode" data-p="gallery" title="${A("معرض","Gallery")}">▦</button>
-      <button type="button" class="z-btn${ZS.audioOnly?" on":""}" data-a="zviewmode" data-p="audio" title="${A("صوت فقط","Audio only")}">🎧</button>
-      <button type="button" class="z-btn${(ZS.menu==="react"||ZS.hand)?" on":""}" data-a="zmenu" data-p="react" title="${A("التفاعلات ورفع اليد","Reactions & raise hand")}">${ZS.hand?"✋☺":"☺✋"}</button>
-      ${st.adm?`<button type="button" class="z-btn${(ZS.menu==="share"||hasScreen)?" on":""}" data-a="zmenu" data-p="share" title="${A("مشاركة","Share")}">↑</button>`:""}
-      <button type="button" class="z-btn${ZS.side==="people"?" on":""}" data-a="zside" data-p="people" title="${st.adm?A("المشاركون","Participants"):A("عدد الحضور","Participants count")}">👥 ${totalCount}</button>
-      <button type="button" class="z-btn${ZS.side==="chat"?" on":""}" data-a="zside" data-p="chat" title="${A("الشات المباشر","Live chat")}">💬${ZS.msgs.length?` (${ZS.msgs.length})`:""}</button>
+      <button type="button" class="z-btn${!ZS.audioOnly?" on":""}" data-a="zviewmode" data-p="gallery">▦</button>
+      <button type="button" class="z-btn${ZS.audioOnly?" on":""}" data-a="zviewmode" data-p="audio">🎧</button>
+      <button type="button" class="z-btn${(ZS.menu==="react"||ZS.hand)?" on":""}" data-a="zmenu" data-p="react">${ZS.hand?"✋☺":"☺✋"}</button>
+      ${st.adm?`<button type="button" class="z-btn${(ZS.menu==="share"||hasScreen)?" on":""}" data-a="zmenu" data-p="share">↑</button>`:""}
+      <button type="button" class="z-btn${ZS.side==="people"?" on":""}" data-a="zside" data-p="people">👥 ${totalCount}</button>
+      <button type="button" class="z-btn${ZS.side==="chat"?" on":""}" data-a="zside" data-p="chat">💬${ZS.msgs.length?` (${ZS.msgs.length})`:""}</button>
     </div>
   </div>`;
 }
@@ -828,6 +847,7 @@ const zs=m=>{const e=$("zst");if(e)e.textContent=m};
 function zStop(){
   stopAudioMeter();
   clearInterval(ZS.presenceTimer);
+  applyDeviceLandscapeLock(false);
   if(ZS.rec&&ZS.rec.state!=="inactive"){try{ZS.rec.stop()}catch(e){}}
   [ZS.cam,ZS.micStream,ZS.scr].forEach(s=>s&&s.getTracks().forEach(t=>t.stop()));
   ZS.cam=ZS.micStream=ZS.scr=ZS.rec=null;
@@ -949,10 +969,11 @@ const ACT={
  async ztogglefocus(){
   if(!st.adm)return;
   ZS.sharedFocused=ZS.sharedFocused?0:1;
+  ZS.menu=null;
+  applyDeviceLandscapeLock(!!ZS.sharedFocused);
   if(db)await setDoc(doc(db,"site","zoom_focus"),{focused:!!ZS.sharedFocused,ts:Date.now()},{merge:true}).catch(()=>{});
   await syncStageToCloud({focused:!!ZS.sharedFocused});
   draw();
-  toast(ZS.sharedFocused?A("تم تكبير الملف للجميع","Focused share for everyone"):A("تمت إعادة العرض الطبيعي","Restored normal view"));
  },
  zmenu(m){ZS.menu=ZS.menu===m?null:m;draw()},
  zside(s){ZS.side=ZS.side===s?null:s;ZS.menu=null;draw()},
@@ -960,7 +981,6 @@ const ACT={
   ZS.audioOnly=m==="audio"?1:0;
   ZS.menu=null;
   draw();
-  toast(ZS.audioOnly?A("تم التبديل إلى وضع الصوت فقط","Switched to audio-only mode"):A("تم التبديل إلى وضع المعرض","Switched to gallery view"));
  },
  ztoggleopt(k){
   ZS[k]=ZS[k]?0:1;
@@ -974,14 +994,14 @@ const ACT={
   ZS.roomCtrl.allowMic=0;
   if(db)await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:false,ts:Date.now()},{merge:true}).catch(()=>{});
   draw();
-  toast("🔇 "+A("تم كتم المايك للجميع","Muted everyone"));
+  toast("🔇");
  },
  async zunmuteall(){
   if(!st.adm)return;
   ZS.roomCtrl.allowMic=1;
   if(db)await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:true,ts:Date.now()},{merge:true}).catch(()=>{});
   draw();
-  toast("🎙 "+A("تم السماح للجميع بتشغيل المايك","Allowed everyone to unmute"));
+  toast("🎙");
  },
  async zsendreact(em){
   ZS.menu=null;
@@ -996,7 +1016,6 @@ const ACT={
         ts:Date.now()
       },{merge:true}).catch(()=>{});
     }
-    toast(ZS.hand?A("تم رفع يدك وستظهر للإدارة","Hand raised — visible to host"):A("تم إنزال يدك","Hand lowered"));
   }
   if(db&&st.user){
     addDoc(collection(db,"zoom_reactions"),{
@@ -1017,11 +1036,10 @@ const ACT={
   draw();
  },
  zinvite(){
-  const txt=A("انضم إلى جلسة ZOOM ALNOOR على منصة النور","Join ZOOM ALNOOR session on Al-Noor Platform")+" ("+location.href+")";
-  navigator.clipboard?.writeText(txt).catch(()=>{});
-  toast("✅ "+A("تم نسخ دعوة الاجتماع","Meeting invite copied"));
+  navigator.clipboard?.writeText(location.href).catch(()=>{});
+  toast("✅");
  },
- zreport(){ZS.menu=null;toast(A("تم تسجيل ملاحظتك حول الجلسة","Session feedback noted"))},
+ zreport(){ZS.menu=null;toast("✅")},
  async zsendmsg(){
   const inp=$("z-chat-in");if(!inp)return;
   const text=inp.value.trim();if(!text)return;
@@ -1038,24 +1056,29 @@ const ACT={
   const box=document.querySelector(".z-msgs");if(box)box.scrollTop=box.scrollHeight;
  },
  zpickmedia(accept){
+  if(!st.adm)return;
   const fi=$("z-media-input");if(!fi)return;
   fi.accept=accept||"*/*";
   fi.onchange=async()=>{
     const file=fi.files?.[0];if(!file)return;
-    const realName=String(file.name||A("ملف مرفق","Attached file")).split(/[/\\]/).pop()||A("ملف مرفق","Attached file");
+    const realName=String(file.name||"").split(/[/\\]/).pop()||"";
     ZS.menu=null;ZS.audioOnly=0;
-    ZS.sharedImg="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedName=realName;ZS.sharedType="";
+    ZS.sharedImg="";ZS.pageDataUrl="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedType="";
     ZS.pdfDoc=null;ZS.pdfNumPages=1;ZS.pdfPage=1;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";
     try{
       if(/^image\//.test(file.type)){
-        const compressed=await compressToDataUrl(file,2560,1440,620000);
+        const compressed=await compressToDataUrl(file,2560,1440,640000);
         ZS.sharedImg=compressed;
         ZS.sharedUrl=compressed;
         ZS.sharedType="img";
+        await syncStageToCloud();
+        draw();
       }else if(/^video\//.test(file.type)){
         ZS.sharedVid=URL.createObjectURL(file);
         ZS.sharedUrl=ZS.sharedVid;
         ZS.sharedType="video";
+        await syncStageToCloud();
+        draw();
       }else if(/pdf/i.test(file.type)||/\.pdf$/i.test(realName)){
         ZS.sharedType="pdf";
         ZS.sharedUrl=URL.createObjectURL(file);
@@ -1064,66 +1087,76 @@ const ACT={
         ZS.pdfDoc=await pdfjs.getDocument({data:buf}).promise;
         ZS.pdfNumPages=ZS.pdfDoc.numPages||1;
         ZS.pdfPage=1;
+        draw();
+        await new Promise(r=>setTimeout(r,30));
+        await renderPdfPageToCanvas(1,true);
       }else if(/\.pptx$/i.test(realName)||/presentationml/i.test(file.type)){
         ZS.sharedType="pptx";
         ZS.sharedUrl=URL.createObjectURL(file);
         ZS.slides=await parsePptxSlides(file);
         ZS.slideIdx=1;
+        await syncStageToCloud();
+        draw();
       }else if(/\.ppt$/i.test(realName)||/ms-powerpoint/i.test(file.type)){
         ZS.sharedType="pptx";
         ZS.sharedUrl=URL.createObjectURL(file);
-        ZS.slides=[{index:1,text:A("ملف PowerPoint قديم (.ppt) — يُنصح بتصديره إلى (.pptx) أو PDF لعرض الشرائح تلقائياً، أو استخدام مشاركة الشاشة.","Legacy .ppt file — export to .pptx or PDF for automatic slide rendering, or use screen share.")}];
+        ZS.slides=[{index:1,text:""}];
         ZS.slideIdx=1;
+        await syncStageToCloud();
+        draw();
       }else if(/^(text\/|application\/(json|xml|javascript))|\.(txt|csv|md|json|html|log)$/i.test(file.type+" "+realName)){
         ZS.sharedType="text";
         ZS.sharedUrl=URL.createObjectURL(file);
         ZS.textContent=(await file.text()).slice(0,12000);
+        await syncStageToCloud();
+        draw();
       }else{
         ZS.sharedType="other";
         ZS.sharedUrl=URL.createObjectURL(file);
+        await syncStageToCloud();
+        draw();
       }
-      await syncStageToCloud();
-      draw();
-      toast("✅ "+A("تم فتح ومشاركة: ","Opened & shared: ")+realName);
+      toast("✅");
     }catch(err){
       console.error(err);
       ZS.sharedType="other";
       ZS.sharedUrl=URL.createObjectURL(file);
       await syncStageToCloud();
       draw();
-      toast("⚠️ "+A("تعذر عرض محتوى الملف داخلياً، يمكنك فتحه أو تنزيله","Could not render preview inline; open or download file"));
+      toast("⚠️");
     }
     fi.value="";
   };
   fi.click();
  },
  async zpdfpage(step){
-  if(!ZS.pdfDoc)return;
+  if(!st.adm||!ZS.pdfDoc)return;
   const next=Math.max(1,Math.min(ZS.pdfNumPages,ZS.pdfPage+(+step||1)));
   if(next===ZS.pdfPage)return;
-  ZS.pdfPage=next;
-  await renderPdfPageToCanvas(next);
-  await syncStageToCloud({pdfPage:ZS.pdfPage,pdfNumPages:ZS.pdfNumPages});
+  await renderPdfPageToCanvas(next,true);
  },
  async zslide(step){
+  if(!st.adm)return;
   const maxS=Math.max(1,ZS.slides.length||1);
   ZS.slideIdx=Math.max(1,Math.min(maxS,ZS.slideIdx+(+step||1)));
   await syncStageToCloud({slideIdx:ZS.slideIdx});
   draw();
  },
  async zclearshare(){
+  if(!st.adm)return;
   if(ZS.scr){ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null}
   if(ZS.sharedUrl&&ZS.sharedUrl.startsWith("blob:")){try{URL.revokeObjectURL(ZS.sharedUrl)}catch(e){}}
   if(ZS.sharedVid&&ZS.sharedVid.startsWith("blob:")){try{URL.revokeObjectURL(ZS.sharedVid)}catch(e){}}
-  ZS.sharedImg="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedName="";ZS.sharedType="";
+  ZS.sharedImg="";ZS.pageDataUrl="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedType="";
   ZS.pdfDoc=null;ZS.pdfNumPages=1;ZS.pdfPage=1;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";
   ZS.screenActive=0;ZS.sharedFocused=0;
   ZS.menu=null;
-  if(db&&st.adm)await setDoc(doc(db,"site","zoom_focus"),{focused:false,ts:Date.now()},{merge:true}).catch(()=>{});
+  applyDeviceLandscapeLock(false);
+  if(db)await setDoc(doc(db,"site","zoom_focus"),{focused:false,ts:Date.now()},{merge:true}).catch(()=>{});
   await syncStageToCloud();
   draw();
  },
- zleave(){zStop();toast(A("تمت مغادرة الجلسة","Left session"));go("dashboard")},
+ zleave(){zStop();go("dashboard")},
 
  async zquickcam(){
   ZS.audioOnly=0;
@@ -1133,30 +1166,28 @@ const ACT={
     draw();
     const s=ZS.cam.getVideoTracks()[0].getSettings();
     zs((s.width||1280)+"×"+(s.height||720));
-  }catch(e){toast("⚠️ "+A("تعذر فتح الكاميرا – تحقق من الصلاحيات","Camera blocked – check permissions"))}
+  }catch(e){toast("⚠️")}
  },
  async zquickmic(){
-  if(!st.adm&&!ZS.roomCtrl.allowMic)return toast("🔇 "+A("المايك مقفل حالياً من قِبل المحاضر","Microphone is currently locked by host"));
+  if(!st.adm&&!ZS.roomCtrl.allowMic)return toast("🔇");
   try{
     const ms=await ensureMic();
     const tr=ms.getAudioTracks()[0];
     if(tr)tr.enabled=true;
     ZS.mic=1;
     draw();
-    toast("🎙 "+A("المايك شغال بجودة عالية","Microphone active in high quality"));
-  }catch(e){toast("⚠️ "+A("تعذر الوصول للمايك – تحقق من الصلاحيات","Microphone blocked – check permissions"))}
+  }catch(e){toast("⚠️")}
  },
  async zt(k){
   if(k==="mic"){
-    if(!st.adm&&!ZS.roomCtrl.allowMic&&!ZS.mic)return toast("🔇 "+A("قام المحاضر بكتم المايك للجميع","Host muted all microphones"));
+    if(!st.adm&&!ZS.roomCtrl.allowMic&&!ZS.mic)return toast("🔇");
     try{
       const next=ZS.mic?0:1;
       const ms=await ensureMic();
       ms.getAudioTracks().forEach(t=>{t.enabled=!!next});
       ZS.mic=next;
       draw();
-      toast(ZS.mic?A("تم تشغيل المايك","Mic turned on"):A("تم إطفاء المايك","Mic turned off"));
-    }catch(e){toast("⚠️ "+A("تعذر الوصول للمايك – اسمح بالصلاحية","Microphone permission denied"))}
+    }catch(e){toast("⚠️")}
     return;
   }
   if(k==="cam1"){
@@ -1169,17 +1200,17 @@ const ACT={
         draw();
         const s=ZS.cam.getVideoTracks()[0]?.getSettings();
         if(s?.width)zs(s.width+"×"+s.height);
-      }catch(e){toast("⚠️ "+A("تعذر فتح الكاميرا – اسمح بالصلاحية","Camera permission denied"))}
+      }catch(e){toast("⚠️")}
     }else{
       ZS.cam1=0;
       if(ZS.cam)ZS.cam.getVideoTracks().forEach(t=>{t.enabled=false});
       draw();
-      toast(A("تم إطفاء الكاميرا","Camera turned off"));
     }
   }
  },
  zhand(){ZS.hand=ZS.hand?0:1;draw()},
  async zscr(){
+  if(!st.adm)return;
   ZS.menu=null;
   if(ZS.scr){
     ZS.scr.getTracks().forEach(t=>t.stop());
@@ -1190,7 +1221,7 @@ const ACT={
     return;
   }
   if(!navigator.mediaDevices?.getDisplayMedia){
-    toast("⚠️ "+A("مشاركة الشاشة غير مدعومة في هذا المتصفح — استخدم مشاركة الملف أو الصورة أو الفيديو","Screen share is not supported on this browser — use file, photo, or video share"));
+    toast("⚠️");
     return;
   }
   try{
@@ -1208,9 +1239,8 @@ const ACT={
     };
     await syncStageToCloud({screenActive:true});
     draw();
-    const stg=vTrack?.getSettings();
-    toast("🖥 4K "+(stg?.width&&stg?.height?`(${stg.width}×${stg.height}) `:"")+A("تمت مشاركة الشاشة","Screen shared"));
-  }catch(e){toast("⚠️ "+A("تعذر بدء مشاركة الشاشة أو تم إلغاؤها","Screen share cancelled or unavailable"))}
+    toast("✅");
+  }catch(e){toast("⚠️")}
  },
  async zrec(b){
   if(ZS.rec&&ZS.rec.state!=="inactive"){ZS.rec.stop();return}
@@ -1219,9 +1249,9 @@ const ACT={
   if(ZS.scr)tracks.push(...ZS.scr.getVideoTracks(),...ZS.scr.getAudioTracks());
   else if(ZS.cam&&ZS.cam1)tracks.push(...ZS.cam.getVideoTracks());
   if(ZS.micStream&&ZS.mic)tracks.push(...ZS.micStream.getAudioTracks());
-  if(!tracks.length)return toast("⚠️ "+A("فعّل الكاميرا أو الصوت أو الشاشة للتسجيل","Enable camera, audio, or screen to record"));
+  if(!tracks.length)return toast("⚠️");
   const mt=["video/webm;codecs=vp9,opus","video/webm","video/mp4"].find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m));
-  if(!mt)return toast("⚠️ "+A("التسجيل غير مدعوم","Recording unsupported"));
+  if(!mt)return toast("⚠️");
   ZS.ch=[];
   const r=new MediaRecorder(new MediaStream(tracks),{mimeType:mt,videoBitsPerSecond:8000000,audioBitsPerSecond:128000});
   ZS.rec=r;
@@ -1245,13 +1275,13 @@ const CHG={
   async zq(v){
     const q=ZQ[v];if(!q)return;
     const target=ZS.scr?.getVideoTracks()[0]||ZS.cam?.getVideoTracks()[0];
-    if(!target)return toast("✓ "+A("سيتم تطبيق الجودة عند فتح الكاميرا/الشاشة","Quality will apply when media opens"));
+    if(!target)return toast("✓");
     try{
       await target.applyConstraints({width:{ideal:q[0]},height:{ideal:q[1]}});
       const s=target.getSettings();
       zs((s.width||q[0])+"×"+(s.height||q[1]));
-      toast("✅ "+A("تم تحديث الجودة","Quality updated"));
-    }catch(e){toast("⚠️ "+A("الجودة غير مدعومة بهذا الجهاز","Resolution not supported on this device"))}
+      toast("✅");
+    }catch(e){toast("⚠️")}
   }
 };
 
