@@ -5,7 +5,8 @@
 
 const DEFAULT_BADGE_PATH = "./icons/badge.png";
 const DEFAULT_ICON_PATH = "./icons/icon-192.png";
-const INBOX_HASH = "#inbox";
+const INBOX_PAGE_PATH = "./inbox.html";
+const INDEX_INBOX_HASH = "./index.html#inbox";
 const LECTURE_HASH_PREFIX = "#zoom-alnoor";
 
 function resolveSafeUrl(relativeOrUrl, fallbackPath) {
@@ -17,6 +18,21 @@ function resolveSafeUrl(relativeOrUrl, fallbackPath) {
     }
   } catch (_) {}
   return new URL(fallbackPath, base).href;
+}
+
+function resolveInboxTargetUrl(rawUrl) {
+  const fallback = new URL(INBOX_PAGE_PATH, self.location.href);
+  if (!rawUrl) return fallback.href;
+
+  try {
+    const resolved = new URL(resolveSafeUrl(rawUrl, fallback.href));
+    if (resolved.hash === "#inbox" && resolved.pathname.endsWith("/index.html")) {
+      return fallback.href;
+    }
+    return resolved.href;
+  } catch (_) {
+    return fallback.href;
+  }
 }
 
 function parsePushPayload(event) {
@@ -63,7 +79,7 @@ self.addEventListener("push", (event) => {
       ? payload.body.trim().slice(0, 220)
       : "وصلك تحديث في صندوق الرسائل. افتح المنصة لقراءة الرسالة والرابط.";
 
-    const targetUrl = resolveSafeUrl(payload.url, `./index.html${INBOX_HASH}`);
+    const targetUrl = resolveInboxTargetUrl(payload.url);
     const icon = resolveSafeUrl(payload.icon, DEFAULT_ICON_PATH);
     const badge = resolveSafeUrl(payload.badge, DEFAULT_BADGE_PATH);
 
@@ -84,10 +100,11 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   event.waitUntil((async () => {
-    const fallbackUrl = new URL(`./index.html${INBOX_HASH}`, self.location.href);
+    const defaultInboxUrl = new URL(INBOX_PAGE_PATH, self.location.href);
+    const indexInboxUrl = new URL(INDEX_INBOX_HASH, self.location.href);
     const requestedUrl = event.notification?.data?.url
-      ? new URL(resolveSafeUrl(event.notification.data.url, fallbackUrl.href))
-      : fallbackUrl;
+      ? new URL(resolveInboxTargetUrl(event.notification.data.url))
+      : defaultInboxUrl;
 
     const clientsList = await self.clients.matchAll({
       type: "window",
@@ -98,17 +115,19 @@ self.addEventListener("notificationclick", (event) => {
     const reusableClient = clientsList.find((client) => {
       try {
         const current = new URL(client.url);
-        const sameOrigin = current.origin === fallbackUrl.origin;
-        const samePath = current.pathname === fallbackUrl.pathname;
+        const sameOrigin = current.origin === defaultInboxUrl.origin;
+        const isInboxOrIndex =
+          current.pathname === defaultInboxUrl.pathname ||
+          current.pathname === indexInboxUrl.pathname;
         const inLecture = current.hash.startsWith(LECTURE_HASH_PREFIX);
-        return sameOrigin && samePath && !inLecture;
+        return sameOrigin && isInboxOrIndex && !inLecture;
       } catch (_) {
         return false;
       }
     });
 
     if (reusableClient) {
-      if (typeof reusableClient.navigate === "function") {
+      if (typeof reusableClient.navigate === "function" && reusableClient.url !== requestedUrl.href) {
         await reusableClient.navigate(requestedUrl.href);
       }
       if (typeof reusableClient.focus === "function") {
