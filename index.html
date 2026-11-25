@@ -48,7 +48,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .qr{width:120px;height:120px;background:#fff;padding:6px;border-radius:8px;display:block;margin:8px 0}
 .star{background:none;border:0;font-size:28px;color:#B8C4D0;padding:0 2px}.star.on{color:#F5A623}
 
-/* ---------- غرفة ZOOM ALNOOR العصرية ---------- */
+/* ---------- غرفة ZOOM ALNOOR ---------- */
 .z-wrap{background:#121316;border:3px solid #2a2c33;border-radius:24px;box-shadow:0 14px 36px rgba(0,0,0,.35);color:#f3f4f6;overflow:hidden;position:relative;display:flex;flex-direction:column}
 .z-wrap.expanded{position:fixed;inset:0;z-index:60;border-radius:0;border:0;width:100vw;height:100svh;max-height:100svh;background:#090a0d}
 .z-wrap.expanded .z-top,
@@ -69,7 +69,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-body{display:grid;grid-template-columns:1fr;min-height:420px;position:relative}
 .z-body.with-side{grid-template-columns:minmax(0,1fr) 320px}
 @media (max-width:820px){.z-body.with-side{grid-template-columns:1fr}}
-.z-stage{position:relative;background:#0d0e11;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;min-height:380px;gap:12px;overflow:hidden}
+.z-stage{position:relative;background:#0d0e11;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;min-height:380px;gap:10px;overflow:hidden}
 .z-stage.audio-only{background:radial-gradient(circle at center,#1f2330 0%,#0d0e11 75%)}
 .z-empty{text-align:center;max-width:340px;margin:auto}
 .z-empty h3{color:#fff;font-size:20px;margin-bottom:12px}
@@ -77,7 +77,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-empty-btn:hover{background:#2d313e}
 .z-media-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;width:100%;height:100%}
 .z-tile{position:relative;background:#161820;border:2px solid #343848;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%}
-.z-tile.main-share{min-height:280px;flex:1}
+.z-tile.main-share{min-height:290px;flex:1}
 .z-wrap.expanded .z-tile.main-share{min-height:0;height:100%;border-radius:12px}
 .z-tile video,.z-tile img{width:100%;height:100%;max-height:66svh;object-fit:contain;background:#090a0d}
 .z-wrap.expanded .z-tile video,.z-wrap.expanded .z-tile img{max-height:100%}
@@ -88,15 +88,17 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 #z-pdf-canvas,.z-shared-page-img{max-width:100%;max-height:100%;width:auto;height:auto;border-radius:6px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.45);object-fit:contain}
 .z-slide-card{width:100%;height:100%;min-height:240px;background:linear-gradient(145deg,#1b1f2b,#12151e);border:1px solid #363c4d;border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;overflow:hidden}
 .z-slide-lines{max-width:820px;width:100%;text-align:start;background:rgba(10,12,18,.65);border:1px solid #2d3344;border-radius:12px;padding:12px 14px;white-space:pre-wrap;font-size:14px;line-height:1.7;color:#f1f5f9;max-height:38svh;overflow-y:auto}
-.z-avatar-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px}
-.z-avatar-circle{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#1e6fd9);color:#fff;display:grid;place-items:center;font-size:28px;font-weight:700;box-shadow:0 6px 18px rgba(79,70,229,.35)}
+.z-avatar-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px}
+.z-avatar-circle{width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#1e6fd9);color:#fff;display:grid;place-items:center;font-size:26px;font-weight:700;box-shadow:0 6px 18px rgba(79,70,229,.35)}
+.z-peers-strip{display:flex;flex-wrap:wrap;gap:8px;width:100%;justify-content:center}
+.z-peer-card{background:#181b24;border:1px solid #343949;border-radius:12px;padding:8px 10px;display:flex;align-items:center;gap:8px;min-width:150px}
+.z-peer-card video{width:96px;height:64px;border-radius:8px;object-fit:cover;background:#090a0d}
 .z-meter{display:inline-flex;align-items:center;gap:6px;background:#1f222b;border:1px solid #343844;border-radius:999px;padding:4px 10px;font-size:12px}
 .z-bar{width:64px;height:6px;background:#323642;border-radius:999px;overflow:hidden}
 .z-bar>i{display:block;height:100%;width:0%;background:#22c55e;transition:width .06s linear}
 .z-reactions-stack{position:absolute;top:10px;inset-inline-end:10px;display:flex;flex-direction:column;gap:6px;z-index:6;pointer-events:none}
 .z-reaction-pop{background:rgba(24,27,36,.94);border:1px solid #525a70;border-radius:999px;padding:5px 12px;font-size:14px;color:#fff;display:inline-flex;align-items:center;gap:6px;box-shadow:0 6px 18px rgba(0,0,0,.45)}
 
-/* القوائم المنبثقة داخل الإطار فوق الشريط السفلي */
 .z-popover{position:absolute;bottom:66px;inset-inline:12px;margin:auto;width:min(340px,calc(100% - 24px));background:#1e2028;border:1px solid #383c49;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.55);padding:10px;z-index:70;color:#f3f4f6}
 .z-pop-handle{width:34px;height:4px;border-radius:999px;background:#4b5061;margin:0 auto 10px}
 .z-pop-item{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:9px 12px;border:0;border-radius:10px;background:transparent;color:#f3f4f6;text-align:start;font-size:14px}
@@ -109,7 +111,6 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-react-btn{background:transparent;border:0;font-size:26px;padding:4px;border-radius:10px;transition:transform .12s}
 .z-react-btn:hover{transform:scale(1.2);background:rgba(255,255,255,.08)}
 
-/* الشريط الجانبي (دردشة / مشاركون) */
 .z-side{background:#181a20;border-inline-start:1px solid #2b2e36;display:flex;flex-direction:column;max-height:480px}
 .z-side-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #2b2e36;font-weight:700;font-size:14px}
 .z-msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
@@ -119,7 +120,6 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-chat-form{display:flex;gap:6px;padding:10px;border-top:1px solid #2b2e36;background:#15171c}
 .z-chat-form input{flex:1;background:#242731;border:1px solid #3a3e4b;color:#fff;border-radius:10px;padding:7px 10px;font-size:13px}
 
-/* شريط الأدوات السفلي العصري داخل الإطار */
 .z-dock{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#191b20;border-top:1px solid #2a2d36;flex-wrap:wrap;max-width:100%}
 .z-divider{width:1px;height:28px;background:#323642;margin:0 4px}
 .z-btn{min-width:42px;height:40px;padding:0 10px;border-radius:11px;border:1px solid transparent;background:#252832;color:#f3f4f6;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:600;transition:background .12s,transform .1s}
@@ -208,7 +208,7 @@ const ads=()=>st.seeded?st.ads:DEF_ADS;
 const about=()=>st.seeded?st.about:(st.about||DEF_ABOUT);
 function team(){const map=new Map(st.team.map(x=>[x.id,x]));return DEF_TEAM.map(d=>({...d,...(map.get(d.id)||{})}))}
 
-function toast(m){const e=$("toast");e.textContent=m;e.className="show";clearTimeout(toast.t);toast.t=setTimeout(()=>e.className="",2600)}
+function toast(m){const e=$("toast");if(!e)return;e.textContent=m;e.className="show";clearTimeout(toast.t);toast.t=setTimeout(()=>e.className="",2600)}
 async function run(f,msg,b){if(!db)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));if(b)b.disabled=true;
   try{await f();toast("✅ "+(msg||A("تم الحفظ بنجاح","Saved successfully")))}catch(e){console.error(e);toast("⚠️ "+A("تعذر الحفظ: ","Save failed: ")+(e.code||e.message))}finally{if(b)b.disabled=false}}
 const igC=h=>{h=String(h||"").trim();const m=h.match(/instagram\.com\/([A-Za-z0-9._]+)/i);if(m)h=m[1];return h.replace(/^@/,"").replace(/[^A-Za-z0-9._]/g,"")};
@@ -248,8 +248,7 @@ const tag=s=>`<span class="tag${s=="pending"?" r":""}">${s=="pending"?A("قيد 
 const price=p=>p>0?`<span class="price">${p} ${A("د.أ","JD")}</span>`:`<span class="tag">${A("مجاني","Free")}</span>`;
 const stars=n=>"★".repeat(n)+"☆".repeat(5-n);
 const pin6=v=>/^\d{6}$/.test(String(v||"").trim());
-
-const displayName=()=>st.adm?A("الإدارة","Host"):(st.me.name||A("طالب","Student"));
+const displayName=()=>st.adm?A("الإدارة","Host"):(st.me.name||st.user?.email?.split("@")[0]||A("طالب","Student"));
 
 const sub=(q,cb,k)=>onSnapshot(q,s=>{cb(s);rd(k)},e=>{console.error(e);toast("⚠️ "+A("تعذرت المزامنة: ","Sync error: ")+e.code)});
 function rd(k){
@@ -257,13 +256,15 @@ function rd(k){
     const zr=$("zr");
     if(zr){draw();return}
   }
-  const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&$("app").contains(a))return;if(route()=="ads"&&k&&k!="ads")return;draw()
+  const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&$("app")?.contains(a))return;if(route()=="ads"&&k&&k!="ads")return;draw()
 }
 function chkSeed(){if(st.adm&&st.seeded===false&&st.metaSrv&&!st.seeding){st.seeding=1;run(async()=>{const b=writeBatch(db);DEF_ADS.forEach(({id,...d})=>b.set(doc(db,"ads",id),d));DEF_TEAM.forEach(({id,...d})=>b.set(doc(db,"team",id),d));b.set(doc(db,"site","about"),{text:DEF_ABOUT});b.set(doc(db,"site","meta"),{seeded:true});await b.commit()},A("تم تحميل البيانات الأولية","Starter data loaded"))}}
 
-/* ---------- محمّلات PDF.js و JSZip مع كاش سريع للصفحات ---------- */
+/* ---------- محمّلات PDF.js و JSZip مع كاش وتحميل مسبق ---------- */
 let pdfjsLibCache=null,jszipCache=null;
 const pdfPageCache=new Map();
+let pdfPrefetching=new Set();
+
 async function loadPdfJs(){
   if(pdfjsLibCache)return pdfjsLibCache;
   if(window.pdfjsLib){pdfjsLibCache=window.pdfjsLib;return pdfjsLibCache}
@@ -280,7 +281,9 @@ async function loadJsZip(){
   return jszipCache;
 }
 
-/* ---------- حالة غرفة ZOOM ALNOOR والمزامنة الفورية ---------- */
+/* ---------- قناة مزامنة فورية محلية + WebRTC صوت/فيديو حي ---------- */
+const zoomBC=(typeof BroadcastChannel!=="undefined")?new BroadcastChannel("alnoor_zoom_live_v1"):null;
+
 const ZS={
   cam:null,micStream:null,scr:null,rec:null,ch:[],
   hand:0,mic:0,cam1:0,speaker:1,shareAudio:1,audioOnly:0,batterySaver:0,captions:0,expanded:0,
@@ -296,16 +299,20 @@ const ZS={
   hands:{},
   presence:{},
   roomCtrl:{allowMic:1},
-  audioCtx:null,analyser:null,meterRaf:0,presenceTimer:0
+  audioCtx:null,analyser:null,meterRaf:0,presenceTimer:0,
+  peers:new Map(),       // peerUid -> RTCPeerConnection
+  remoteStreams:new Map(), // peerUid -> {stream, name, isAdmin}
+  rtcSubStarted:false,
+  seenSignals:new Set()
 };
 let zoomSubStarted=false;
 let lastRemoteStageTs=0;
 
-function canvasToFastSyncedImage(canvas,maxLen=620000){
+function canvasToFastSyncedImage(canvas,maxLen=580000){
   if(!canvas||!canvas.width||!canvas.height)return"";
   const tmp=document.createElement("canvas");
   let w=canvas.width,h=canvas.height;
-  const maxDim=1180;
+  const maxDim=1120;
   if(w>maxDim||h>maxDim){
     const k=Math.min(maxDim/w,maxDim/h);
     w=Math.max(1,Math.round(w*k));
@@ -313,24 +320,23 @@ function canvasToFastSyncedImage(canvas,maxLen=620000){
   }
   tmp.width=w;tmp.height=h;
   tmp.getContext("2d").drawImage(canvas,0,0,w,h);
-  let out=tmp.toDataURL("image/jpeg",0.74);
+  let out=tmp.toDataURL("image/jpeg",0.72);
   if(out.length>maxLen){
     const s2=document.createElement("canvas");
-    s2.width=Math.round(w*0.75);s2.height=Math.round(h*0.75);
+    s2.width=Math.round(w*0.76);s2.height=Math.round(h*0.76);
     s2.getContext("2d").drawImage(tmp,0,0,s2.width,s2.height);
-    out=s2.toDataURL("image/jpeg",0.65);
+    out=s2.toDataURL("image/jpeg",0.64);
   }
-  return out.length<=750000?out:"";
+  return out.length<=740000?out:"";
 }
 
-function syncStageToCloud(extra={}){
-  if(!db||!st.adm)return;
-  const payload={
+function buildStagePayload(extra={}){
+  return{
     sharedType:ZS.sharedType||"",
     sharedImg:(ZS.sharedImg&&ZS.sharedImg.length<660000)?ZS.sharedImg:"",
     pageDataUrl:(ZS.pageDataUrl&&ZS.pageDataUrl.length<660000)?ZS.pageDataUrl:"",
-    sharedVid:(ZS.sharedVid&&ZS.sharedVid.length<660000)?ZS.sharedVid:"",
-    sharedUrl:(ZS.sharedUrl&&ZS.sharedUrl.length<660000)?ZS.sharedUrl:"",
+    sharedVid:(ZS.sharedVid&&!ZS.sharedVid.startsWith("blob:")&&ZS.sharedVid.length<660000)?ZS.sharedVid:"",
+    sharedUrl:(ZS.sharedUrl&&!ZS.sharedUrl.startsWith("blob:")&&ZS.sharedUrl.length<660000)?ZS.sharedUrl:"",
     pdfPage:ZS.pdfPage||1,
     pdfNumPages:ZS.pdfNumPages||1,
     slides:Array.isArray(ZS.slides)?ZS.slides.slice(0,120):[],
@@ -340,8 +346,37 @@ function syncStageToCloud(extra={}){
     ts:Date.now(),
     ...extra
   };
+}
+
+function syncStageToCloud(extra={}){
+  if(!st.adm)return;
+  const payload=buildStagePayload(extra);
   lastRemoteStageTs=payload.ts;
-  setDoc(doc(db,"site","zoom_stage"),payload,{merge:true}).catch(e=>console.error(e));
+  try{zoomBC?.postMessage({type:"stage",payload})}catch(e){}
+  if(db){
+    setDoc(doc(db,"site","zoom_stage"),payload,{merge:true}).catch(e=>console.error(e));
+  }
+}
+
+async function prefetchPdfPage(pageNum){
+  if(!ZS.pdfDoc||pageNum<1||pageNum>ZS.pdfNumPages)return;
+  if(pdfPageCache.has(pageNum)||pdfPrefetching.has(pageNum))return;
+  pdfPrefetching.add(pageNum);
+  try{
+    const page=await ZS.pdfDoc.getPage(pageNum);
+    const viewport=page.getViewport({scale:1.35});
+    const c=document.createElement("canvas");
+    c.width=Math.round(viewport.width);
+    c.height=Math.round(viewport.height);
+    await page.render({canvasContext:c.getContext("2d"),viewport}).promise;
+    const dataUrl=st.adm?canvasToFastSyncedImage(c):"";
+    if(typeof createImageBitmap==="function"){
+      const bmp=await createImageBitmap(c);
+      pdfPageCache.set(pageNum,{w:c.width,h:c.height,bmp,dataUrl});
+    }
+  }catch(e){}finally{
+    pdfPrefetching.delete(pageNum);
+  }
 }
 
 async function renderPdfPageToCanvas(pageNum,shouldSync=false){
@@ -358,9 +393,12 @@ async function renderPdfPageToCanvas(pageNum,shouldSync=false){
     canvas.height=cached.h;
     canvas.getContext("2d").drawImage(cached.bmp,0,0);
     if(st.adm){
-      ZS.pageDataUrl=cached.dataUrl||canvasToFastSyncedImage(canvas);
+      const imgUrl=cached.dataUrl||canvasToFastSyncedImage(canvas);
+      ZS.pageDataUrl=imgUrl;
       if(shouldSync)syncStageToCloud({pdfPage:ZS.pdfPage,pdfNumPages:ZS.pdfNumPages,pageDataUrl:ZS.pageDataUrl});
     }
+    prefetchPdfPage(safePage+1);
+    prefetchPdfPage(safePage-1);
     return;
   }
 
@@ -383,6 +421,8 @@ async function renderPdfPageToCanvas(pageNum,shouldSync=false){
       ZS.pageDataUrl=dataUrl;
       if(shouldSync)syncStageToCloud({pdfPage:ZS.pdfPage,pdfNumPages:ZS.pdfNumPages,pageDataUrl:ZS.pageDataUrl});
     }
+    prefetchPdfPage(safePage+1);
+    prefetchPdfPage(safePage-1);
   }catch(e){
     console.error(e);
   }finally{
@@ -413,10 +453,174 @@ async function parsePptxSlides(file){
     }).filter(Boolean);
     slides.push({
       index:i+1,
-      text:lines.length?lines.join("\n"):A("شريحة مرئية — استخدم مشاركة الشاشة لعرضها كاملة.","Visual slide — use screen share for full layout.")
+      text:lines.length?lines.join("\n"):A("شريحة مرئية","Visual slide")
     });
   }
   return slides;
+}
+
+/* ---------- WebRTC صوت/فيديو حي بين جميع الحاضرين في الغرفة ---------- */
+const RTC_CFG={iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}]};
+
+function getLocalOutboundTracks(){
+  const tracks=[];
+  if(ZS.micStream&&ZS.mic){
+    ZS.micStream.getAudioTracks().forEach(t=>{if(t.enabled)tracks.push(t)});
+  }
+  if(ZS.scr){
+    ZS.scr.getVideoTracks().forEach(t=>{if(t.enabled)tracks.push(t)});
+    if(ZS.shareAudio)ZS.scr.getAudioTracks().forEach(t=>{if(t.enabled)tracks.push(t)});
+  }else if(ZS.cam&&ZS.cam1&&!ZS.audioOnly){
+    ZS.cam.getVideoTracks().forEach(t=>{if(t.enabled)tracks.push(t)});
+  }
+  return tracks;
+}
+
+async function sendRtcSignal(toUid,type,data){
+  if(!db||!st.user||!toUid||toUid===st.user.uid)return;
+  try{
+    await addDoc(collection(db,"zoom_rtc"),{
+      from:st.user.uid,
+      fromName:displayName(),
+      fromAdmin:!!st.adm,
+      to:toUid,
+      type,
+      data,
+      ts:Date.now()
+    });
+  }catch(e){}
+}
+
+function createPeerConnection(peerUid,peerName="",peerAdmin=false){
+  if(ZS.peers.has(peerUid))return ZS.peers.get(peerUid);
+  const pc=new RTCPeerConnection(RTC_CFG);
+  ZS.peers.set(peerUid,pc);
+
+  getLocalOutboundTracks().forEach(tr=>{
+    try{pc.addTrack(tr,new MediaStream([tr]))}catch(e){}
+  });
+
+  pc.onicecandidate=ev=>{
+    if(ev.candidate){
+      sendRtcSignal(peerUid,"ice",ev.candidate.toJSON());
+    }
+  };
+
+  pc.ontrack=ev=>{
+    const stream=ev.streams?.[0]||new MediaStream([ev.track]);
+    const prev=ZS.remoteStreams.get(peerUid)||{name:peerName,isAdmin:peerAdmin};
+    ZS.remoteStreams.set(peerUid,{...prev,stream,name:peerName||prev.name||A("مشارك","Participant"),isAdmin:peerAdmin||prev.isAdmin});
+    attachMediaElements();
+    if(route()=="zoom-alnoor"&&$("zr"))draw();
+  };
+
+  pc.onconnectionstatechange=()=>{
+    if(pc.connectionState==="failed"||pc.connectionState==="closed"||pc.connectionState==="disconnected"){
+      try{pc.close()}catch(e){}
+      ZS.peers.delete(peerUid);
+      ZS.remoteStreams.delete(peerUid);
+    }
+  };
+  return pc;
+}
+
+async function syncTracksToPeers(){
+  if(!st.user)return;
+  const desired=getLocalOutboundTracks();
+  for(const [peerUid,pc] of ZS.peers.entries()){
+    try{
+      const senders=pc.getSenders();
+      senders.forEach(s=>{
+        if(s.track&&!desired.includes(s.track)){
+          try{pc.removeTrack(s)}catch(e){}
+        }
+      });
+      const currentTracks=senders.map(s=>s.track).filter(Boolean);
+      desired.forEach(tr=>{
+        if(!currentTracks.includes(tr)){
+          try{pc.addTrack(tr,new MediaStream([tr]))}catch(e){}
+        }
+      });
+      const offer=await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      await sendRtcSignal(peerUid,"offer",pc.localDescription);
+    }catch(e){}
+  }
+}
+
+async function connectToPresentPeers(){
+  if(!st.user||!db)return;
+  const peers=Object.values(ZS.presence||{});
+  for(const p of peers){
+    if(!p.uid||p.uid===st.user.uid||!p.active)continue;
+    if(st.user.uid<p.uid&&!ZS.peers.has(p.uid)){
+      const pc=createPeerConnection(p.uid,p.name,p.isAdmin);
+      try{
+        const offer=await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        await sendRtcSignal(p.uid,"offer",pc.localDescription);
+      }catch(e){}
+    }
+  }
+}
+
+function startRtcSignalingSub(){
+  if(!db||!st.user||ZS.rtcSubStarted)return;
+  ZS.rtcSubStarted=true;
+  un.push(sub(query(collection(db,"zoom_rtc"),where("to","==",st.user.uid)),async s=>{
+    for(const chg of s.docChanges()){
+      if(chg.type!=="added")continue;
+      if(ZS.seenSignals.has(chg.doc.id))continue;
+      ZS.seenSignals.add(chg.doc.id);
+      const d=chg.doc.data();
+      if(!d||!d.from||d.from===st.user.uid)continue;
+      if(d.ts&&(Date.now()-d.ts>180000))continue;
+      const pc=createPeerConnection(d.from,d.fromName,d.fromAdmin);
+      try{
+        if(d.type==="offer"&&d.data){
+          await pc.setRemoteDescription(new RTCSessionDescription(d.data));
+          const ans=await pc.createAnswer();
+          await pc.setLocalDescription(ans);
+          await sendRtcSignal(d.from,"answer",pc.localDescription);
+        }else if(d.type==="answer"&&d.data){
+          if(pc.signalingState==="have-local-offer"){
+            await pc.setRemoteDescription(new RTCSessionDescription(d.data));
+          }
+        }else if(d.type==="ice"&&d.data){
+          await pc.addIceCandidate(new RTCIceCandidate(d.data)).catch(()=>{});
+        }
+      }catch(e){}
+    }
+  },"zoom_rtc"));
+}
+
+function applyRemoteStageData(d){
+  if(!d)return;
+  if(st.adm&&(d.ts||0)<=lastRemoteStageTs)return;
+  lastRemoteStageTs=d.ts||Date.now();
+  ZS.sharedType=d.sharedType||"";
+  ZS.sharedImg=d.sharedImg||"";
+  ZS.pageDataUrl=d.pageDataUrl||"";
+  ZS.sharedVid=d.sharedVid||"";
+  ZS.sharedUrl=d.sharedUrl||"";
+  ZS.pdfPage=d.pdfPage||1;
+  ZS.pdfNumPages=d.pdfNumPages||1;
+  ZS.slides=Array.isArray(d.slides)?d.slides:[];
+  ZS.slideIdx=d.slideIdx||1;
+  ZS.textContent=d.textContent||"";
+  ZS.screenActive=d.screenActive?1:0;
+  if(ZS.sharedType||ZS.screenActive)ZS.audioOnly=0;
+}
+
+if(zoomBC){
+  zoomBC.onmessage=ev=>{
+    const m=ev.data;
+    if(!m)return;
+    if(m.type==="stage"&&!st.adm){
+      applyRemoteStageData(m.payload);
+      if(route()=="zoom-alnoor"&&$("zr"))draw();
+    }
+  };
 }
 
 function touchPresence(active=true){
@@ -427,15 +631,16 @@ function touchPresence(active=true){
     isAdmin:!!st.adm,
     active:!!active,
     lastSeen:Date.now()
-  },{merge:true}).catch(()=>{});
+  },{merge:true}).then(()=>{if(active)connectToPresentPeers()}).catch(()=>{});
 }
 
 function startZoomRealtimeSubs(){
   if(!db||zoomSubStarted)return;
   zoomSubStarted=true;
   touchPresence(true);
+  startRtcSignalingSub();
   clearInterval(ZS.presenceTimer);
-  ZS.presenceTimer=setInterval(()=>{if(route()=="zoom-alnoor"&&st.user)touchPresence(true)},45000);
+  ZS.presenceTimer=setInterval(()=>{if(route()=="zoom-alnoor"&&st.user)touchPresence(true)},35000);
 
   un.push(sub(collection(db,"zoom_chat"),s=>{
     const all=L(s).sort((a,b)=>(a.ts||0)-(b.ts||0));
@@ -454,6 +659,7 @@ function startZoomRealtimeSubs(){
     const now=Date.now(),map={};
     s.docs.forEach(d=>{const x=d.data();if(x.active&&(!x.lastSeen||now-x.lastSeen<150000))map[d.id]={uid:d.id,...x}});
     ZS.presence=map;
+    connectToPresentPeers();
   },"zoom_presence"));
 
   un.push(sub(doc(db,"site","zoom_ctrl"),s=>{
@@ -465,6 +671,7 @@ function startZoomRealtimeSubs(){
         if(!ZS.roomCtrl.allowMic&&ZS.micStream){
           ZS.mic=0;
           ZS.micStream.getAudioTracks().forEach(t=>{t.enabled=false});
+          syncTracksToPeers();
           toast("🔇");
         }
       }
@@ -479,21 +686,7 @@ function startZoomRealtimeSubs(){
       }
       return;
     }
-    const d=s.data();
-    if(st.adm&&(d.ts||0)<=lastRemoteStageTs)return;
-    lastRemoteStageTs=d.ts||Date.now();
-    ZS.sharedType=d.sharedType||"";
-    ZS.sharedImg=d.sharedImg||"";
-    ZS.pageDataUrl=d.pageDataUrl||"";
-    ZS.sharedVid=d.sharedVid||"";
-    ZS.sharedUrl=d.sharedUrl||"";
-    ZS.pdfPage=d.pdfPage||1;
-    ZS.pdfNumPages=d.pdfNumPages||1;
-    ZS.slides=Array.isArray(d.slides)?d.slides:[];
-    ZS.slideIdx=d.slideIdx||1;
-    ZS.textContent=d.textContent||"";
-    ZS.screenActive=d.screenActive?1:0;
-    if(ZS.sharedType||ZS.screenActive)ZS.audioOnly=0;
+    applyRemoteStageData(s.data());
   },"zoom_stage"));
 
   un.push(sub(collection(db,"zoom_reactions"),s=>{
@@ -511,7 +704,7 @@ if(ok){
   sub(collection(db,"ads"),s=>st.ads=L(s).sort((a,b)=>a.ts-b.ts),"ads");
   sub(collection(db,"team"),s=>{st.team=L(s);if(st.team.length)st.seeded=true},"team");
   sub(collection(db,"lecs"),s=>st.lecs=L(s).sort((a,b)=>a.ts-b.ts),"lecs");
-  onAuthStateChanged(auth,u=>{un.forEach(f=>f());un=[];zoomSubStarted=false;clearInterval(ZS.presenceTimer);st.user=u;st.adm=!!u&&(u.email||"").toLowerCase()==ADMIN_EMAIL.toLowerCase();st.me={};st.regs={};st.all=[];st.studs=[];st.revs=[];ZS.hands={};ZS.presence={};st.ready=true;
+  onAuthStateChanged(auth,u=>{un.forEach(f=>f());un=[];zoomSubStarted=false;ZS.rtcSubStarted=false;clearInterval(ZS.presenceTimer);st.user=u;st.adm=!!u&&(u.email||"").toLowerCase()==ADMIN_EMAIL.toLowerCase();st.me={};st.regs={};st.all=[];st.studs=[];st.revs=[];ZS.hands={};ZS.presence={};ZS.remoteStreams.clear();st.ready=true;
     if(u){un.push(sub(doc(db,"students",u.uid),s=>st.me=s.exists()?s.data():{},"me"),sub(doc(db,"regs",u.uid),s=>st.regs=s.exists()?s.data().list||{}:{},"me"));
       if(!st.adm)setDoc(doc(db,"students",u.uid),{email:u.email||"",last:Date.now()},{merge:true}).catch(()=>{});
       un.push(sub(st.adm?collection(db,"reviews"):query(collection(db,"reviews"),where("ok","==",true)),s=>st.revs=L(s).sort((a,b)=>b.ts-a.ts),"revs"));
@@ -530,7 +723,7 @@ const colOf=c=>c=="courses"||c=="vols"?"items":c;
 const inp=(id,[k,ph,ty],v,fixedKind)=>fixedKind?`<input type="hidden" id="${id}-${k}" value="${fixedKind}">`:`<input id="${id}-${k}" type="${ty||"text"}" ${ty=="number"?'min="0" step="0.5"':""} placeholder="${esc(ph)}" value="${esc(v??"")}">`;
 const ef=(c,o,acc)=>`<div class="fld">${FS(c).map(f=>inp(`e-${c}-${o.id}`,f,o[f[0]])).join("")}${acc?`<input id="e-${c}-${o.id}-file" type="file" accept="${acc}">`:""}</div>${c=="team"?founderCropBox(o.id):""}<div class="row"><button type="button" class="btn t" data-a="save" data-p="${c}|${o.id}">${A("حفظ","Save")}</button><button type="button" class="btn g" data-a="del" data-p="${c}|${o.id}">${A("حذف","Delete")}</button></div>`;
 const af=(c,acc,fixedKind)=>`<div class="card"><div class="fld">${FS(c).map(f=>inp(`n-${c}`,f,"",fixedKind&&f[0]=="kind"?fixedKind:null)).join("")}${acc?`<input id="n-${c}-file" type="file" accept="${acc}">`:""}</div><button type="button" class="btn t" data-a="add" data-p="${c}">${A("إضافة","Add")}</button></div>`;
-const rdF=(id,c)=>{const d={};FS(c).forEach(([k,,ty])=>{let v=$(`${id}-${k}`).value.trim();if(k=="ig")v=igC(v);d[k]=ty=="number"?+v||0:v});if(c=="courses")d.kind="c";if(c=="vols"){d.kind="v";d.price=0}return d};
+const rdF=(id,c)=>{const d={};FS(c).forEach(([k,,ty])=>{let v=$(`${id}-${k}`)?.value?.trim()||"";if(k=="ig")v=igC(v);d[k]=ty=="number"?+v||0:v});if(c=="courses")d.kind="c";if(c=="vols"){d.kind="v";d.price=0}return d};
 
 function vDash(){const u=st.user,m=st.me,r=Object.entries(st.regs),nv=r.filter(x=>x[1].kind=="v").length,f=(k,l)=>`<label>${l}<input id="p_${k}" value="${esc(m[k]??"")}"></label>`;
  return`<div class="hero"><h1>${A("مرحباً","Hello")} ${esc(m.name||u.email||"")}</h1><p class="sub" style="margin:0">${A("تطوع، تدرّب، وتابع محاضراتك من مكان واحد.","Volunteer, train, and follow your lectures in one place.")}</p><div class="stats"><div><b>${nv}</b>${A("التطوعات","Volunteering")}</div><div><b>${r.length-nv}</b>${A("الدورات الوجاهية","Courses")}</div></div></div>
@@ -605,6 +798,16 @@ function attachMediaElements(){
     zvv.volume=ZS.speaker?1:0;
     zvv.play?.().catch(()=>{});
   }
+  document.querySelectorAll("[data-peer-vid]").forEach(el=>{
+    const uid=el.dataset.peerVid;
+    const info=ZS.remoteStreams.get(uid);
+    if(info?.stream){
+      el.srcObject=info.stream;
+      el.muted=!ZS.speaker;
+      el.volume=ZS.speaker?1:0;
+      el.play?.().catch(()=>{});
+    }
+  });
   if(ZS.sharedType==="pdf"&&ZS.pdfDoc){
     renderPdfPageToCanvas(ZS.pdfPage,false);
   }
@@ -620,6 +823,7 @@ function zroom(){
   const raisedList=Object.values(ZS.hands||{}).filter(h=>h.raised);
   const presList=Object.values(ZS.presence||{});
   const totalCount=Math.max(1,presList.length);
+  const peerEntries=[...ZS.remoteStreams.entries()].filter(([uid,p])=>uid!==st.user?.uid&&p?.stream&&(p.stream.getAudioTracks().length||p.stream.getVideoTracks().length));
 
   let hostBar="";
   if(st.adm){
@@ -700,12 +904,22 @@ function zroom(){
     </div>`
     :"";
 
+  const peersHtml=peerEntries.length&&!ZS.expanded
+    ?`<div class="z-peers-strip">${peerEntries.map(([uid,p])=>{
+      const hasVid=p.stream.getVideoTracks().some(t=>t.enabled&&t.readyState==="live");
+      return`<div class="z-peer-card">
+        ${hasVid?`<video data-peer-vid="${esc(uid)}" autoplay playsinline></video>`:`<audio data-peer-vid="${esc(uid)}" autoplay playsinline></audio><span class="z-pill">🎙</span>`}
+        <div><div style="font-size:12px;font-weight:700">${esc(p.name||A("مشارك","Participant"))}</div><div style="font-size:11px;color:#93c5fd">${p.isAdmin?A("الإدارة","Host"):A("مشارك","Participant")}</div></div>
+      </div>`;
+    }).join("")}</div>`
+    :"";
+
   let stageContent="";
   if(ZS.audioOnly){
     stageContent=`${focusTopBar}<div class="z-avatar-card">
       <div class="z-avatar-circle">🎧</div>
       <div style="font-weight:700">${myName}</div>
-    </div>`;
+    </div>${peersHtml}`;
   }else if(!hasAnyVisual){
     stageContent=`${focusTopBar}<div class="z-empty">
       <h3>${A("ادعُ أشخاصاً للانضمام إليك","Invite people to join you")}</h3>
@@ -715,7 +929,7 @@ function zroom(){
         <button type="button" class="btn t" style="padding:6px 12px;font-size:13px" data-a="zquickcam">📷</button>
         <button type="button" class="btn g" style="padding:6px 12px;font-size:13px" data-a="zquickmic">🎙</button>
       </div>
-    </div>`;
+    </div>${peersHtml}`;
   }else{
     const tiles=[];
     if(ZS.scr){
@@ -764,14 +978,10 @@ function zroom(){
       </div></div>`);
     }
 
-    if(!ZS.expanded){
-      if(hasCam){
-        tiles.push(`<div class="z-tile cam-tile"><video id="zv" autoplay playsinline muted></video></div>`);
-      }else if(!hasSharedDoc&&!ZS.sharedImg&&!ZS.sharedVid&&!hasScreen){
-        tiles.push(`<div class="z-tile"><div class="z-avatar-card"><div class="z-avatar-circle">${initial}</div></div></div>`);
-      }
+    if(!ZS.expanded&&hasCam){
+      tiles.push(`<div class="z-tile cam-tile"><video id="zv" autoplay playsinline muted></video></div>`);
     }
-    stageContent=`${focusTopBar}<div class="z-media-grid">${tiles.join("")}</div>`;
+    stageContent=`${focusTopBar}<div class="z-media-grid">${tiles.join("")}</div>${peersHtml}`;
   }
 
   const reactionsHtml=ZS.reactions.length
@@ -833,6 +1043,7 @@ function vZm(){const z=st.zoom;
  if(st.zok!=z.ts)return`<h1>ZOOM ALNOOR</h1><div class="card" style="max-width:420px"><b>${A("أدخل كود المحاضرة","Enter the lecture code")}</b><div class="row"><input id="zin" dir="ltr" autocomplete="off" data-e="zenter"><button type="button" class="btn" data-a="zenter">${A("دخول","Enter")}</button></div></div>`;
  return zroom()}
 const zs=m=>{const e=$("zst");if(e)e.textContent=m};
+
 function zStop(){
   stopAudioMeter();
   clearInterval(ZS.presenceTimer);
@@ -840,6 +1051,9 @@ function zStop(){
   [ZS.cam,ZS.micStream,ZS.scr].forEach(s=>s&&s.getTracks().forEach(t=>t.stop()));
   ZS.cam=ZS.micStream=ZS.scr=ZS.rec=null;
   ZS.mic=0;ZS.cam1=0;ZS.menu=null;ZS.expanded=0;
+  ZS.peers.forEach(pc=>{try{pc.close()}catch(e){}});
+  ZS.peers.clear();
+  ZS.remoteStreams.clear();
   if(db&&st.user){
     touchPresence(false);
     if(st.adm)setDoc(doc(db,"site","zoom_stage"),{screenActive:false,ts:Date.now()},{merge:true}).catch(()=>{});
@@ -862,14 +1076,14 @@ function vAdm(){if(!st.adm)return`<h1>${A("لوحة الإدارة","Admin dashb
 <h2>${T("الطلاب","Students")} (${st.studs.length})</h2><div class="card scroll"><table><tr><th>${T("الاسم","Name")}</th><th>Email</th><th>${T("الهاتف","Phone")}</th><th>${T("التخصص","Major")}</th><th>${T("الجامعة","University")}</th><th>${T("آخر دخول","Last visit")}</th><th></th></tr>${st.studs.map(x=>`<tr><td>${esc(x.name)}</td><td dir="ltr">${esc(x.email)}</td><td dir="ltr">${esc(x.phone)}</td><td>${esc(x.major)}</td><td>${esc(x.uni)}</td><td>${x.last?new Date(x.last).toLocaleDateString():""}</td><td><button type="button" class="btn g" data-a="del" data-p="students|${x.id}">${T("حذف","Delete")}</button></td></tr>`).join("")}</table></div>`}
 
 function draw(){const r=route(),d=document.documentElement;
- d.lang=st.lang;d.dir=st.lang=="ar"?"rtl":"ltr";$("bn").textContent=A("منصة النور","Al-Noor Platform");$("lg").textContent=A("English","العربية");$("lo").textContent=A("خروج","Logout");$("lo").style.display=st.user?"":"none";$("ft").textContent=A("© منصة النور · جميع الحقوق محفوظة","© Al-Noor Platform · All rights reserved");document.title=$("bn").textContent;
+ d.lang=st.lang;d.dir=st.lang=="ar"?"rtl":"ltr";if($("bn"))$("bn").textContent=A("منصة النور","Al-Noor Platform");if($("lg"))$("lg").textContent=A("English","العربية");if($("lo")){$("lo").textContent=A("خروج","Logout");$("lo").style.display=st.user?"":"none"}if($("ft"))$("ft").textContent=A("© منصة النور · جميع الحقوق محفوظة","© Al-Noor Platform · All rights reserved");document.title=$("bn")?.textContent||"منصة النور";
  applyTheme(d.getAttribute("data-theme")||"light");
  const lt=Math.max(0,...ads().map(a=>a.ts||0)),nw=r!="ads"&&lt>+(ls("seen")||0);if(r=="ads")ls("seen",lt);
  let tb=[["dashboard",A("لوحتي","My space")],["ads",A("الإعلانات","Ads")+(nw?` <span class="tag r">${A("جديد","New")}</span>`:"")],["volunteering",A("التطوعات","Volunteering")],["courses",A("الدورات الوجاهية","Courses")],["zoom-alnoor","ZOOM"],["lectures",A("المحاضرات","Lectures")],["feedback",A("الفيدباك","Feedback")],["about",A("عن النور","About")]];
  if(st.adm)tb.push(["admin-secret-portal",A("لوحة الإدارة","Admin")]);if(!st.user)tb=[tb[1]];
- $("nav").innerHTML=tb.map(x=>`<a href="#${x[0]}" class="${r==x[0]?"on":""}">${x[1]}</a>`).join("");
+ if($("nav"))$("nav").innerHTML=tb.map(x=>`<a href="#${x[0]}" class="${r==x[0]?"on":""}">${x[1]}</a>`).join("");
  let v;if(!st.ready)v=`<p class="sub">…</p>`;else if(r=="ads")v=vAds();else if(!st.user)v=vLogin();else v=({dashboard:vDash,volunteering:()=>vItems("v"),courses:()=>vItems("c"),"zoom-alnoor":vZm,lectures:vLec,feedback:vFb,about:vAbout,"admin-secret-portal":vAdm}[r]||vDash)();
- $("app").innerHTML=(ok?"":`<div class="warn">⚠️ ${A("لم يتم ضبط مفاتيح firebaseConfig بعد: المنصة تعمل بالبيانات الأولية فقط.","firebaseConfig is not set yet: running with starter data only.")}</div>`)+v;
+ if($("app"))$("app").innerHTML=(ok?"":`<div class="warn">⚠️ ${A("لم يتم ضبط مفاتيح firebaseConfig بعد: المنصة تعمل بالبيانات الأولية فقط.","firebaseConfig is not set yet: running with starter data only.")}</div>`)+v;
  Object.keys(st.crops).forEach(syncCropPreview);
  if(r=="zoom-alnoor"&&st.user){
    startZoomRealtimeSubs();
@@ -911,21 +1125,21 @@ const ACT={
  out(){zStop();if(ok)signOut(auth).then(()=>{go("dashboard");toast(A("تم تسجيل الخروج","Signed out"))})},
  togglemode(v){st.regMode=v=="1";draw()},
  cropReset(id){if(st.crops[id]){st.crops[id].x=0;st.crops[id].y=0;st.crops[id].zoom=1;draw()}},
- async studin(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));const e=$("se").value.trim(),p=$("sp").value.trim();
+ async studin(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));const e=$("se")?.value.trim()||"",p=$("sp")?.value.trim()||"";
   if(!e||!pin6(p))return toast(A("أدخل البريد الإلكتروني ورمزاً من 6 أرقام","Enter email and a 6-digit PIN"));
   try{await pers;await signInWithEmailAndPassword(auth,e,p);go("dashboard")}catch(err){toast("⚠️ "+A("تعذر الدخول: ","Sign-in failed: ")+(err.code||err.message))}},
- async studreg(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));const e=$("se").value.trim(),p=$("sp").value.trim(),p2=$("sp2")?.value.trim();
+ async studreg(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));const e=$("se")?.value.trim()||"",p=$("sp")?.value.trim()||"",p2=$("sp2")?.value.trim()||"";
   if(!e||!pin6(p))return toast(A("أدخل بريداً صحيحاً ورمزاً مكوناً من 6 أرقام","Enter a valid email and a 6-digit PIN"));
   if(p!==p2)return toast(A("تأكيد الرمز غير مطابق للرمز الأول","PIN confirmation does not match"));
   try{await pers;await createUserWithEmailAndPassword(auth,e,p);st.regMode=false;go("dashboard");toast("✅ "+A("تم إنشاء الحساب وتسجيل الدخول","Account created and signed in"))}catch(err){toast("⚠️ "+A("تعذر إنشاء الحساب: ","Sign-up failed: ")+(err.code||err.message))}},
- async adminin(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));try{await pers;await signInWithEmailAndPassword(auth,$("ae").value.trim(),$("ac2").value);go("admin-secret-portal")}catch(e){toast("⚠️ "+A("البريد أو الرمز غير صحيح","Wrong email or password"))}},
- saveP(b){const d={email:st.user.email||"",last:Date.now()};["name","phone","major","uni"].forEach(k=>d[k]=$("p_"+k).value.trim());run(()=>setDoc(doc(db,"students",st.user.uid),d,{merge:true}),A("تم حفظ بياناتك","Profile saved"),b)},
- reg(id,b){const it=st.items.find(x=>x.id==id),m=st.me;if(!m.name||!m.phone){toast(A("أكمل اسمك ورقم هاتفك في لوحتي أولاً","Add your name and phone in My space first"));return go("dashboard")}
+ async adminin(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));try{await pers;await signInWithEmailAndPassword(auth,$("ae")?.value.trim()||"",$("ac2")?.value||"");go("admin-secret-portal")}catch(e){toast("⚠️ "+A("البريد أو الرمز غير صحيح","Wrong email or password"))}},
+ saveP(b){const d={email:st.user?.email||"",last:Date.now()};["name","phone","major","uni"].forEach(k=>d[k]=$(`p_${k}`)?.value.trim()||"");run(()=>setDoc(doc(db,"students",st.user.uid),d,{merge:true}),A("تم حفظ بياناتك","Profile saved"),b)},
+ reg(id,b){const it=st.items.find(x=>x.id==id),m=st.me;if(!it)return;if(!m.name||!m.phone){toast(A("أكمل اسمك ورقم هاتفك في لوحتي أولاً","Add your name and phone in My space first"));return go("dashboard")}
   run(()=>setDoc(doc(db,"regs",st.user.uid),{name:m.name,phone:m.phone,email:st.user.email||"",list:{[id]:{title:it.t,kind:it.kind,price:+it.price||0,ts:Date.now(),status:"pending"}}},{merge:true}),it.kind=="v"?A("تم إرسال طلبك","Application sent"):A("مقعدك مؤكد","Seat confirmed"),b)},
- ad(i){adShow(+i)},mute(b){const v=b.parentNode.querySelector("video");if(!v)return;v.muted=!v.muted;b.textContent=v.muted?"🔇":"🔊"},
- star(i){st.fc=$("fc").value;st.rs=+i;draw()},
- sfb(b){if(!st.rs)return toast(A("اختر عدد النجوم","Pick a star rating"));const c=$("fc").value.trim();run(async()=>{await addDoc(collection(db,"reviews"),{uid:st.user.uid,n:st.me.name||st.user.email||"",s:st.rs,c,ok:false,ts:Date.now()});st.rs=0;st.fc=""},A("سيظهر تقييمك بعد موافقة الإدارة","Your review appears after admin approval"),b)},
- saveA(b){run(()=>setDoc(doc(db,"site","about"),{text:$("ab").value}),null,b)},
+ ad(i){adShow(+i)},mute(b){const v=b.parentNode?.querySelector("video");if(!v)return;v.muted=!v.muted;b.textContent=v.muted?"🔇":"🔊"},
+ star(i){if($("fc"))st.fc=$("fc").value;st.rs=+i;draw()},
+ sfb(b){if(!st.rs)return toast(A("اختر عدد النجوم","Pick a star rating"));const c=$("fc")?.value.trim()||"";run(async()=>{await addDoc(collection(db,"reviews"),{uid:st.user.uid,n:st.me.name||st.user.email||"",s:st.rs,c,ok:false,ts:Date.now()});st.rs=0;st.fc=""},A("سيظهر تقييمك بعد موافقة الإدارة","Your review appears after admin approval"),b)},
+ saveA(b){run(()=>setDoc(doc(db,"site","about"),{text:$("ab")?.value||""}),null,b)},
  async save(p,b){
   if(!st.adm)return toast("⚠️ "+A("يجب تسجيل الدخول كإدارة أولاً","Please sign in as admin first"));
   const[c,id]=p.split("|"),d=rdF(`e-${c}-${id}`,c),f=$(`e-${c}-${id}-file`)?.files[0];
@@ -949,8 +1163,8 @@ const ACT={
  rdel(p,b){const[u,i]=p.split("|");if(confirm(A("تأكيد الحذف؟","Confirm delete?")))run(()=>updateDoc(doc(db,"regs",u),{["list."+i]:deleteField()}),A("تم الحذف","Deleted"),b)},
  rv(p,b){const[id,v]=p.split("|");run(()=>updateDoc(doc(db,"reviews",id),{ok:v=="1"}),null,b)},
  csv(){const q=s=>'"'+String(s??"").replace(/"/g,'""')+'"',rows=st.all.filter(r=>!st.filt||r.item==st.filt),c="\ufeff"+"name,phone,email,type,title,price,status,date\n"+rows.map(r=>[r.name,r.phone,r.email,r.kind=="v"?"volunteering":"course",r.title,r.price,r.status||"pending",new Date(r.ts).toISOString()].map(q).join(",")).join("\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([c],{type:"text/csv"}));a.download="alnoor-registrations.csv";document.body.appendChild(a);a.click();a.remove()},
- async zenter(){const v=$("zin").value.trim().toUpperCase();if(v&&await sha("zoom|"+v)==st.zoom?.h){st.zok=st.zoom.ts;draw()}else toast(A("الكود غير صحيح","Wrong code"))},
- async zcreate(b){let v=$("zc").value.trim().toUpperCase();if(!v){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";v=[...crypto.getRandomValues(new Uint8Array(8))].map(x=>c[x%c.length]).join("")}run(async()=>{await setDoc(doc(db,"site","zoom"),{h:await sha("zoom|"+v),ts:Date.now()});ls("zc",v)},null,b)},
+ async zenter(){const v=$("zin")?.value.trim().toUpperCase()||"";if(v&&await sha("zoom|"+v)==st.zoom?.h){st.zok=st.zoom.ts;draw()}else toast(A("الكود غير صحيح","Wrong code"))},
+ async zcreate(b){let v=$("zc")?.value.trim().toUpperCase()||"";if(!v){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";v=[...crypto.getRandomValues(new Uint8Array(8))].map(x=>c[x%c.length]).join("")}run(async()=>{await setDoc(doc(db,"site","zoom"),{h:await sha("zoom|"+v),ts:Date.now()});ls("zc",v)},null,b)},
  zclose(b){ls("zc","");run(()=>deleteDoc(doc(db,"site","zoom")),A("تم إغلاق المحاضرة","Lecture closed"),b)},
 
  zexpand(){ZS.expanded=ZS.expanded?0:1;ZS.menu=null;ZS.side=null;draw()},
@@ -959,12 +1173,14 @@ const ACT={
  zviewmode(m){
   ZS.audioOnly=m==="audio"?1:0;
   ZS.menu=null;
+  syncTracksToPeers();
   draw();
  },
  ztoggleopt(k){
   ZS[k]=ZS[k]?0:1;
   if(k==="speaker"){
     [$("zsv"),$("z-shared-vid")].forEach(el=>{if(el){el.muted=!ZS.speaker;el.volume=ZS.speaker?1:0}});
+    document.querySelectorAll("[data-peer-vid]").forEach(el=>{el.muted=!ZS.speaker;el.volume=ZS.speaker?1:0});
   }
   draw();
  },
@@ -1044,10 +1260,10 @@ const ACT={
     ZS.menu=null;ZS.audioOnly=0;
     ZS.sharedImg="";ZS.pageDataUrl="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedType="";
     ZS.pdfDoc=null;ZS.pdfNumPages=1;ZS.pdfPage=1;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";
-    pdfPageCache.clear();
+    pdfPageCache.clear();pdfPrefetching.clear();
     try{
       if(/^image\//.test(file.type)){
-        const compressed=await compressToDataUrl(file,1600,900,620000);
+        const compressed=await compressToDataUrl(file,1400,900,580000);
         ZS.sharedImg=compressed;
         ZS.sharedUrl=compressed;
         ZS.sharedType="img";
@@ -1133,7 +1349,8 @@ const ACT={
   ZS.pdfDoc=null;ZS.pdfNumPages=1;ZS.pdfPage=1;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";
   ZS.screenActive=0;
   ZS.menu=null;
-  pdfPageCache.clear();
+  pdfPageCache.clear();pdfPrefetching.clear();
+  syncTracksToPeers();
   draw();
   syncStageToCloud();
  },
@@ -1144,9 +1361,10 @@ const ACT={
   try{
     await ensureCam();
     ZS.cam1=1;
+    syncTracksToPeers();
     draw();
-    const s=ZS.cam.getVideoTracks()[0].getSettings();
-    zs((s.width||1280)+"×"+(s.height||720));
+    const s=ZS.cam.getVideoTracks()[0]?.getSettings();
+    if(s?.width)zs((s.width||1280)+"×"+(s.height||720));
   }catch(e){toast("⚠️")}
  },
  async zquickmic(){
@@ -1156,6 +1374,7 @@ const ACT={
     const tr=ms.getAudioTracks()[0];
     if(tr)tr.enabled=true;
     ZS.mic=1;
+    syncTracksToPeers();
     draw();
   }catch(e){toast("⚠️")}
  },
@@ -1167,6 +1386,7 @@ const ACT={
       const ms=await ensureMic();
       ms.getAudioTracks().forEach(t=>{t.enabled=!!next});
       ZS.mic=next;
+      syncTracksToPeers();
       draw();
     }catch(e){toast("⚠️")}
     return;
@@ -1178,6 +1398,7 @@ const ACT={
         await ensureCam();
         ZS.cam.getVideoTracks().forEach(t=>{t.enabled=true});
         ZS.cam1=1;
+        syncTracksToPeers();
         draw();
         const s=ZS.cam.getVideoTracks()[0]?.getSettings();
         if(s?.width)zs(s.width+"×"+s.height);
@@ -1185,6 +1406,7 @@ const ACT={
     }else{
       ZS.cam1=0;
       if(ZS.cam)ZS.cam.getVideoTracks().forEach(t=>{t.enabled=false});
+      syncTracksToPeers();
       draw();
     }
   }
@@ -1197,6 +1419,7 @@ const ACT={
     ZS.scr.getTracks().forEach(t=>t.stop());
     ZS.scr=null;
     ZS.screenActive=0;
+    syncTracksToPeers();
     draw();
     syncStageToCloud({screenActive:false});
     return;
@@ -1215,9 +1438,11 @@ const ACT={
     const vTrack=ZS.scr.getVideoTracks()[0];
     if(vTrack)vTrack.onended=()=>{
       ZS.scr=null;ZS.screenActive=0;
+      syncTracksToPeers();
       draw();
       syncStageToCloud({screenActive:false});
     };
+    syncTracksToPeers();
     draw();
     syncStageToCloud({screenActive:true});
     toast("✅");
@@ -1288,7 +1513,7 @@ document.addEventListener("change",async e=>{
   }
 });
 document.addEventListener("input",e=>{const sl=e.target.dataset?.cropSlider;if(!sl)return;const[id,prop]=sl.split("|"),cr=st.crops[id];if(!cr)return;cr[prop]=+e.target.value;syncCropPreview(id)});
-document.addEventListener("keydown",e=>{if(e.key=="Enter"&&e.target.dataset.e)ACT[e.target.dataset.e]()});
+document.addEventListener("keydown",e=>{if(e.key=="Enter"&&e.target.dataset.e){const act=ACT[e.target.dataset.e];if(act)act()}});
 addEventListener("beforeunload",()=>{if(route()=="zoom-alnoor")zStop()});
 initTheme();
 draw();
