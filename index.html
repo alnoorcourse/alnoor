@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#087f8c">
 <meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>منصة النور</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
 <style>
@@ -172,6 +174,16 @@ nav a.on{background:var(--teal);color:#fff;border-color:var(--teal)}
 .device-dialog progress{width:100%;accent-color:var(--teal)}.device-dialog p{font-size:13px}
 .bar{flex-wrap:wrap}
 .hero{min-width:0;overflow-wrap:anywhere}.hero>*{min-width:0}
+.inbox-list{display:grid;gap:14px}.inbox-message{overflow-wrap:anywhere}.inbox-message.unread{border-inline-start:4px solid var(--teal)}
+.inbox-message h3{margin:0}.inbox-message time{font-size:12px}.message-text{white-space:pre-wrap;line-height:1.9}
+.inbox-settings{margin-bottom:16px}.inbox-settings small{display:block;color:var(--tx2);line-height:1.9}
+.inbox-empty{text-align:center;padding:36px 20px}.inbox-empty>span{font-size:42px;color:var(--teal)}
+.accept-template{margin:14px 0;border:1px solid #9cc9c6;border-radius:12px;padding:12px;background:var(--tealS)}
+.accept-template legend{font-weight:700;padding-inline:6px}.accept-template small{display:block;color:var(--tx2)}
+#inbox-button{position:relative}#inbox-badge{display:inline-grid;place-items:center;min-width:20px;height:20px;background:var(--red);color:#fff;border-radius:99px;font-size:11px;margin-inline-start:4px}
+#inbox-badge[hidden]{display:none}.accept-template input,.accept-template textarea{background:var(--card)}
+button,a,[role="button"]{touch-action:manipulation}
+@media(pointer:coarse){input,textarea,select{font-size:16px!important}}
 .onboard-dialog{width:min(540px,calc(100vw - 28px));max-height:calc(100dvh - 32px);padding:0;overflow:auto;border:1px solid color-mix(in srgb,var(--teal) 25%,transparent);border-radius:24px;background:var(--card);color:var(--tx);box-shadow:0 24px 100px #031d3255;overscroll-behavior:contain}
 .onboard-dialog::backdrop{background:#06232dba}
 .onboard-dialog[open]{display:flex;flex-direction:column}
@@ -195,46 +207,11 @@ nav a.on{background:var(--teal);color:#fff;border-color:var(--teal)}
 .onboard-count{font-size:12px;color:var(--tx2);font-variant-numeric:tabular-nums}
 @media(max-width:420px){.onboard-body{padding:18px 20px 8px}.onboard-body h2{font-size:26px}.onboard-foot{padding:14px 20px 18px;gap:8px}.onboard-foot .btn{min-width:80px;padding-inline:10px}.onboard-count{white-space:nowrap;font-size:11px}.onboard-art{margin-inline:20px;padding:16px}.onboard-art svg{height:24px}.onboard-head{padding-inline:20px}#onboard-help{font-size:12px}}
 @media(max-width:600px){.z-wrap{border-radius:12px}.z-health-strip{padding:8px}.z-side{width:min(320px,88vw)}.z-dock{gap:6px}.z-btn{min-width:34px}}
-
-/* ---------- تحسينات التصميم (frontend-design) ---------- */
-:root{--ar:"IBM Plex Sans Arabic",system-ui,sans-serif}
-/* خلفية أهدأ: النقاط شبه خفية كي يبرز الهيرو وحده */
-body{background-image:radial-gradient(color-mix(in srgb,var(--ink) 7%,transparent) 1.2px,transparent 1.5px);line-height:1.85}
-p,.sub,.meta{max-width:68ch}
-/* لالزار للشعار والهيرو فقط؛ العناوين الداخلية بخط القراءة */
-h2,h3,th{font-family:var(--ar);font-weight:700;letter-spacing:0}
-h2{font-size:22px;margin-top:30px}h3{font-size:18px}
-th{font-size:14px}
-/* تدرّج في الشكل: الهيرو هو العنصر المميز، والباقي هادئ */
-.hero{border-radius:22px;box-shadow:8px 8px 0 var(--ink);padding:30px 24px}
-.card{border-width:2px;border-radius:14px;box-shadow:3px 3px 0 var(--ink)}
-.btn,.ib,nav a{border-radius:10px}
-input,select,textarea{border-width:2px;border-radius:8px;padding:10px}
-.tag{font-weight:500}
-.act-item{border-width:1.5px}
-/* حركة (مهارات Emil): ease-out قوي، مدد قصيرة، لا حركة على العناصر المتكررة */
-:root{--ease-out:cubic-bezier(.23,1,.32,1)}
-.btn,.ib,nav a{transition:transform 140ms var(--ease-out),box-shadow 140ms var(--ease-out),background-color 140ms ease}
-@media (hover:hover) and (pointer:fine){.btn:hover,.ib:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}}
-.btn:active,.ib:active,nav a:active{transform:translate(2px,2px) scale(.97);box-shadow:none}
-/* التنبيه: يصعد قليلاً مع الظهور بدل الظهور من العدم */
-#toast{transform:translateY(8px);transition:opacity 200ms var(--ease-out),transform 200ms var(--ease-out)}
-#toast.show{transform:none}
-/* نافذة الدليل: تبدأ من scale(.96) وليس من الصفر، وتبقى مركزية */
-.onboard-dialog[open]{animation:dlg-in 220ms var(--ease-out)}
-.onboard-dialog::backdrop{animation:bd-in 220ms ease}
-@keyframes dlg-in{from{opacity:0;transform:scale(.96)}}
-@keyframes bd-in{from{opacity:0}}
-/* أهداف لمس مريحة */
-.btn,.ib,nav a{min-height:40px;display:inline-flex;align-items:center;justify-content:center}
-nav{scrollbar-width:none}nav::-webkit-scrollbar{display:none}
-nav a.on{box-shadow:none;transform:translate(3px,3px)}
-@media (max-width:600px){main{padding-top:14px}.hero{padding:22px 16px}.grid{grid-template-columns:1fr}}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
 <header><div class="bar"><div class="brand" data-a="home"><span class="logo">✚</span><span id="bn"></span></div>
+<button type="button" class="ib" id="inbox-button" data-a="goRoute" data-p="inbox" style="display:none">✉ <span id="inbox-label">الرسائل</span><span id="inbox-badge" hidden>0</span></button>
 <button type="button" class="ib" id="onboard-help" data-a="onboard" aria-haspopup="dialog">دليل المنصة</button>
 <button type="button" class="ib" id="lg" data-a="lang"></button><button type="button" class="ib" id="theme" data-a="theme" aria-label="theme">🌙</button><button type="button" class="ib" id="lo" data-a="out"></button></div><nav id="nav"></nav></header>
 <main id="app"></main>
@@ -242,12 +219,12 @@ nav a.on{box-shadow:none;transform:translate(3px,3px)}
 <div id="toast" role="status"></div>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import{initializeFirestore,memoryLocalCache,collection,doc,onSnapshot,setDoc,addDoc,updateDoc,deleteDoc,deleteField,query,where,writeBatch,getDocs,limit}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import{initializeFirestore,memoryLocalCache,collection,doc,onSnapshot,setDoc,addDoc,updateDoc,deleteDoc,deleteField,query,where,writeBatch,getDocs,limit,orderBy,runTransaction}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import{getAuth,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 /* ============ مفاتيح مشروع Alnoor Course في Firebase ============ */
 const firebaseConfig={
-  apiKey:"AIzaSyASdbQXmDmCaJ_t1ubrrm0ZnYJp1QwAKtE",
+  apiKey:"PASTE_FIREBASE_API_KEY",
   authDomain:"alnoor-course.firebaseapp.com",
   projectId:"alnoor-course",
   storageBucket:"alnoor-course.firebasestorage.app",
@@ -262,10 +239,226 @@ const ZQ={"2160":[3840,2160],"1080":[1920,1080],"720":[1280,720],"480":[854,480]
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}};
 const st={lang:ls("lang")||"ar",user:null,adm:false,ready:false,regMode:false,me:{},regs:{},items:[],ads:[],team:[],lecs:[],revs:[],about:"",zoom:null,seeded:null,metaSrv:false,all:[],studs:[],filt:"",rs:0,fc:"",zok:0,crops:{}};
+Object.assign(st,{inbox:[],readMessages:new Set(),templates:{},presenter:null,presenters:[],pushConfig:{},pushReady:false,inboxError:"",bulkBusy:false,bulkProgress:"",noticeSession:0});
+function canPresent(){return !!st.user&&(st.adm||!!(st.presenter?.enabled&&String(st.presenter.roomId)===String(st.zoom?.ts)&&st.zoom))}
+const teachingPeer=p=>!!(p?.isAdmin||p?.isPresenter);
+function safeHttpLink(value){
+  if(!value)return "";
+  try{const u=new URL(String(value).trim());return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:""}catch(e){return ""}
+}
+function unreadMessages(){return st.inbox.filter(n=>!st.readMessages.has(n.id)).length}
+function notificationBody(title,text="",url="",recipient="all",item=""){
+  return {title:String(title).slice(0,180),text:String(text).slice(0,4000),url:safeHttpLink(url),recipient,item,ts:Date.now(),createdBy:st.user.uid};
+}
+function addAnnouncementToBatch(batch,ref,title,text,routeName){
+  batch.set(doc(db,"notifications",ref),{...notificationBody(title,text),route:routeName||"inbox",type:"announcement"});
+}
+function templateBox(c,o={},prefix=""){
+  if(!["courses","vols","lecs"].includes(c))return "";
+  const key=c==="lecs"?"lec_"+o.id:o.id,t=st.templates[key]||{};
+  return `<fieldset class="accept-template"><legend>${A("رسالة القبول التلقائية","Automatic acceptance message")}</legend>
+    <label>${A("الرسالة التي تصل عند القبول","Message delivered on acceptance")}<textarea id="${prefix}-acceptMessage" maxlength="4000" placeholder="${A("مبروك قبولك! هذا رابط المجموعة…","You have been accepted! Here is your group link…")}">${esc(t.message||"")}</textarea></label>
+    <label>${A("رابط المجموعة أو التعليمات","Group or instructions link")}<input id="${prefix}-acceptLink" type="url" dir="ltr" maxlength="2000" placeholder="https://" value="${esc(t.url||"")}"></label>
+    <small>${A("خاص بالإدارة؛ لا يظهر للطلاب قبل القبول. احفظ القالب قبل قبول المسجلين.","Admin-only; not shown before acceptance. Save the template before accepting registrations.")}</small></fieldset>`;
+}
+function readTemplate(prefix){
+  const message=$(`${prefix}-acceptMessage`)?.value.trim()||"",raw=$(`${prefix}-acceptLink`)?.value.trim()||"";
+  if(raw&&!safeHttpLink(raw))throw new Error(A("استخدم رابط HTTP أو HTTPS صالحًا، وليس javascript أو data.","Use a valid HTTP or HTTPS link."));
+  return {message:message.slice(0,4000),url:safeHttpLink(raw),updatedAt:Date.now()};
+}
+async function changeRegistrationStatus(uid,item,status){
+  if(!st.adm||!["pending","ok","done"].includes(status))throw new Error("Permission denied");
+  const regRef=doc(db,"regs",uid),templateRef=doc(db,"messageTemplates",item);
+  return runTransaction(db,async transaction=>{
+    const registration=await transaction.get(regRef);
+    const entry=registration.exists()?registration.data().list?.[item]:null;
+    if(!entry)throw new Error(A("طلب التسجيل لم يعد موجودًا","Registration no longer exists"));
+    if((entry.status||"pending")===status)return false;
+    const template=await transaction.get(templateRef),content=template.exists()?template.data():{};
+    const id="reg_"+await sha(uid+"|"+item+"|"+entry.ts+"|"+status);
+    const notificationRef=doc(db,"notifications",id),existing=await transaction.get(notificationRef);
+    transaction.update(regRef,{["list."+item+".status"]:status});
+    if(!existing.exists()){
+      const accepted=status==="ok",title=accepted?A("تم قبولك في ","Accepted: ")+entry.title:status==="done"?A("تم إكمال ","Completed: ")+entry.title:A("تحديث طلبك: ","Application update: ")+entry.title;
+      const text=accepted?(content.message||A("مبروك! تم قبول طلبك. راجع التفاصيل مع الإدارة.","Your registration was accepted.")):A("تغيّرت حالة تسجيلك. راجع صندوق الرسائل ولوحتك.","Your registration status was updated.");
+      transaction.set(notificationRef,{...notificationBody(title,text,accepted?content.url:"",uid,item),type:"registration",status,route:"inbox"});
+    }
+    return true;
+  });
+}
+async function acceptFilteredRegistrations(){
+  if(!st.adm||st.bulkBusy)return;
+  const rows=st.all.filter(r=>(!st.filt||r.item===st.filt)&&(!r.status||r.status==="pending"));
+  if(!rows.length)return toast(A("ما في طلبات معلّقة ضمن هذا الفلتر.","No pending registrations in this filter."));
+  if(!confirm(A(`قبول ${rows.length} طلبًا وإرسال رسالة القبول المحفوظة لكل طلب؟`,`Accept ${rows.length} registrations and deliver their saved acceptance messages?`)))return;
+  st.bulkBusy=true;let done=0,failed=0,skipped=0,processed=0;const queue=[...rows];
+  const worker=async()=>{while(queue.length){const row=queue.shift();try{if(await changeRegistrationStatus(row.uid,row.item,"ok"))done++;else skipped++}catch(e){failed++}processed++;st.bulkProgress=A(`تمت معالجة ${processed} من ${rows.length} — تعذّر ${failed} — سابقًا ${skipped}`,`Processed ${processed}/${rows.length}; failed ${failed}; already processed ${skipped}`);const el=$("bulk-progress");if(el)el.textContent=st.bulkProgress}};
+  draw();
+  try{await Promise.all(Array.from({length:Math.min(4,rows.length)},worker))}
+  finally{st.bulkBusy=false;draw()}
+  toast(failed?A(`تم قبول ${done}، وتعذّر ${failed}. أعد المحاولة للطلبات المتبقية.`,`Accepted ${done}; ${failed} failed. Retry remaining requests.`):A(`تم قبول ${done} وإيداع رسائلهم في الصندوق.`,`Accepted ${done}; messages delivered to the inbox.`));
+}
+function notificationSettingsHtml(){
+  const supported=isSecureContext&&"Notification"in window&&"serviceWorker"in navigator&&"PushManager"in window;
+  const permission="Notification"in window?Notification.permission:"unsupported";
+  const status=!supported?A("إشعارات الجهاز غير مدعومة هنا؛ رسائلك محفوظة بالصندوق.","Device notifications are unsupported here; inbox messages are still available."):permission==="denied"?A("الإشعارات محظورة. اسمح بها من إعدادات الموقع في المتصفح.","Notifications blocked. Allow them in browser site settings."):st.pushReady?A("هذا الجهاز مسجّل لاستقبال الإشعارات.","This device is registered for push notifications."):permission==="granted"?A("الإذن مسموح؛ ربط الإشعارات بالخلفية غير مكتمل على هذا الجهاز.","Permission granted; background push registration is not complete on this device."):A("فعّل التنبيهات لتنتبه للقبول والإعلانات الجديدة.","Enable notifications for acceptance messages and announcements.");
+  return `<section class="card inbox-settings"><h3>🔔 ${A("إشعارات الهاتف والتابلت","Phone & tablet notifications")}</h3><p class="sub">${status}</p>
+    <div class="row"><button type="button" class="btn t" data-a="enableNotifications" ${!supported||permission==="denied"?"disabled":""}>${A("تفعيل الإشعارات على هذا الجهاز","Enable notifications on this device")}</button><button type="button" class="btn g" data-a="disableNotifications">${A("إيقافها على هذا الجهاز","Disable on this device")}</button></div>
+    <small>${A("على iPhone وiPad قد تحتاج إضافة الموقع للشاشة الرئيسية وفتحه منها. الإشعار مع إغلاق الموقع يتطلب إعداد خدمة الدفع؛ الرسالة تبقى بالصندوق حتى لو رفضت الإذن.","On iPhone/iPad you may need to add the site to your Home Screen and open it there. Closed-site notifications require a configured push service. Inbox messages remain available without permission.")}</small></section>`;
+}
+function vInbox(){
+  const unread=unreadMessages();
+  return `<div class="row" style="justify-content:space-between"><h1>${A("صندوق الرسائل","Message inbox")}</h1><span class="tag">${unread} ${A("غير مقروءة","unread")}</span></div>
+    ${notificationSettingsHtml()}${st.inboxError?`<p class="warn">${esc(st.inboxError)}</p>`:""}
+    <div class="row"><button type="button" class="btn g" data-a="readAllMessages">${A("تعليم الكل كمقروء","Mark all as read")}</button><span class="sub">${A("آخر 100 رسالة؛ رسائل القبول غير الشات المؤقت.","Latest 100 messages. Acceptance messages are separate from temporary lecture chat.")}</span></div>
+    <div class="inbox-list">${st.inbox.map(n=>`<article class="card inbox-message ${st.readMessages.has(n.id)?"":"unread"}">
+      <div class="row" style="justify-content:space-between"><h3>${esc(n.title||A("رسالة من النور","Al-Noor message"))}</h3><time class="sub">${n.ts?esc(new Date(n.ts).toLocaleString(st.lang==="ar"?"ar-JO":"en-GB")):""}</time></div>
+      <p class="message-text">${esc(n.text||"")}</p>
+      <div class="row">${safeHttpLink(n.url)?`<a class="btn t" href="${esc(safeHttpLink(n.url))}" target="_blank" rel="noopener noreferrer">${A("فتح الرابط المرفق ↗","Open attached link ↗")}</a>`:""}
+      ${!st.readMessages.has(n.id)?`<button type="button" class="btn g" data-a="readMessage" data-p="${esc(n.id)}">${A("تمت القراءة","Mark read")}</button>`:`<small>${A("مقروءة","Read")}</small>`}</div></article>`).join("")||`<div class="card inbox-empty"><span aria-hidden="true">✉</span><h3>${A("رسائلك رح تظهر هون","Your messages will appear here")}</h3><p class="sub">${A("قبولك بالدورات والتطوعات والمحاضرات، وروابط المجموعات والإعلانات.","Course, volunteering and lecture decisions, group links and announcements.")}</p></div>`}</div>`;
+}
+function vLectureRegistration(){
+  return `<h1>${A("المحاضرات","Lectures")}</h1><div class="grid">${st.lecs.map(l=>{
+    const key="lec_"+l.id,r=st.regs[key],accepted=r&&["ok","done"].includes(r.status);
+    return `<article class="card"><h3>${esc(l.title)}</h3><p class="message-text">${esc(l.desc||"")}</p>
+      ${r?tag(r.status||"pending"):`<button type="button" class="btn t" data-a="regLecture" data-p="${esc(l.id)}">${A("التسجيل بالمحاضرة","Apply for this lecture")}</button>`}
+      ${accepted&&safeHttpLink(l.url)?`<div class="row"><a class="btn t" href="${esc(safeHttpLink(l.url))}" target="_blank" rel="noopener noreferrer">${A("فتح المحاضرة","Open lecture")}</a></div>`:""}
+      ${r?`<p class="sub">${A("رسالة القبول والرابط بصندوق الرسائل.","Your acceptance message and link are in the inbox.")}</p>`:""}</article>`;
+  }).join("")||none()}</div>`;
+}
+function vCommunicationAdmin(){
+  return `<section class="card" style="margin-bottom:18px"><h2 style="margin-top:0">${A("القبول والرسائل","Acceptance & messages")}</h2>
+    <p>${A("اكتب رسالة ورابطًا داخل صندوق كل دورة أو تطوع أو محاضرة واحفظه. القبول الفردي أو الجماعي يرسل القالب الصحيح تلقائيًا لصندوق الطالب دون تكرار.","Save a message and link for each course, volunteering opportunity or lecture. Individual or bulk acceptance delivers the right template without duplicates.")}</p>
+    <button type="button" class="btn t" data-a="acceptAll" ${st.bulkBusy?"disabled":""}>${A("قبول الكل حسب فلتر المسجلين","Accept all in registration filter")}</button><p id="bulk-progress" role="status">${esc(st.bulkProgress)}</p>
+    <h3>${A("رسالة عامة لكل الطلاب","Message all students")}</h3>
+    <input id="broadcast-title" maxlength="180" placeholder="${A("عنوان الرسالة","Message title")}"><textarea id="broadcast-text" maxlength="4000" placeholder="${A("اكتب الإعلان أو التحديث","Write an announcement or update")}"></textarea>
+    <input id="broadcast-url" type="url" dir="ltr" placeholder="https://"><button type="button" class="btn t" data-a="broadcast">${A("إرسال للجميع","Send to everyone")}</button>
+    <h3 style="margin-top:20px">${A("مسؤول شرح لهذه المحاضرة فقط","Presenter for this lecture only")}</h3>
+    <p class="sub">${A("صلاحية مايك وكاميرا وفتح ملفات ومشاركة شاشة، بدون صلاحيات إدارة المنصة. تنتهي تلقائيًا بتغيير المحاضرة.","Can use mic, camera, files and screen sharing, but has no platform admin rights. Expires when this lecture changes.")}</p>
+    <select id="lecture-presenter"><option value="">${A("اختر حسابًا","Choose an account")}</option>${st.studs.map(s=>`<option value="${esc(s.id)}">${esc(s.name||s.email||s.id)}</option>`).join("")}</select>
+    <button type="button" class="btn t" data-a="assignPresenter" ${!st.zoom?"disabled":""}>${A("تعيين للمحاضرة الحالية","Assign to current lecture")}</button>
+    ${st.presenters.filter(p=>p.enabled&&String(p.roomId)===String(st.zoom?.ts)).map(p=>`<div class="row"><span>${esc(p.name||p.uid)}</span><button type="button" class="btn g" data-a="removePresenter" data-p="${esc(p.uid)}">${A("إلغاء صلاحية الشرح","Revoke presenter role")}</button></div>`).join("")}
+    <details style="margin-top:18px"><summary>${A("إعداد إشعارات الهاتف — بعد نشر الخادم","Phone push setup — after server deployment")}</summary>
+    <p class="sub">${A("ارفع ملفات الحزمة وانشر خدمة الإشعارات، ثم اضغط لنشر إعداداتها العامة. لا تضع أي مفتاح خاص في هذه الصفحة.","Upload the package and deploy the notification service, then publish its public settings. Never put a private key in this page.")}</p>
+    <button type="button" class="btn g" data-a="setupPush">${A("نشر إعدادات الإشعارات","Publish push settings")}</button></details></section>`;
+}
+let knownInboxIds=new Set(),inboxPrimed=false;
+function listenCommunications(user){
+  st.noticeSession++;const session=st.noticeSession;
+  st.inbox=[];st.readMessages=new Set();st.inboxError="";st.templates={};st.presenter=null;st.presenters=[];st.pushReady=false;
+  knownInboxIds=new Set();inboxPrimed=false;
+  un.push(onSnapshot(query(collection(db,"notifications"),where("recipient","in",[user.uid,"all"]),orderBy("ts","desc"),limit(100)),snap=>{
+    if(session!==st.noticeSession)return;
+    const messages=L(snap),fresh=messages.filter(n=>!knownInboxIds.has(n.id));
+    st.inbox=messages;knownInboxIds=new Set(messages.map(n=>n.id));
+    if(inboxPrimed)fresh.slice(0,3).forEach(n=>{
+      toast("✉ "+(n.title||A("رسالة جديدة في الصندوق","New inbox message")));
+      if(!st.pushReady&&"Notification"in window&&Notification.permission==="granted")showOpenSiteNotification(n);
+    });
+    inboxPrimed=true;updateInboxBadge();
+    if(route()==="inbox")draw();
+  },error=>{
+    st.inboxError=A("تعذر تحميل الرسائل. تحقق من صلاحيات Firestore والفهرس المرفق بالحزمة.","Could not load messages. Check Firestore rules and the supplied index.");
+    if(route()==="inbox")draw();
+  }));
+  un.push(onSnapshot(collection(db,"notificationReads",user.uid,"messages"),snap=>{
+    if(session!==st.noticeSession)return;st.readMessages=new Set(snap.docs.map(d=>d.id));updateInboxBadge();if(route()==="inbox")draw();
+  }));
+  un.push(onSnapshot(doc(db,"lecturePresenters",user.uid),snap=>{
+    if(session!==st.noticeSession)return;
+    const previously=canPresent();st.presenter=snap.exists()?snap.data():null;
+    if(previously&&!canPresent()&&!st.adm){
+      ZS.scr?.getTracks().forEach(t=>t.stop());ZS.scr=null;ZS.screenActive=0;ZS.sharedType="";ZS.sharedImg="";ZS.pageDataUrl="";
+      syncTracksToPeers();
+    }
+    if(ZS.joined){touchPresence(true);connectToPresentPeers()}draw();
+  }));
+  un.push(onSnapshot(doc(db,"site","push_config"),snap=>{if(session===st.noticeSession)st.pushConfig=snap.exists()?snap.data():{}}));
+  if(st.adm){
+    un.push(sub(collection(db,"messageTemplates"),snap=>{const map={};snap.docs.forEach(d=>map[d.id]=d.data());st.templates=map},"templates"));
+    un.push(sub(collection(db,"lecturePresenters"),snap=>st.presenters=L(snap),"presenters"));
+  }
+  if(ls("alnoor_push_owner")===user.uid&&"serviceWorker"in navigator){
+    navigator.serviceWorker.getRegistration(new URL("./sw.js",location.href)).then(async registration=>{
+      const subscription=await registration?.pushManager.getSubscription();
+      if(session===st.noticeSession){st.pushReady=!!subscription;if(route()==="inbox")draw()}
+    }).catch(()=>{});
+  }
+}
+function updateInboxBadge(){
+  const badge=$("inbox-badge"),button=$("inbox-button");
+  if(badge){badge.textContent=String(unreadMessages());badge.hidden=!unreadMessages()}
+  if(button){button.style.display=st.user?"":"none";button.setAttribute("aria-label",A("صندوق الرسائل، غير مقروءة: ","Inbox, unread: ")+unreadMessages())}
+}
+function vapidBytes(value){
+  const base=String(value).replace(/-/g,"+").replace(/_/g,"/"),raw=atob(base+"=".repeat((4-base.length%4)%4));
+  return Uint8Array.from(raw,c=>c.charCodeAt(0));
+}
+async function registerNoticeWorker(){
+  if(!isSecureContext||!("serviceWorker"in navigator))throw new Error(A("الإشعارات تحتاج HTTPS ومتصفحًا يدعمها.","Notifications require HTTPS and a supported browser."));
+  const worker=new URL("./sw.js",location.href),registration=await navigator.serviceWorker.register(worker.href,{scope:new URL("./",location.href).pathname});
+  if(registration.active)return registration;
+  await new Promise((resolve,reject)=>{
+    const waiting=registration.installing||registration.waiting;
+    if(!waiting)return reject(new Error("Worker not active"));
+    const timer=setTimeout(()=>reject(new Error("Worker activation timed out")),15000);
+    waiting.addEventListener("statechange",()=>{if(waiting.state==="activated"){clearTimeout(timer);resolve()}else if(waiting.state==="redundant"){clearTimeout(timer);reject(new Error("Worker failed"))}});
+  });
+  return registration;
+}
+async function enableDeviceNotifications(){
+  if(!st.user)return toast(A("سجّل دخولك أولًا.","Sign in first."));
+  if(!("Notification"in window)||!("PushManager"in window))return toast(A("هذا المتصفح لا يدعم إشعارات الجهاز؛ استخدم الصندوق داخل المنصة.","This browser does not support device notifications; use the inbox."));
+  /* يجب أن يبقى طلب الإذن في نقرة المستخدم مباشرة. */
+  const uid=st.user.uid,permission=await Notification.requestPermission();
+  if(permission!=="granted")return toast(A("لم تُفعّل إشعارات الجهاز. صندوق الرسائل يعمل بدونها.","Device notifications were not enabled. Your inbox still works."));
+  try{
+    const registration=await registerNoticeWorker();
+    if(st.user?.uid!==uid)return;
+    if(!st.pushConfig.publicKey){
+      toast(A("تم السماح بتنبيهات الموقع المفتوح. إشعارات الموقع المغلق تحتاج تهيئة خادم الدفع.","Open-site alerts are allowed. Closed-site push still needs server configuration."));draw();return;
+    }
+    const subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:vapidBytes(st.pushConfig.publicKey)});
+    const id=await sha(subscription.endpoint);
+    if(st.user?.uid!==uid){await subscription.unsubscribe();return}
+    await setDoc(doc(db,"pushDevices",id),{uid,subscription:subscription.toJSON(),enabled:true,updatedAt:Date.now()});
+    ls("alnoor_push_owner",uid);ls("alnoor_push_device",id);st.pushReady=true;
+    await registration.showNotification(A("إشعارات النور جاهزة على هذا الجهاز","Al-Noor notifications enabled"),{body:A("القبول والإعلانات ستظهر هنا عند وصولها من الخادم.","Acceptance messages and announcements will appear when sent by the server."),tag:"alnoor-enabled",data:{url:new URL("./index.html#inbox",location.href).href}});
+    draw();
+  }catch(error){
+    st.pushReady=false;toast(A("تعذر تسجيل إشعارات الخلفية. تأكد من رفع sw.js وضبط خدمة الدفع وصلاحياتها. صندوق الرسائل ما زال يعمل.","Could not register background push. Upload sw.js and configure push service and permissions. Inbox remains available."));draw();
+  }
+}
+async function detachDeviceNotifications(){
+  const id=ls("alnoor_push_device"),owner=ls("alnoor_push_owner");
+  if(id&&owner===st.user?.uid&&db)await deleteDoc(doc(db,"pushDevices",id));
+  const registration="serviceWorker"in navigator?await navigator.serviceWorker.getRegistration(new URL("./sw.js",location.href)):null;
+  await (await registration?.pushManager.getSubscription())?.unsubscribe();
+  ls("alnoor_push_owner","");ls("alnoor_push_device","");st.pushReady=false;
+}
+async function showOpenSiteNotification(message){
+  try{
+    const registration=await navigator.serviceWorker?.getRegistration(new URL("./sw.js",location.href));
+    if(registration)await registration.showNotification(message.title||"النور",{body:A("رسالة جديدة في صندوقك. افتح المنصة لقراءتها.","A new message is in your inbox. Open the platform to read it."),tag:"alnoor-"+message.id,data:{url:new URL("./index.html#inbox",location.href).href}});
+  }catch(e){}
+}
 const A=(a,e)=>st.lang=="ar"?a:e,L=s=>s.docs.map(d=>({id:d.id,...d.data()}));
 let AT=0,AI=0,un=[];
 const MY_SID=Math.random().toString(36).slice(2,10);
 
+async function loadFirebaseRuntimeConfig(config){
+  if(config.apiKey&&!/^PASTE/.test(config.apiKey))return;
+  try{
+    const response=await fetch(new URL("./firebase-config.json",location.href),{cache:"no-store",signal:AbortSignal.timeout(8000)});
+    if(!response.ok)return;
+    const runtime=await response.json();
+    if(runtime.projectId!==config.projectId||typeof runtime.apiKey!=="string"||runtime.apiKey.length<20||/^PASTE/.test(runtime.apiKey))return;
+    for(const key of ["apiKey","authDomain","projectId","storageBucket","messagingSenderId","appId","measurementId"]){
+      if(typeof runtime[key]==="string")config[key]=runtime[key];
+    }
+  }catch(e){/* Setup notice below; never log configuration values. */}
+}
+await loadFirebaseRuntimeConfig(firebaseConfig);
 const ok=!/^PASTE/.test(firebaseConfig.apiKey);let db,auth,pers;
 if(ok){const app=initializeApp(firebaseConfig);
   db=initializeFirestore(app,{localCache:memoryLocalCache()});
@@ -468,6 +661,7 @@ function stopLiveFrameSync(){
 
 function buildStagePayload(extra={}){
   return{
+    senderUid:st.user?.uid||"",
     roomId:ZS.roomId||String(st.zoom?.ts||""),
     sharedType:ZS.sharedType||"",
     sharedImg:(ZS.sharedImg&&ZS.sharedImg.length<660000)?ZS.sharedImg:"",
@@ -487,7 +681,7 @@ function buildStagePayload(extra={}){
 }
 
 function syncStageToCloud(extra={}){
-  if(!st.adm)return;
+  if(!canPresent()||!ZS.joined)return;
   const payload=buildStagePayload(extra);
   lastRemoteStageTs=payload.ts;
   try{zoomBC?.postMessage({type:"stage",payload})}catch(e){}
@@ -507,7 +701,7 @@ async function prefetchPdfPage(pageNum){
     c.width=Math.round(viewport.width);
     c.height=Math.round(viewport.height);
     await page.render({canvasContext:c.getContext("2d"),viewport}).promise;
-    const dataUrl=st.adm?canvasToFastSyncedImage(c):"";
+    const dataUrl=canPresent()?canvasToFastSyncedImage(c):"";
     if(typeof createImageBitmap==="function"){
       const bmp=await createImageBitmap(c);
       pdfPageCache.set(pageNum,{w:c.width,h:c.height,bmp,dataUrl});
@@ -530,7 +724,7 @@ async function renderPdfPageToCanvas(pageNum,shouldSync=false){
     canvas.width=cached.w;
     canvas.height=cached.h;
     canvas.getContext("2d").drawImage(cached.bmp,0,0);
-    if(st.adm){
+    if(canPresent()){
       const imgUrl=cached.dataUrl||canvasToFastSyncedImage(canvas);
       ZS.pageDataUrl=imgUrl;
       if(shouldSync)syncStageToCloud({pdfPage:ZS.pdfPage,pdfNumPages:ZS.pdfNumPages,pageDataUrl:ZS.pageDataUrl});
@@ -549,13 +743,13 @@ async function renderPdfPageToCanvas(pageNum,shouldSync=false){
     canvas.width=Math.round(viewport.width);
     canvas.height=Math.round(viewport.height);
     await page.render({canvasContext:ctx,viewport}).promise;
-    const dataUrl=st.adm?canvasToFastSyncedImage(canvas):"";
+    const dataUrl=canPresent()?canvasToFastSyncedImage(canvas):"";
     if(typeof createImageBitmap==="function"){
       createImageBitmap(canvas).then(bmp=>{
         pdfPageCache.set(safePage,{w:canvas.width,h:canvas.height,bmp,dataUrl});
       }).catch(()=>{});
     }
-    if(st.adm){
+    if(canPresent()){
       ZS.pageDataUrl=dataUrl;
       if(shouldSync)syncStageToCloud({pdfPage:ZS.pdfPage,pdfNumPages:ZS.pdfNumPages,pageDataUrl:ZS.pageDataUrl});
     }
@@ -636,8 +830,10 @@ function startVidCapture(){
   }catch(e){console.error(e)}
 }
 function hostScreenStream(){
-  for(const [uid,p] of ZS.remoteStreams){
-    if((p.isAdmin||ZS.presence?.[uid]?.isAdmin)&&p.streams?.screen)return p.streams.screen;
+  const streams=[...ZS.remoteStreams].sort(([a],[b])=>Number(b===ZS.stageSender)-Number(a===ZS.stageSender));
+  for(const [uid,p] of streams){
+    const stream=p.streams?.screen,track=stream?.getVideoTracks()[0];
+    if((teachingPeer(p)||teachingPeer(ZS.presence?.[uid]))&&track?.readyState==="live"&&!track.muted)return stream;
   }
   return null;
 }
@@ -655,7 +851,8 @@ function tuneSender(s,role){
   try{
     const p=s.getParameters();
     if(!p.encodings||!p.encodings.length)p.encodings=[{}];
-    p.encodings[0].maxBitrate={mic:40000,sys:96000,cam:600000,screen:1400000}[role];
+    p.encodings[0].maxBitrate={mic:96000,sys:128000,cam:600000,screen:1400000}[role];
+    if(role==="mic"||role==="sys")p.encodings[0].networkPriority="high";
     s.setParameters(p).catch(()=>{});
   }catch(e){}
 }
@@ -728,9 +925,9 @@ function setupChatChannel(c,channel){
     if(typeof ev.data!=="string"||ev.data.length>10000)return;
     try{
       const m=JSON.parse(ev.data);
-      if(!st.adm&&!c.isAdmin)return;
-      if(st.adm){m.who=c.name||A("طالب","Student");m.isAdmin=c.isAdmin}
-      if(rememberChat(m)&&st.adm)relayChat(m,c.uid);
+      if(!canPresent()&&!teachingPeer(c))return;
+      if(canPresent()){m.who=c.name||A("طالب","Student");m.isAdmin=c.isAdmin}
+      if(rememberChat(m)&&canPresent())relayChat(m,c.uid);
     }catch(e){}
   };
 }
@@ -830,7 +1027,7 @@ async function openDeviceTest(){
       deviceTest.streams.push(stream);
       await deviceTest.ctx?.close();deviceTest.ctx=new AudioContext();await deviceTest.ctx.resume();
       const analyser=deviceTest.ctx.createAnalyser();analyser.fftSize=256;deviceTest.ctx.createMediaStreamSource(stream).connect(analyser);
-      const samples=new Uint8Array(analyser.frequencyBinCount);let peak=0;
+      const samples=new Uint8Array(analyser.fftSize);let peak=0;
       const meter=()=>{if(epoch!==deviceTest.epoch)return;analyser.getByteTimeDomainData(samples);let sum=0;for(const x of samples)sum+=(x-128)**2;const level=Math.min(100,Math.sqrt(sum/samples.length)*4);peak=Math.max(peak,level);if($("device-level"))$("device-level").value=level;deviceTest.raf=requestAnimationFrame(meter)};meter();
       status(A("احكِ الآن لمدة 3 ثوانٍ…","Speak now for 3 seconds…"));
       if(!window.MediaRecorder)throw new Error("Recorder unavailable");
@@ -875,10 +1072,10 @@ async function connectSfu(){
     ZS.sfu=room;
     const updateSubscriptions=()=>{
       for(const participant of room.remoteParticipants.values()){
-        let host=false;try{host=JSON.parse(participant.metadata||"{}").role==="admin"}catch(e){}
+        let host=false;try{host=["admin","presenter"].includes(JSON.parse(participant.metadata||"{}").role)}catch(e){}
         for(const publication of participant.trackPublications.values()){
           /* لا ننزل 300 كاميرا: صورة الإدارة فقط، وصوت الطلاب للإدارة. */
-          publication.setSubscribed(host||(st.adm&&publication.kind==="audio"));
+          publication.setSubscribed(host||(canPresent()&&publication.kind==="audio"));
         }
       }
     };
@@ -899,7 +1096,7 @@ async function connectSfu(){
       const role=publication.source===S.Microphone?"mic":publication.source===S.Camera?"cam":publication.source===S.ScreenShare?"screen":"sys";
       const info=ZS.remoteStreams.get(participant.identity)||{name:participant.name||A("مشارك","Participant"),streams:{}};
       /* الخادم وحده يحدد role في metadata؛ لا يقبل الدور من طلب العميل. */
-      try{info.isAdmin=JSON.parse(participant.metadata||"{}").role==="admin"}catch(e){info.isAdmin=false}
+      try{const role=JSON.parse(participant.metadata||"{}").role;info.isAdmin=role==="admin";info.isPresenter=role==="presenter"}catch(e){info.isAdmin=false;info.isPresenter=false}
       info.streams[role]=new MediaStream([track.mediaStreamTrack]);
       ZS.remoteStreams.set(participant.identity,info);syncAudioElements();scheduleRtcRedraw();
     });
@@ -944,7 +1141,7 @@ function syncSfuTracks(){
       if(old?.mediaStreamTrack===next)continue;
       if(old){await room.localParticipant.unpublishTrack(old,false);ZS.sfuTracks.delete(role)}
       if(next&&ZS.joined&&room===ZS.sfu){
-        const publication=await room.localParticipant.publishTrack(next,{source:sources[role],name:role,simulcast:role==="cam"});
+        const publication=await room.localParticipant.publishTrack(next,{source:sources[role],name:role,simulcast:role==="cam",...(role==="mic"?{audioPreset:{maxBitrate:64000},dtx:false}:{})});
         ZS.sfuTracks.set(role,publication.track);
       }
     }
@@ -953,28 +1150,28 @@ function syncSfuTracks(){
   return sfuSyncQueue;
 }
 function syncSfuPermissions(){
-  if(!st.adm&&!ZS.roomCtrl.allowMic)ZS.micStream?.getAudioTracks().forEach(t=>t.enabled=false);
+  if(!canPresent()&&!ZS.roomCtrl.allowMic)ZS.micStream?.getAudioTracks().forEach(t=>t.enabled=false);
 }
 
 const MESH=false; /* وضع احتياطي صغير: طالب ↔ إدارة. محاضرة 300 تحتاج SFU. */
 /* المتصل (caller) دائماً الإدارة، وبين طالبين الأصغر uid. هيك ما في تعارض عروض (glare) */
-const imCaller=(uid,peerAdmin)=>st.adm?true:(peerAdmin?false:st.user.uid<uid);
+const imCaller=(uid,peerTeaching)=>canPresent()?(peerTeaching?st.user.uid<uid:true):false;
 const newId=()=>Math.random().toString(36).slice(2,10);
 
 async function sendRtcSignal(c,type,data){
   if(!db||!st.user||!c)return;
   try{
     if(!ZS.joined||!ZS.roomId)return;
-    await addDoc(collection(db,"zoom_rtc"),{roomId:ZS.roomId,from:st.user.uid,fromName:displayName(),fromAdmin:!!st.adm,fromSid:ZS.sid,to:c.uid,toSid:c.sid||"",cid:c.cid,type,data:JSON.stringify(data),ts:Date.now()});
+    await addDoc(collection(db,"zoom_rtc"),{roomId:ZS.roomId,from:st.user.uid,fromName:displayName(),fromAdmin:!!st.adm,fromPresenter:canPresent()&&!st.adm,fromSid:ZS.sid,to:c.uid,toSid:c.sid||"",cid:c.cid,type,data:JSON.stringify(data),ts:Date.now()});
   }catch(e){
     console.error(e);
     if(!ZS.sigErr){ZS.sigErr=1;toast("⚠️ "+A("تعذر إرسال إشارات الاتصال: افتح قواعد Firestore واسمح بـ zoom_rtc","Cannot send signaling: allow zoom_rtc in Firestore rules"))}
   }
 }
 
-function makePeer(uid,name,isAdmin,sid,cid,caller){
+function makePeer(uid,name,isAdmin,sid,cid,caller,isPresenter=false){
   const pc=new RTCPeerConnection(RTC_CFG);
-  const c={pc,uid,sid:sid||"",cid,caller:!!caller,name:name||"",isAdmin:!!isAdmin,pending:[],q:Promise.resolve(),born:Date.now(),tr:{},makingOffer:false};
+  const c={pc,uid,sid:sid||"",cid,caller:!!caller,name:name||"",isAdmin:!!isAdmin,isPresenter:!!isPresenter,pending:[],q:Promise.resolve(),born:Date.now(),tr:{},makingOffer:false};
   ZS.peers.set(uid,c);
   if(caller)setupChatChannel(c,pc.createDataChannel("alnoor-ephemeral",{ordered:true}));
   pc.ondatachannel=ev=>{if(ev.channel.label==="alnoor-ephemeral")setupChatChannel(c,ev.channel)};
@@ -996,7 +1193,7 @@ function makePeer(uid,name,isAdmin,sid,cid,caller){
     const role=Object.keys(c.tr).find(r=>c.tr[r]===ev.transceiver)||RTC_ROLES[pc.getTransceivers().indexOf(ev.transceiver)]?.[0];
     if(!role)return;
     const info=ZS.remoteStreams.get(uid)||{streams:{}};
-    info.name=c.name;info.isAdmin=c.isAdmin;
+    info.name=c.name;info.isAdmin=c.isAdmin;info.isPresenter=c.isPresenter;
     info.streams[role]=new MediaStream([ev.track]);
     ZS.remoteStreams.set(uid,info);
     ev.track.onunmute=()=>{syncAudioElements();scheduleRtcRedraw()};
@@ -1060,8 +1257,8 @@ function routeSignal(d){
       }
       return;
     }
-    if(imCaller(d.from,d.fromAdmin))return; /* أنا المفروض أبدأ، مش هو */
-    c=makePeer(d.from,d.fromName,d.fromAdmin,d.fromSid,d.cid,false);
+    if(imCaller(d.from,d.fromAdmin||d.fromPresenter))return;
+    c=makePeer(d.from,d.fromName,d.fromAdmin,d.fromSid,d.cid,false,d.fromPresenter);
     const key=d.from+"|"+d.cid;
     c.pending.push(...(ZS.pendingSignals.get(key)||[]));ZS.pendingSignals.delete(key);
   }
@@ -1077,24 +1274,25 @@ function connectToPresentPeers(){
   ZS.peers.forEach((c,uid)=>{
     const p=ZS.presence?.[uid];
     const gone=(!p||now-(p.lastSeen||0)>90000)&&now-c.born>15000;
+    const noLongerTeaching=p&&!MESH&&!canPresent()&&!teachingPeer(p);
     const newSess=p&&p.sid&&c.sid&&p.sid!==c.sid;
     const stuck=c.caller&&c.pc.connectionState!=="connected"&&now-c.born>20000;
-    if(gone||newSess||stuck)closePeer(uid);
+    if(gone||newSess||stuck||noLongerTeaching)closePeer(uid);
   });
   Object.values(ZS.presence||{}).forEach(p=>{
     if(!p.uid||p.uid===st.user.uid||!p.sid||p.roomId!==ZS.roomId||now-(p.lastSeen||0)>90000)return;
-    if(!MESH&&!st.adm&&!p.isAdmin)return;
-    if(!imCaller(p.uid,p.isAdmin))return;
+    if(!MESH&&!canPresent()&&!teachingPeer(p))return;
+    if(!imCaller(p.uid,teachingPeer(p)))return;
     const c=ZS.peers.get(p.uid);
-    if(c){if(p.name)c.name=p.name;return}
-    makePeer(p.uid,p.name,p.isAdmin,p.sid,newId(),true);
+    if(c){if(p.name)c.name=p.name;c.isAdmin=!!p.isAdmin;c.isPresenter=!!p.isPresenter;return}
+    makePeer(p.uid,p.name,p.isAdmin,p.sid,newId(),true,p.isPresenter);
   });
 }
 
 function startRtcSignalingSub(){
   if(!db||!st.user)return;
   try{ZS.rtcUnsub?.()}catch(e){}
-  ZS.rtcUnsub=onSnapshot(query(collection(db,"zoom_rtc"),where("to","==",st.user.uid),limit(500)),snap=>{
+  ZS.rtcUnsub=onSnapshot(query(collection(db,"zoom_rtc"),where("to","==",st.user.uid),where("roomId","==",ZS.roomId),limit(500)),snap=>{
     const adds=snap.docChanges().filter(x=>x.type==="added").map(x=>({id:x.doc.id,ref:x.doc.ref,d:x.doc.data()})).sort((a,b)=>(a.d.ts||0)-(b.d.ts||0));
     adds.forEach(({id,ref,d})=>{
       if(ZS.seenSignals.has(id))return;
@@ -1104,7 +1302,7 @@ function startRtcSignalingSub(){
       if(!d||!d.from||d.from===st.user.uid)return;
       if(d.toSid!==ZS.sid)return; /* موجهة لجلسة قديمة */
       if(d.roomId!==ZS.roomId||Date.now()-(d.ts||0)>120000)return;
-      if(!MESH&&!st.adm&&!d.fromAdmin)return;
+      if(!MESH&&!canPresent()&&!d.fromAdmin&&!d.fromPresenter)return;
       routeSignal(d);
     });
   },err=>{console.error(err);toast("⚠️ "+A("تعذرت قراءة إشارات الاتصال: ","Signaling read failed: ")+(err.code||""))});
@@ -1112,8 +1310,9 @@ function startRtcSignalingSub(){
 
 function applyRemoteStageData(d){
   if(!d||!inRoom()||String(d.roomId||"")!==String(st.zoom?.ts||""))return;
-  if(st.adm&&(d.ts||0)<=lastRemoteStageTs)return;
+  if(d.senderUid===st.user?.uid&&(d.ts||0)<=lastRemoteStageTs)return;
   lastRemoteStageTs=d.ts||Date.now();
+  ZS.stageSender=d.senderUid||"";
   ZS.sharedType=d.sharedType||"";
   ZS.sharedImg=d.sharedImg||"";
   ZS.pageDataUrl=d.pageDataUrl||"";
@@ -1133,7 +1332,7 @@ if(zoomBC){
   zoomBC.onmessage=ev=>{
     const m=ev.data;
     if(!m)return;
-    if(m.type==="stage"&&!st.adm){
+    if(m.type==="stage"&&m.payload?.senderUid!==st.user?.uid){
       applyRemoteStageData(m.payload);
       if(route()=="zoom-alnoor"&&$("zr"))draw();
     }else if(m.type==="liveFrame"&&!st.adm&&m.frame){
@@ -1152,12 +1351,13 @@ function touchPresence(active=true){
     sid:ZS.sid,
     name:displayName(),
     isAdmin:!!st.adm,
+    isPresenter:canPresent()&&!st.adm,
     active:!!active,
     cam:!!(ZS.cam&&ZS.cam1&&!ZS.audioOnly),
     lastSeen:Date.now()
   },{merge:true}).then(()=>{if(active)connectToPresentPeers()}).catch(()=>{});
 }
-function inRoom(){return !!st.user&&!!st.zoom&&(st.adm||st.zok==st.zoom.ts)}
+function inRoom(){return !!st.user&&!!st.zoom&&(canPresent()||st.zok==st.zoom.ts)}
 function joinRoom(){
   if(ZS.joined||!db||!st.user||!inRoom())return;
   ZS.roomId=String(st.zoom.ts);ZS.enteredAt=Date.now();ZS.msgs=[];ZS.chatSeen.clear();
@@ -1189,7 +1389,7 @@ function startZoomRealtimeSubs(){
   if(!useSFU())ZS.roomUnsubs.push(sub(query(collection(db,"zoom_presence"),where("roomId","==",roomId)),s=>{
     const now=Date.now(),map={};
     s.docs.forEach(d=>{const x=d.data();if(x.active&&now-(x.lastSeen||0)<90000)map[d.id]={uid:d.id,...x}});
-    const sig=Object.values(map).map(p=>p.uid+":"+(p.cam?1:0)+":"+(p.name||"")).sort().join("|");
+    const sig=Object.values(map).map(p=>p.uid+":"+(p.cam?1:0)+":"+(p.isPresenter?1:0)+":"+(p.name||"")).sort().join("|");
     ZS.presChanged=sig!==ZS.presSig?1:0;
     ZS.presSig=sig;
     ZS.presence=map;
@@ -1201,7 +1401,7 @@ function startZoomRealtimeSubs(){
       const d=s.data();
       const prevAllow=ZS.roomCtrl.allowMic;
       ZS.roomCtrl={allowMic:d.allowMic!==false?1:0};
-      if(prevAllow!==ZS.roomCtrl.allowMic&&!st.adm){
+      if(prevAllow!==ZS.roomCtrl.allowMic&&!canPresent()){
         if(!ZS.roomCtrl.allowMic&&ZS.micStream){
           ZS.mic=0;
           ZS.micStream.getAudioTracks().forEach(t=>{t.enabled=false});
@@ -1232,7 +1432,7 @@ function startZoomRealtimeSubs(){
     applyRemoteStageData(d);
     /* تحديث صورة البث الاحتياطي بدون إعادة رسم الغرفة */
     if(!st.adm&&!changed&&d.liveFrameUrl){const img=$("z-live-frame-img");if(img)img.src=d.liveFrameUrl}
-    ZS.stageDraw=(changed&&(!st.adm||firstTime))?1:0;
+    ZS.stageDraw=(changed&&(d.senderUid!==st.user?.uid||firstTime))?1:0;
   },"zoom_stage"));
 
   ZS.roomUnsubs.push(sub(query(collection(db,"zoom_reactions"),where("roomId","==",roomId)),s=>{
@@ -1251,7 +1451,8 @@ if(ok){
   sub(collection(db,"team"),s=>{st.team=L(s);if(st.team.length)st.seeded=true},"team");
   sub(collection(db,"lecs"),s=>st.lecs=L(s).sort((a,b)=>a.ts-b.ts),"lecs");
   onAuthStateChanged(auth,u=>{closeOnboarding();zStop();un.forEach(f=>f());un=[];zoomSubStarted=false;st.user=u;st.adm=!!u&&(u.email||"").toLowerCase()==ADMIN_EMAIL.toLowerCase();st.me={};st.regs={};st.all=[];st.studs=[];st.revs=[];st.ready=true;
-    if(u){un.push(sub(doc(db,"students",u.uid),s=>st.me=s.exists()?s.data():{},"me"),sub(doc(db,"regs",u.uid),s=>st.regs=s.exists()?s.data().list||{}:{},"me"));
+    st.noticeSession++;st.inbox=[];st.readMessages=new Set();st.presenter=null;st.presenters=[];st.templates={};st.pushReady=false;
+    if(u){listenCommunications(u);un.push(sub(doc(db,"students",u.uid),s=>st.me=s.exists()?s.data():{},"me"),sub(doc(db,"regs",u.uid),s=>st.regs=s.exists()?s.data().list||{}:{},"me"));
       if(!st.adm)setDoc(doc(db,"students",u.uid),{email:u.email||"",last:Date.now()},{merge:true}).catch(()=>{});
       un.push(sub(st.adm?collection(db,"reviews"):query(collection(db,"reviews"),where("ok","==",true)),s=>st.revs=L(s).sort((a,b)=>b.ts-a.ts),"revs"));
       startZoomRealtimeSubs();
@@ -1267,15 +1468,15 @@ const FS=c=>({ads:[["title",A("عنوان الإعلان","Ad title")],["desc",A
  team:[["name",A("الاسم","Name")],["ig",A("حساب الانستغرام (اسم أو رابط)","Instagram (handle or link)")]]})[c];
 const colOf=c=>c=="courses"||c=="vols"?"items":c;
 const inp=(id,[k,ph,ty],v,fixedKind)=>fixedKind?`<input type="hidden" id="${id}-${k}" value="${fixedKind}">`:`<input id="${id}-${k}" type="${ty||"text"}" ${ty=="number"?'min="0" step="0.5"':""} placeholder="${esc(ph)}" value="${esc(v??"")}">`;
-const ef=(c,o,acc)=>`<div class="fld">${FS(c).map(f=>inp(`e-${c}-${o.id}`,f,o[f[0]])).join("")}${acc?`<input id="e-${c}-${o.id}-file" type="file" accept="${acc}">`:""}</div>${c=="team"?founderCropBox(o.id):""}<div class="row"><button type="button" class="btn t" data-a="save" data-p="${c}|${o.id}">${A("حفظ","Save")}</button><button type="button" class="btn g" data-a="del" data-p="${c}|${o.id}">${A("حذف","Delete")}</button></div>`;
-const af=(c,acc,fixedKind)=>`<div class="card"><div class="fld">${FS(c).map(f=>inp(`n-${c}`,f,"",fixedKind&&f[0]=="kind"?fixedKind:null)).join("")}${acc?`<input id="n-${c}-file" type="file" accept="${acc}">`:""}</div><button type="button" class="btn t" data-a="add" data-p="${c}">${A("إضافة","Add")}</button></div>`;
+const ef=(c,o,acc)=>`<div class="fld">${FS(c).map(f=>inp(`e-${c}-${o.id}`,f,o[f[0]])).join("")}${acc?`<input id="e-${c}-${o.id}-file" type="file" accept="${acc}">`:""}</div>${templateBox(c,o,`e-${c}-${o.id}`)}${c=="team"?founderCropBox(o.id):""}<div class="row"><button type="button" class="btn t" data-a="save" data-p="${c}|${o.id}">${A("حفظ","Save")}</button><button type="button" class="btn g" data-a="del" data-p="${c}|${o.id}">${A("حذف","Delete")}</button></div>`;
+const af=(c,acc,fixedKind)=>`<div class="card"><div class="fld">${FS(c).map(f=>inp(`n-${c}`,f,"",fixedKind&&f[0]=="kind"?fixedKind:null)).join("")}${acc?`<input id="n-${c}-file" type="file" accept="${acc}">`:""}</div>${templateBox(c,{},`n-${c}`)}<button type="button" class="btn t" data-a="add" data-p="${c}">${A("إضافة","Add")}</button></div>`;
 const rdF=(id,c)=>{const d={};FS(c).forEach(([k,,ty])=>{let v=$(`${id}-${k}`)?.value?.trim()||"";if(k=="ig")v=igC(v);d[k]=ty=="number"?+v||0:v});if(c=="courses")d.kind="c";if(c=="vols"){d.kind="v";d.price=0}return d};
 
 function vDash(){
  const u=st.user,m=st.me,r=Object.entries(st.regs);
  const nv=r.filter(x=>x[1].kind=="v").length;
- const nc=r.length-nv;
- const nOk=r.filter(x=>x[1].kind!="v"||x[1].status=="ok"||x[1].status=="done").length;
+ const nc=r.filter(x=>x[1].kind==="c").length;
+ const nOk=r.filter(x=>x[1].status=="ok"||x[1].status=="done").length;
  const fields=["name","phone","major","uni"];
  const doneCount=fields.filter(k=>String(m[k]||"").trim()).length+(m.photo?1:0);
  const pct=Math.round((doneCount/(fields.length+1))*100);
@@ -1330,14 +1531,14 @@ function vDash(){
   ${r.map(([k,x])=>`<div class="act-item">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
       <b>${esc(x.title)}</b>
-      ${x.kind=="v"?tag(x.status||"pending"):`<span class="tag">${A("مقعد مؤكد","Seat")}</span>`}
+      ${tag(x.status||"pending")}
     </div>
     <div class="meta" style="margin:4px 0 0"><span>${x.kind=="v"?A("تطوع","Volunteering"):A("دورة وجاهية","Course")}</span>${x.ts?`<span>• ${new Date(x.ts).toLocaleDateString()}</span>`:""}</div>
-    ${x.kind!="v"?`<div style="margin-top:6px">${qr(k+st.user.uid)}</div>`:""}
+    ${x.kind==="c"&&["ok","done"].includes(x.status)?`<div style="margin-top:6px">${qr(k+st.user.uid)}</div>`:""}
   </div>`).join("")||none()}
  </div>
 </div>`}
-const vItems=k=>`<h1>${k=="v"?A("التطوعات","Volunteering"):A("الدورات الوجاهية","On-site courses")}</h1><div class="grid">${st.items.filter(i=>i.kind==k).map(i=>{const g=st.regs[i.id];return`<div class="card"><h3>${esc(i.t)}</h3><div class="meta"><span>📍 ${esc(i.p)}</span><span>📅 ${esc(i.d)}</span></div><div style="margin-bottom:10px">${price(+i.price)}</div>${g?(k=="v"?tag(g.status||"pending"):`<span class="tag">${A("مقعدك مؤكد","Seat confirmed")}</span><div class="meta" style="margin:8px 0 0">${A("تذكرة الدخول (QR)","Entry ticket (QR)")}</div>${qr(i.id+st.user.uid)}`):`<button type="button" class="btn" data-a="reg" data-p="${i.id}">${k=="v"?A("تقدم الآن","Apply now"):A("احجز مقعداً","Book a seat")}</button>`}</div>`}).join("")||none()}</div>`;
+const vItems=k=>`<h1>${k=="v"?A("التطوعات","Volunteering"):A("الدورات الوجاهية","On-site courses")}</h1><div class="grid">${st.items.filter(i=>i.kind==k).map(i=>{const g=st.regs[i.id];return`<div class="card"><h3>${esc(i.t)}</h3><div class="meta"><span>📍 ${esc(i.p)}</span><span>📅 ${esc(i.d)}</span></div><div style="margin-bottom:10px">${price(+i.price)}</div>${g?tag(g.status||"pending")+(k==="c"&&["ok","done"].includes(g.status)?`<div class="meta">${A("تذكرة الدخول (QR)","Entry ticket (QR)")}</div>${qr(i.id+st.user.uid)}`:""):`<button type="button" class="btn" data-a="reg" data-p="${i.id}">${A("إرسال طلب تسجيل","Apply")}</button>`}</div>`}).join("")||none()}</div>`;
 function vAds(){const a=ads();return`<h1>${A("الإعلانات","Announcements")}</h1>`+(a.length?`<div class="at"><div class="atb">${a.map((x,k)=>`<button type="button" id="atb${k}" data-a="ad" data-p="${k}">${esc(x.title||A("إعلان ","Ad ")+(k+1))}</button>`).join("")}</div><div class="atc" id="atc"></div></div>`:none())}
 function adShow(i){clearTimeout(AT);const a=ads(),c=$("atc");if(!c||!a.length)return;AI=(i%a.length+a.length)%a.length;const x=a[AI],nx=()=>adShow(AI+1);a.forEach((_,k)=>{const e=$("atb"+k);if(e)e.className=k==AI?"on":""});
  c.innerHTML=(x.src?`<div class="atm">${x.type=="video"?`<video src="${esc(x.src)}" autoplay muted playsinline></video><button type="button" class="atm2" data-a="mute">🔇</button>`:`<img src="${esc(x.src)}" alt="">`}</div>`:"")+`<div class="atx"><h2>${esc(x.title||"")}</h2><p>${esc(x.desc||"")}</p></div><div class="atg"><b id="atg"></b></div>`;
@@ -1543,7 +1744,7 @@ function zroom(){
     const tiles=[];
     if(ZS.scr){
       tiles.push(`<div class="z-tile main-share"><video id="zsv" autoplay playsinline muted></video></div>`);
-    }else if((ZS.screenActive||ZS.sharedType==="video")&&!st.adm){
+    }else if((ZS.screenActive||ZS.sharedType==="video")&&!ZS.scr){
       const hasLiveVidStream=!!hostScreenStream();
       if(hasLiveVidStream){
         tiles.push(`<div class="z-tile main-share"><video id="z-remote-screen-vid" autoplay playsinline muted></video></div>`);
@@ -1555,7 +1756,7 @@ function zroom(){
         tiles.push(`<div class="z-tile main-share"><div class="z-slide-card"><div style="font-size:28px">🖥</div><div style="font-size:18px;font-weight:700">${A("بث مباشر","Live")}</div></div></div>`);
       }
     }
-    if(ZS.sharedVid&&st.adm){
+    if(ZS.sharedVid&&canPresent()){
       tiles.push(`<div class="z-tile main-share"><div class="z-doc-box" id="z-vid-slot"></div></div>`);
     }
     if(ZS.sharedImg){
@@ -1564,10 +1765,10 @@ function zroom(){
       </div></div>`);
     }
     if(ZS.sharedType==="pdf"){
-      const pdfNavHtml=st.adm
+      const pdfNavHtml=canPresent()
         ?`<button type="button" class="z-btn on" style="height:28px;padding:0 10px;font-size:12px" data-a="zpdfpage" data-p="-1">◀</button><span class="z-pill" id="z-pdf-page-lbl">${ZS.pdfPage} / ${ZS.pdfNumPages}</span><button type="button" class="z-btn on" style="height:28px;padding:0 10px;font-size:12px" data-a="zpdfpage" data-p="1">▶</button>`
         :`<span class="z-pill" id="z-pdf-page-lbl">${ZS.pdfPage} / ${ZS.pdfNumPages}</span>`;
-      const pdfBodyHtml=st.adm
+      const pdfBodyHtml=canPresent()&&ZS.pdfDoc
         ?`<canvas id="z-pdf-canvas"></canvas>`
         :(ZS.pageDataUrl
           ?`<img class="z-shared-page-img" src="${esc(ZS.pageDataUrl)}" alt="">`
@@ -1578,7 +1779,7 @@ function zroom(){
       </div></div>`);
     }else if(ZS.sharedType==="pptx"){
       const curSlide=ZS.slides[ZS.slideIdx-1]||{index:ZS.slideIdx,text:""};
-      const pptNavHtml=st.adm
+      const pptNavHtml=canPresent()
         ?`<button type="button" class="z-btn on" style="height:28px;padding:0 10px;font-size:12px" data-a="zslide" data-p="-1">◀</button><span class="z-pill">${curSlide.index} / ${Math.max(1,ZS.slides.length)}</span><button type="button" class="z-btn on" style="height:28px;padding:0 10px;font-size:12px" data-a="zslide" data-p="1">▶</button>`
         :`<span class="z-pill">${curSlide.index} / ${Math.max(1,ZS.slides.length)}</span>`;
       tiles.push(`<div class="z-tile main-share"><div class="z-slide-card">
@@ -1623,7 +1824,7 @@ function zroom(){
       </div>
     </div>
     <div class="z-health-strip">
-      <span>${useSFU()?A("اتصال SFU جماعي","SFU conference"):A("اتصال مباشر احتياطي · غير معتمد لـ 300 حاضر","Direct fallback · not validated for 300 attendees")}</span>
+      <span>${useSFU()?A("المحاضرة · بث جماعي","Lecture · conference"):A("المحاضرة المباشرة","Live classroom")}</span>
       <span id="z-duration">00:00:00</span>
       <button type="button" class="z-btn" data-a="zdevices">${A("فحص الصوت والكاميرا","Test audio & camera")}</button>
       <button type="button" class="z-btn" data-a="zreconnect">${A("إعادة الاتصال","Reconnect")}</button>
@@ -1650,7 +1851,7 @@ function zroom(){
       <button type="button" class="z-btn${!ZS.audioOnly?" on":""}" data-a="zviewmode" data-p="gallery">▦</button>
       <button type="button" class="z-btn${ZS.audioOnly?" on":""}" data-a="zviewmode" data-p="audio">🎧</button>
       <button type="button" class="z-btn${(ZS.menu==="react"||ZS.hand)?" on":""}" data-a="zmenu" data-p="react">${ZS.hand?"✋☺":"☺✋"}</button>
-      ${st.adm?`<button type="button" class="z-btn${(ZS.menu==="share"||hasScreen)?" on":""}" data-a="zmenu" data-p="share">↑</button>`:""}
+      ${canPresent()?`<button type="button" class="z-btn${(ZS.menu==="share"||hasScreen)?" on":""}" data-a="zmenu" data-p="share">↑</button>`:""}
       <button type="button" class="z-btn${ZS.side==="people"?" on":""}" data-a="zside" data-p="people">👥 ${totalCount}</button>
       <button type="button" class="z-btn${ZS.side==="chat"?" on":""}" data-a="zside" data-p="chat">💬${ZS.msgs.length?` (${ZS.msgs.length})`:""}</button>
     </div>
@@ -1660,7 +1861,7 @@ function zroom(){
 function vZm(){const z=st.zoom;
  if(st.adm)return`<h1>${A("قاعة النور الطبية","Al-Noor medical classroom")}</h1><div class="card" style="margin-bottom:12px"><b>${A("كود دخول المحاضرة","Lecture access code")}</b><div class="row"><input id="zc" dir="ltr" placeholder="${A("اكتب كوداً أو اتركه فارغاً لإنشاء كود عشوائي","Type a code or leave empty for a random one")}"><button type="button" class="btn t" data-a="zcreate">${A("إنشاء وتفعيل","Create")}</button><button type="button" class="btn g" data-a="zdevices">${A("فحص الأجهزة","Test devices")}</button></div>${z?`<p style="margin:10px 0 0">${ls("zc")?A("الكود الحالي: ","Current code: ")+`<b dir="ltr" style="font-size:22px;color:var(--teal)">${esc(ls("zc"))}</b>`:A("يوجد كود فعّال (أنشئ جديداً لعرضه)","A code is active (create a new one to see it)")}</p><button type="button" class="btn g" style="margin-top:10px" data-a="zclose">${A("إغلاق المحاضرة","Close lecture")}</button>`:""}</div>`+(z?zroom():`<div class="card">${A("أنشئ محاضرة أولًا، ثم فعّل المايك والكاميرا من شريط المحاضرة.","Create a lecture first, then enable microphone and camera from the conference toolbar.")}</div>`);
  if(!z)return`<h1>ZOOM ALNOOR</h1><div class="card"><p class="sub" style="margin:0">${A("لا توجد محاضرة مفتوحة حالياً.","No lecture is open right now.")}</p></div>`;
- if(st.zok!=z.ts)return`<h1>ZOOM ALNOOR</h1><div class="card" style="max-width:420px"><b>${A("أدخل كود المحاضرة","Enter the lecture code")}</b><div class="row"><input id="zin" dir="ltr" autocomplete="off" data-e="zenter"><button type="button" class="btn" data-a="zenter">${A("دخول","Enter")}</button></div></div>`;
+ if(!canPresent()&&st.zok!=z.ts)return`<h1>ZOOM ALNOOR</h1><div class="card" style="max-width:420px"><b>${A("أدخل كود المحاضرة","Enter the lecture code")}</b><div class="row"><input id="zin" dir="ltr" autocomplete="off" data-e="zenter"><button type="button" class="btn" data-a="zenter">${A("دخول","Enter")}</button></div></div>`;
  return zroom()}
 const zs=m=>{const e=$("zst");if(e)e.textContent=m};
 
@@ -1686,7 +1887,7 @@ function zStop(){
   ZS.peers.clear();ZS.remoteStreams.clear();syncAudioElements();
   if(db&&st.user){
     touchPresence(false);
-    if(st.adm)setDoc(doc(db,"site","zoom_stage"),{screenActive:false,liveFrameUrl:"",ts:Date.now()},{merge:true}).catch(()=>{});
+    if(canPresent())setDoc(doc(db,"site","zoom_stage"),{roomId:ZS.roomId,senderUid:st.user.uid,sharedType:"",sharedImg:"",pageDataUrl:"",screenActive:false,liveFrameUrl:"",ts:Date.now()},{merge:true}).catch(()=>{});
     if(ZS.hand)setDoc(doc(db,"zoom_hands",st.user.uid),{raised:false,ts:Date.now()},{merge:true}).catch(()=>{});
   }
   ZS.hand=0;
@@ -1711,7 +1912,7 @@ function vAdm(){if(!st.adm)return`<h1>${A("لوحة الإدارة","Admin dashb
 /* جولة تعريفية خفيفة: لا وصول للأجهزة ولا كتابة إلى قاعدة البيانات. */
 const onboarding={step:0,key:"",role:"",timer:0,seen:new Set(),returnFocus:null};
 function onboardingRole(){return !st.user?"guest":st.adm?"admin":"student"}
-function onboardingKey(){return "alnoor_onboarding_v1_"+onboardingRole()+"_"+(st.user?.uid||"visitor")}
+function onboardingKey(){return "alnoor_onboarding_v2_"+onboardingRole()+"_"+(st.user?.uid||"visitor")}
 function onboardingSteps(){
   const role=onboarding.role;
   return [
@@ -1727,9 +1928,9 @@ function onboardingSteps(){
     {icon:"◉",title:A("افحص الصوت قبل البداية","Check your audio before you begin"),
       body:A("من «فحص الأجهزة» جرّب المايك 3 ثوانٍ واسمع التسجيل المحلي، وشوف معاينة الكاميرا. اسمح للمتصفح بالأجهزة، واستخدم سماعة لتخفيف الصدى. داخل المحاضرة فعّل المايك بزرّه عندما تريد الكلام.","In device diagnostics, record a local 3-second mic test and check the camera preview. Allow browser permissions and use headphones to reduce echo. Use the mic button in the lecture when you want to speak."),
       note:A(role==="admin"?"لمشاركة فيديو بصوته، اختر تبويبًا وفعّل «مشاركة صوت التبويب» إذا كان متصفحك يدعمها.":"الميكروفون والكاميرا لا يعملان تلقائيًا. الإدارة قد توقف مايكات الطلاب مؤقتًا.",role==="admin"?"To share video with audio, choose a browser tab and enable Share tab audio where supported.":"Your microphone and camera never start automatically. The host may temporarily disable student microphones.")},
-    {icon:"☷",title:A("احكِ، اسأل، وتعلّم","Ask, discuss and learn"),
-      body:A("ارفع إيدك لطلب الكلام، واستخدم الشات للسؤال خلال المحاضرة. الشات مباشر ومؤقت: لا أرشيف للداخلين لاحقًا، ونسختك تنمسح عند مغادرتك.","Raise your hand to request a turn and use chat for questions. Chat is live and temporary: new arrivals get no history, and your session copy is cleared when you leave."),
-      note:A("الرسائل تبقى عند بقية الحاضرين حتى يغادروا. تجنّب إرسال بيانات المرضى أو أي معلومات حساسة.","Other attendees retain their session copy until they leave. Never share patient details or other sensitive information.")}
+    {icon:"✉",title:A("صندوق رسائلك وإشعاراتك","Your inbox & notifications"),
+      body:A("قبولك بالدورات والتطوعات والمحاضرات، ورسالة الإدارة ورابط المجموعة، بيوصلوا إلى «صندوق الرسائل». افتح الصندوق واضغط «تفعيل الإشعارات» ثم اسمح للمتصفح. الشات داخل المحاضرة مختلف: مؤقت وينمسح من جهازك عند المغادرة.","Acceptance decisions, your host's message and group links arrive in Inbox. Choose Enable notifications there, then allow browser permission. Lecture chat is separate: temporary and cleared on your device when leaving."),
+      note:A("التفعيل لهذا الجهاز فقط. على iPhone/iPad قد تحتاج إضافة الموقع للشاشة الرئيسية. إشعارات الموقع المغلق تحتاج إعداد خادم الدفع؛ لا تشارك بيانات المرضى.","Enable on each device. On iPhone/iPad you may need a Home Screen installation. Closed-site push requires a configured server. Never share patient details.")}
   ];
 }
 function closeOnboarding(result=""){
@@ -1754,6 +1955,7 @@ function paintOnboarding(){
     <section class="onboard-body" aria-live="polite" aria-atomic="true">
       <h2 id="onboard-title" tabindex="-1">${esc(step.title)}</h2>
       <p id="onboard-description">${esc(step.body)}</p><div class="onboard-note">${esc(step.note)}</div>
+      ${last&&st.user?`<button type="button" class="btn t" style="margin-top:12px" data-ob="notifications">${A("تفعيل الإشعارات","Enable notifications")}</button>`:""}
     </section>
     <div class="onboard-foot">
       <button type="button" class="btn g" data-ob="back" ${onboarding.step===0?"disabled":""}>${A("السابق","Back")}</button>
@@ -1776,6 +1978,7 @@ function openOnboarding(){
     e.stopPropagation();
     const action=e.target.closest("[data-ob]")?.dataset.ob;
     if(action==="skip")closeOnboarding("skipped");
+    else if(action==="notifications"){closeOnboarding("done");go("inbox");enableDeviceNotifications().catch(()=>toast(A("تعذر تفعيل الإشعارات الآن.","Could not enable notifications now.")))}
     else if(action==="finish")closeOnboarding("done");
     else if(action==="next"){onboarding.step=Math.min(onboardingSteps().length-1,onboarding.step+1);paintOnboarding()}
     else if(action==="back"){onboarding.step=Math.max(0,onboarding.step-1);paintOnboarding()}
@@ -1793,17 +1996,22 @@ function maybeStartOnboarding(){
 }
 
 function draw(){const r=route(),d=document.documentElement;
+ updateInboxBadge();if($("inbox-label"))$("inbox-label").textContent=A("الرسائل","Messages");
  if($("onboard-help"))$("onboard-help").textContent=A("دليل المنصة","Platform guide");
  const chatInput=$("z-chat-in"),chatDraft=chatInput?.value||"",chatFocused=document.activeElement===chatInput,chatCursor=chatInput?.selectionStart;
  d.lang=st.lang;d.dir=st.lang=="ar"?"rtl":"ltr";if($("bn"))$("bn").textContent=A("منصة النور","Al-Noor Platform");if($("lg"))$("lg").textContent=A("English","العربية");if($("lo")){$("lo").textContent=A("خروج","Logout");$("lo").style.display=st.user?"":"none"}if($("ft"))$("ft").textContent=A("© منصة النور · جميع الحقوق محفوظة","© Al-Noor Platform · All rights reserved");document.title=$("bn")?.textContent||"منصة النور";
  applyTheme(d.getAttribute("data-theme")||"light");
  const lt=Math.max(0,...ads().map(a=>a.ts||0)),nw=r!="ads"&&lt>+(ls("seen")||0);if(r=="ads")ls("seen",lt);
- let tb=[["dashboard",A("لوحتي","My space")],["ads",A("الإعلانات","Ads")+(nw?` <span class="tag r">${A("جديد","New")}</span>`:"")],["volunteering",A("التطوعات","Volunteering")],["courses",A("الدورات الوجاهية","Courses")],["zoom-alnoor","ZOOM"],["lectures",A("المحاضرات","Lectures")],["feedback",A("الفيدباك","Feedback")],["about",A("عن النور","About")]];
- if(st.adm)tb.push(["admin-secret-portal",A("لوحة الإدارة","Admin")]);if(!st.user)tb=[tb[1]];
+ let tb=[["dashboard",A("لوحتي","My space")],["inbox",A("صندوق الرسائل","Inbox")],["ads",A("الإعلانات","Ads")+(nw?` <span class="tag r">${A("جديد","New")}</span>`:"")],["volunteering",A("التطوعات","Volunteering")],["courses",A("الدورات الوجاهية","Courses")],["zoom-alnoor","ZOOM"],["lectures",A("المحاضرات","Lectures")],["feedback",A("الفيدباك","Feedback")],["about",A("عن النور","About")]];
+ if(st.adm)tb.push(["admin-secret-portal",A("لوحة الإدارة","Admin")]);if(!st.user)tb=[tb.find(t=>t[0]==="ads")];
  if($("nav"))$("nav").innerHTML=tb.map(x=>`<a href="#${x[0]}" class="${r==x[0]?"on":""}">${x[1]}</a>`).join("");
- let v;if(!st.ready)v=`<p class="sub">…</p>`;else if(r=="ads")v=vAds();else if(!st.user)v=vLogin();else v=({dashboard:vDash,volunteering:()=>vItems("v"),courses:()=>vItems("c"),"zoom-alnoor":vZm,lectures:vLec,feedback:vFb,about:vAbout,"admin-secret-portal":vAdm}[r]||vDash)();
- if(ZS.vidEl&&ZS.vidEl.parentNode)ZS.vidEl.remove();if($("app"))$("app").innerHTML=(ok?"":`<div class="warn">⚠️ ${A("لم يتم ضبط مفاتيح firebaseConfig بعد: المنصة تعمل بالبيانات الأولية فقط.","firebaseConfig is not set yet: running with starter data only.")}</div>`)+v;
+ let v;if(!st.ready)v=`<p class="sub">…</p>`;else if(r=="ads")v=vAds();else if(!st.user)v=vLogin();else v=({dashboard:vDash,inbox:vInbox,volunteering:()=>vItems("v"),courses:()=>vItems("c"),"zoom-alnoor":vZm,lectures:vLectureRegistration,feedback:vFb,about:vAbout,"admin-secret-portal":()=>st.adm?vCommunicationAdmin()+vAdm():vAdm()}[r]||vDash)();
+  if(ZS.vidEl&&ZS.vidEl.parentNode)ZS.vidEl.remove();if($("app"))$("app").innerHTML=(ok?"":`<section class="card" role="status"><h2>${A("ربط مشروع Firebase","Connect your Firebase project")}</h2><p>${A("ضع إعداد مشروعك الأصلي في firebase-config.json بجانب هذا الملف على الاستضافة، حسب دليل الحزمة. لم نضمّن مفتاحك في النسخة المسلّمة. لا ترسل مفاتيح في الدردشة.","Place your original project's settings in firebase-config.json beside this page, following the package instructions. Your key is not embedded in the delivered HTML. Never send keys in chat.")}</p><button type="button" class="btn t" onclick="location.reload()">${A("فحص الربط وإعادة المحاولة","Check configuration and retry")}</button></section>`)+v;
  Object.keys(st.crops).forEach(syncCropPreview);
+ if(r==="admin-secret-portal"&&st.adm){
+   const filter=document.querySelector('select[data-c="filt"]');
+   if(filter){for(const lecture of st.lecs){const option=document.createElement("option");option.value="lec_"+lecture.id;option.textContent=A("محاضرة: ","Lecture: ")+lecture.title;filter.appendChild(option)}filter.value=st.filt}
+ }
  if($("z-chat-in")){$("z-chat-in").value=chatDraft;if(chatFocused){$("z-chat-in").focus({preventScroll:true});try{$("z-chat-in").setSelectionRange(chatCursor,chatCursor)}catch(e){}}}
  if(r=="zoom-alnoor"&&st.user){
    startZoomRealtimeSubs();
@@ -1825,7 +2033,7 @@ async function ensureMic(){
   if(!navigator.mediaDevices?.getUserMedia)throw new Error("Unsupported");
   const epoch=ZS.sfuEpoch;
   const s=await navigator.mediaDevices.getUserMedia({
-    audio:{...(deviceChoice.mic?{deviceId:{exact:deviceChoice.mic}}:{}),echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:{ideal:1}},
+    audio:{...(deviceChoice.mic?{deviceId:{exact:deviceChoice.mic}}:{}),echoCancellation:true,noiseSuppression:true,autoGainControl:false,channelCount:{ideal:1},sampleRate:{ideal:48000},sampleSize:{ideal:16}},
     video:false
   });
   if(!ZS.joined||epoch!==ZS.sfuEpoch){s.getTracks().forEach(t=>t.stop());throw new Error("Session ended")}
@@ -1850,6 +2058,43 @@ async function ensureCam(){
 }
 
 const ACT={
+ async setupPush(){
+  if(!st.adm)return;
+  try{
+    const [{getApp},{getFunctions,httpsCallable}]=await Promise.all([import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),import("https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js")]);
+    await httpsCallable(getFunctions(getApp()),"publishPushSettings")({});
+    toast(A("نُشرت إعدادات الإشعارات. فعّلها من صندوق الرسائل على كل جهاز.","Push settings published. Enable notifications from Inbox on each device."));
+  }catch(e){toast(A("الخدمة غير منشورة أو صلاحيات الإدارة غير مضبوطة. راجع ملف إعداد الإشعارات.","Service not deployed or server admin permissions not configured. See push setup instructions."))}
+ },
+ async enableNotifications(){await enableDeviceNotifications()},
+ async disableNotifications(){try{await detachDeviceNotifications();draw();toast(A("أوقفت الإشعارات على هذا الجهاز فقط.","Notifications disabled on this device only."))}catch(e){toast(A("تعذر إيقاف التسجيل؛ حاول قبل تسجيل الخروج.","Could not unregister this device; retry before signing out."))}},
+ async readMessage(id){if(st.user&&st.inbox.some(n=>n.id===id)){await setDoc(doc(db,"notificationReads",st.user.uid,"messages",id),{readAt:Date.now()});st.readMessages.add(id);draw()}},
+ async readAllMessages(){if(!st.user)return;const batch=writeBatch(db);st.inbox.forEach(n=>batch.set(doc(db,"notificationReads",st.user.uid,"messages",n.id),{readAt:Date.now()}));await batch.commit();st.inbox.forEach(n=>st.readMessages.add(n.id));draw()},
+ async acceptAll(){await acceptFilteredRegistrations()},
+ async broadcast(){
+  if(!st.adm)return;
+  const title=$("broadcast-title")?.value.trim(),text=$("broadcast-text")?.value.trim(),raw=$("broadcast-url")?.value.trim();
+  if(!title||!text)return toast(A("اكتب عنوانًا ونصًا للرسالة.","Enter a title and message."));
+  if(raw&&!safeHttpLink(raw))return toast(A("الرابط غير صالح.","Invalid link."));
+  if(!confirm(A("إرسال هذه الرسالة لجميع الطلاب؟","Send this message to every student?")))return;
+  await run(()=>addDoc(collection(db,"notifications"),{...notificationBody(title,text,raw),type:"broadcast",route:"inbox"}),A("أُرسلت الرسالة للصناديق.","Message sent to inboxes."));
+ },
+ async assignPresenter(){
+  if(!st.adm||!st.zoom)return;
+  const uid=$("lecture-presenter")?.value,student=st.studs.find(s=>s.id===uid);if(!student)return;
+  await run(()=>setDoc(doc(db,"lecturePresenters",uid),{uid,name:student.name||student.email||"",roomId:String(st.zoom.ts),enabled:true,assignedBy:st.user.uid,ts:Date.now()}),A("تم تعيين مسؤول شرح للمحاضرة فقط.","Presenter assigned to this lecture only."));
+ },
+ async removePresenter(uid){if(st.adm)await run(()=>runTransaction(db,async transaction=>{
+   const stageRef=doc(db,"site","zoom_stage"),stage=await transaction.get(stageRef);
+   transaction.delete(doc(db,"lecturePresenters",uid));
+   transaction.set(doc(db,"zoom_presence",uid),{uid,roomId:String(st.zoom?.ts||""),isPresenter:false,active:false},{merge:true});
+   if(stage.exists()&&stage.data().senderUid===uid)transaction.set(stageRef,{roomId:String(st.zoom?.ts||""),senderUid:st.user.uid,sharedType:"",sharedImg:"",pageDataUrl:"",screenActive:false,liveFrameUrl:"",ts:Date.now()},{merge:true});
+ }),A("تم إلغاء صلاحية الشرح.","Presenter access revoked."))},
+ regLecture(id){
+  const lecture=st.lecs.find(l=>l.id===id),m=st.me;if(!st.user||!lecture)return;
+  if(!m.name||!m.phone){toast(A("أكمل اسمك ورقمك أولًا.","Complete your name and phone first."));return go("dashboard")}
+  return run(()=>setDoc(doc(db,"regs",st.user.uid),{name:m.name,phone:m.phone,email:st.user.email||"",lastApplicationKey:"lec_"+id,list:{["lec_"+id]:{entityId:id,title:lecture.title,kind:"l",price:0,ts:Date.now(),status:"pending"}}},{merge:true}),A("تم إرسال طلب المحاضرة.","Lecture application submitted."));
+ },
  onboard(){openOnboarding()},
  async zdevices(){await openDeviceTest()},
  async zreconnect(){
@@ -1879,7 +2124,7 @@ const ACT={
  goRoute(r){if(r)go(r)},
  lang(){st.lang=st.lang=="ar"?"en":"ar";ls("lang",st.lang);draw()},
  theme(){const isDark=document.documentElement.getAttribute("data-theme")==="dark";applyTheme(isDark?"light":"dark");toast(isDark?A("تم التفعيل: وضع النهار","Light mode enabled"):A("تم التفعيل: وضع الليل","Dark mode enabled"))},
- out(){zStop();if(ok)signOut(auth).then(()=>{go("dashboard");toast(A("تم تسجيل الخروج","Signed out"))})},
+ async out(){try{await detachDeviceNotifications()}catch(e){return toast(A("تعذر فصل إشعارات هذا الجهاز؛ أعد المحاولة لحماية رسائلك قبل الخروج.","Could not unlink this device's notifications. Retry before signing out."))}zStop();if(ok)await signOut(auth);go("dashboard");toast(A("تم تسجيل الخروج","Signed out"))},
  togglemode(v){st.regMode=v=="1";draw()},
  cropReset(id){if(st.crops[id]){st.crops[id].x=0;st.crops[id].y=0;st.crops[id].zoom=1;draw()}},
  delStudPhoto(b){
@@ -1907,11 +2152,11 @@ const ACT={
   },A("تم حفظ بياناتك","Profile saved"),b);
  },
  reg(id,b){const it=st.items.find(x=>x.id==id),m=st.me;if(!it)return;if(!m.name||!m.phone){toast(A("أكمل اسمك ورقم هاتفك في لوحتي أولاً","Add your name and phone in My space first"));return go("dashboard")}
-  run(()=>setDoc(doc(db,"regs",st.user.uid),{name:m.name,phone:m.phone,email:st.user.email||"",list:{[id]:{title:it.t,kind:it.kind,price:+it.price||0,ts:Date.now(),status:"pending"}}},{merge:true}),it.kind=="v"?A("تم إرسال طلبك","Application sent"):A("مقعدك مؤكد","Seat confirmed"),b)},
+  run(()=>setDoc(doc(db,"regs",st.user.uid),{name:m.name,phone:m.phone,email:st.user.email||"",lastApplicationKey:id,list:{[id]:{title:it.t,kind:it.kind,price:+it.price||0,ts:Date.now(),status:"pending"}}},{merge:true}),A("تم إرسال طلبك؛ القرار سيصلك بصندوق الرسائل.","Application submitted; the decision will arrive in your inbox."),b)},
  ad(i){adShow(+i)},mute(b){const v=b.parentNode?.querySelector("video");if(!v)return;v.muted=!v.muted;b.textContent=v.muted?"🔇":"🔊"},
  star(i){if($("fc"))st.fc=$("fc").value;st.rs=+i;draw()},
  sfb(b){if(!st.rs)return toast(A("اختر عدد النجوم","Pick a star rating"));const c=$("fc")?.value.trim()||"";run(async()=>{await addDoc(collection(db,"reviews"),{uid:st.user.uid,n:st.me.name||st.user.email||"",s:st.rs,c,ok:false,ts:Date.now()});st.rs=0;st.fc=""},A("سيظهر تقييمك بعد موافقة الإدارة","Your review appears after admin approval"),b)},
- saveA(b){run(()=>setDoc(doc(db,"site","about"),{text:$("ab")?.value||""}),null,b)},
+ saveA(b){if(st.adm)return run(()=>setDoc(doc(db,"site","about"),{text:$("ab")?.value||""}),null,b)},
  async save(p,b){
   if(!st.adm)return toast("⚠️ "+A("يجب تسجيل الدخول كإدارة أولاً","Please sign in as admin first"));
   const[c,id]=p.split("|"),d=rdF(`e-${c}-${id}`,c),f=$(`e-${c}-${id}-file`)?.files[0];
@@ -1920,7 +2165,10 @@ const ACT={
     if(c=="team"&&st.crops[id]){Object.assign(d,await fdata(c,id));delete st.crops[id]}
     else if(f){Object.assign(d,await fdata(c,f))}
     const payload=c=="team"?{id,name:d.name||"",ig:d.ig||"",...(d.photo!==undefined?{photo:d.photo}:{})}:d;
-    await setDoc(doc(db,colOf(c),id),payload,{merge:true});
+    const batch=writeBatch(db);batch.set(doc(db,colOf(c),id),payload,{merge:true});
+    if(["courses","vols","lecs"].includes(c))batch.set(doc(db,"messageTemplates",c==="lecs"?"lec_"+id:id),readTemplate(`e-${c}-${id}`));
+    if(["ads","courses","vols","lecs"].includes(c))addAnnouncementToBatch(batch,"update_"+id+"_"+Date.now(),A("تحديث: ","Updated: ")+(d.t||d.title||A("إعلان","Announcement")),d.desc||A("راجع المنصة للاطلاع على التفاصيل.","Open the platform for details."),c==="vols"?"volunteering":c==="lecs"?"lectures":c);
+    await batch.commit();
     if(c=="team")await setDoc(doc(db,"site","meta"),{seeded:true},{merge:true}).catch(()=>{});
   },A("تم حفظ التعديل","Changes saved"),b);
  },
@@ -1929,15 +2177,21 @@ const ACT={
   const d=rdF(`n-${c}`,c),f=$(`n-${c}-file`)?.files[0];
   if(!(d.t||d.title||d.desc||f))return toast(A("أدخل محتوى الإعلان أو اختر ملفاً","Enter ad content or pick a file"));
   d.ts=Date.now();if(c=="ads")d.type="text";
-  run(async()=>{if(f)Object.assign(d,await fdata(c,f));await addDoc(collection(db,colOf(c)),d);FS(c).forEach(([k])=>{const el=$(`n-${c}-${k}`);if(el&&el.type!="hidden")el.value=""});if(f)$(`n-${c}-file`).value=""},A("تمت الإضافة","Added"),b);
+  run(async()=>{
+    if(f)Object.assign(d,await fdata(c,f));
+    const id=crypto.randomUUID(),batch=writeBatch(db);batch.set(doc(db,colOf(c),id),d);
+    if(["courses","vols","lecs"].includes(c))batch.set(doc(db,"messageTemplates",c==="lecs"?"lec_"+id:id),readTemplate(`n-${c}`));
+    if(["ads","courses","vols","lecs"].includes(c))addAnnouncementToBatch(batch,"new_"+id,A("جديد: ","New: ")+(d.t||d.title||A("إعلان","Announcement")),d.desc||A("افتح المنصة للتفاصيل والتسجيل.","Open the platform for details and registration."),c==="vols"?"volunteering":c==="lecs"?"lectures":c);
+    await batch.commit();FS(c).forEach(([k])=>{const el=$(`n-${c}-${k}`);if(el&&el.type!="hidden")el.value=""});for(const field of ["acceptMessage","acceptLink"]){const el=$(`n-${c}-${field}`);if(el)el.value=""}if(f)$(`n-${c}-file`).value="";
+  },A("تمت الإضافة وإرسال الإعلان.","Added and announced."),b);
  },
  del(p,b){if(!st.adm)return toast("⚠️ "+A("يجب تسجيل الدخول كإدارة أولاً","Please sign in as admin first"));const[c,id]=p.split("|");if(confirm(A("تأكيد الحذف؟","Confirm delete?")))run(()=>deleteDoc(doc(db,colOf(c),id)),A("تم الحذف","Deleted"),b)},
- rdel(p,b){const[u,i]=p.split("|");if(confirm(A("تأكيد الحذف؟","Confirm delete?")))run(()=>updateDoc(doc(db,"regs",u),{["list."+i]:deleteField()}),A("تم الحذف","Deleted"),b)},
- rv(p,b){const[id,v]=p.split("|");run(()=>updateDoc(doc(db,"reviews",id),{ok:v=="1"}),null,b)},
+ rdel(p,b){if(!st.adm)return;const[u,i]=p.split("|");if(confirm(A("تأكيد الحذف؟","Confirm delete?")))run(()=>updateDoc(doc(db,"regs",u),{["list."+i]:deleteField()}),A("تم الحذف","Deleted"),b)},
+ rv(p,b){if(!st.adm)return;const[id,v]=p.split("|");run(()=>updateDoc(doc(db,"reviews",id),{ok:v=="1"}),null,b)},
  csv(){const q=s=>'"'+String(s??"").replace(/"/g,'""')+'"',rows=st.all.filter(r=>!st.filt||r.item==st.filt),c="\ufeff"+"name,phone,email,type,title,price,status,date\n"+rows.map(r=>[r.name,r.phone,r.email,r.kind=="v"?"volunteering":"course",r.title,r.price,r.status||"pending",new Date(r.ts).toISOString()].map(q).join(",")).join("\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([c],{type:"text/csv"}));a.download="alnoor-registrations.csv";document.body.appendChild(a);a.click();a.remove()},
  async zenter(){const v=$("zin")?.value.trim().toUpperCase()||"";if(v&&await sha("zoom|"+v)==st.zoom?.h){st.zok=st.zoom.ts;draw()}else toast(A("الكود غير صحيح","Wrong code"))},
- async zcreate(b){let v=$("zc")?.value.trim().toUpperCase()||"";if(!v){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";v=[...crypto.getRandomValues(new Uint8Array(8))].map(x=>c[x%c.length]).join("")}run(async()=>{await setDoc(doc(db,"site","zoom"),{h:await sha("zoom|"+v),ts:Date.now()});await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:true,ts:Date.now()},{merge:true});ls("zc",v)},null,b)},
- zclose(b){ls("zc","");run(()=>deleteDoc(doc(db,"site","zoom")),A("تم إغلاق المحاضرة","Lecture closed"),b)},
+ async zcreate(b){if(!st.adm)return;let v=$("zc")?.value.trim().toUpperCase()||"";if(!v){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";v=[...crypto.getRandomValues(new Uint8Array(8))].map(x=>c[x%c.length]).join("")}run(async()=>{await setDoc(doc(db,"site","zoom"),{h:await sha("zoom|"+v),ts:Date.now()});await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:true,ts:Date.now()},{merge:true});ls("zc",v)},null,b)},
+ zclose(b){if(!st.adm)return;ls("zc","");run(()=>deleteDoc(doc(db,"site","zoom")),A("تم إغلاق المحاضرة","Lecture closed"),b)},
 
  zexpand(){ZS.expanded=ZS.expanded?0:1;ZS.menu=null;ZS.side=null;draw()},
  zmenu(m){ZS.menu=ZS.menu===m?null:m;draw()},
@@ -2019,7 +2273,7 @@ const ACT={
   catch(e){toast("⚠️ "+e.message)}
  },
  zpickmedia(accept){
-  if(!st.adm)return;
+  if(!canPresent())return;
   const fi=$("z-media-input");if(!fi)return;
   fi.accept=accept||"*/*";
   fi.onchange=async()=>{dropVidEl();
@@ -2102,7 +2356,7 @@ const ACT={
   fi.click();
  },
  async zpdfpage(step){
-  if(!st.adm||!ZS.pdfDoc)return;
+  if(!canPresent()||!ZS.pdfDoc)return;
   const next=Math.max(1,Math.min(ZS.pdfNumPages,ZS.pdfPage+(+step||1)));
   if(next===ZS.pdfPage)return;
   ZS.pdfPage=next;
@@ -2111,14 +2365,14 @@ const ACT={
   await renderPdfPageToCanvas(next,true);
  },
  zslide(step){
-  if(!st.adm)return;
+  if(!canPresent())return;
   const maxS=Math.max(1,ZS.slides.length||1);
   ZS.slideIdx=Math.max(1,Math.min(maxS,ZS.slideIdx+(+step||1)));
   draw();
   syncStageToCloud({slideIdx:ZS.slideIdx});
  },
  zclearshare(){
-  if(!st.adm)return;dropVidEl();
+  if(!canPresent())return;dropVidEl();
   stopLiveFrameSync();
   if(ZS.scr){ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null}
   if(ZS.vidShareStream){ZS.vidShareStream.getTracks().forEach(t=>t.stop());ZS.vidShareStream=null}
@@ -2147,7 +2401,7 @@ const ACT={
   }catch(e){toast("⚠️ "+mediaErrorMsg(e,"cam"))}
  },
  async zquickmic(){
-  if(!st.adm&&!ZS.roomCtrl.allowMic)return toast("🔇 "+A("الإدارة أوقفت المايكروفون مؤقتاً للطلاب","Host temporarily muted student microphones"));
+  if(!canPresent()&&!ZS.roomCtrl.allowMic)return toast("🔇 "+A("الإدارة أوقفت المايكروفون مؤقتاً للطلاب","Host temporarily muted student microphones"));
   try{
     const ms=await ensureMic();
     const tr=ms.getAudioTracks()[0];
@@ -2159,7 +2413,7 @@ const ACT={
  },
  async zt(k){
   if(k==="mic"){
-    if(!st.adm&&!ZS.roomCtrl.allowMic&&!ZS.mic)return toast("🔇 "+A("الإدارة أوقفت المايكروفون مؤقتاً للطلاب","Host temporarily muted student microphones"));
+    if(!canPresent()&&!ZS.roomCtrl.allowMic&&!ZS.mic)return toast("🔇 "+A("الإدارة أوقفت المايكروفون مؤقتاً للطلاب","Host temporarily muted student microphones"));
     try{
       const next=ZS.mic?0:1;
       const ms=await ensureMic();
@@ -2192,7 +2446,7 @@ const ACT={
  },
  zhand(){ZS.hand=ZS.hand?0:1;draw()},
  async zscr(){
-  if(!st.adm||!ZS.joined)return;
+  if(!canPresent()||!ZS.joined)return;
   ZS.menu=null;
   if(ZS.scr){
     stopLiveFrameSync();
@@ -2263,7 +2517,7 @@ const ACT={
 
 const CHG={
   filt(v){st.filt=v;draw()},
-  rst(v,e){const[u,i]=e.dataset.p.split("|");run(()=>updateDoc(doc(db,"regs",u),{["list."+i+".status"]:v}),null)},
+  rst(v,e){const[u,i]=e.dataset.p.split("|");return run(()=>changeRegistrationStatus(u,i,v),A("تم تحديث الحالة وإيداع الرسالة.","Status updated and message delivered."))},
   async zq(v){
     const q=ZQ[v];if(!q)return;
     const target=ZS.scr?.getVideoTracks()[0]||ZS.cam?.getVideoTracks()[0];
@@ -2319,5 +2573,3 @@ draw();
 </script>
 </body>
 </html>
-```[span_0](start_span)[span_0](end_span)
-
