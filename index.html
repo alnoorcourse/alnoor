@@ -347,20 +347,57 @@ function listenCommunications(user){
   st.noticeSession++;const session=st.noticeSession;
   st.inbox=[];st.readMessages=new Set();st.inboxError="";st.templates={};st.presenter=null;st.presenters=[];st.pushReady=false;
   knownInboxIds=new Set();inboxPrimed=false;
-  un.push(onSnapshot(query(collection(db,"notifications"),where("recipient","in",[user.uid,"all"]),orderBy("ts","desc"),limit(100)),snap=>{
+  const notifRef=collection(db,"notifications");
+  const buckets=new Map();
+  let usedFallback=false;
+
+  const publishMerged=()=>{
     if(session!==st.noticeSession)return;
-    const messages=L(snap),fresh=messages.filter(n=>!knownInboxIds.has(n.id));
-    st.inbox=messages;knownInboxIds=new Set(messages.map(n=>n.id));
+    const merged=new Map();
+    buckets.forEach(list=>list.forEach(item=>merged.set(item.id,item)));
+    const messages=Array.from(merged.values())
+      .sort((a,b)=>Number(b.ts||0)-Number(a.ts||0))
+      .slice(0,100);
+    const fresh=messages.filter(n=>!knownInboxIds.has(n.id));
+    st.inbox=messages;
+    knownInboxIds=new Set(messages.map(n=>n.id));
+    st.inboxError="";
     if(inboxPrimed)fresh.slice(0,3).forEach(n=>{
       toast("✉ "+(n.title||A("رسالة جديدة في الصندوق","New inbox message")));
       if(!st.pushReady&&"Notification"in window&&Notification.permission==="granted")showOpenSiteNotification(n);
     });
-    inboxPrimed=true;updateInboxBadge();
+    inboxPrimed=true;
+    updateInboxBadge();
     if(route()==="inbox")draw();
-  },error=>{
-    st.inboxError=A("تعذر تحميل الرسائل. تحقق من صلاحيات Firestore والفهرس المرفق بالحزمة.","Could not load messages. Check Firestore rules and the supplied index.");
-    if(route()==="inbox")draw();
-  }));
+  };
+
+  const watchRecipient=(bucketKey,recipientVal)=>{
+    const attach=(withOrder)=>{
+      const q=withOrder
+        ?query(notifRef,where("recipient","==",recipientVal),orderBy("ts","desc"),limit(100))
+        :query(notifRef,where("recipient","==",recipientVal),limit(100));
+      un.push(onSnapshot(q,snap=>{
+        if(session!==st.noticeSession)return;
+        buckets.set(bucketKey,L(snap));
+        publishMerged();
+      },error=>{
+        if(session!==st.noticeSession)return;
+        if(withOrder&&!usedFallback&&error?.code==="failed-precondition"){
+          usedFallback=true;
+          attach(false);
+          return;
+        }
+        console.error("Inbox snapshot error:",error);
+        st.inboxError=A("تعذر تحميل الرسائل: ","Could not load messages: ")+(error?.code||error?.message||A("تحقق من صلاحيات Firestore","Check Firestore rules"));
+        if(route()==="inbox")draw();
+      }));
+    };
+    attach(true);
+  };
+
+  watchRecipient("user",user.uid);
+  watchRecipient("all","all");
+
   un.push(onSnapshot(collection(db,"notificationReads",user.uid,"messages"),snap=>{
     if(session!==st.noticeSession)return;st.readMessages=new Set(snap.docs.map(d=>d.id));updateInboxBadge();if(route()==="inbox")draw();
   }));
@@ -409,7 +446,6 @@ async function registerNoticeWorker(){
 async function enableDeviceNotifications(){
   if(!st.user)return toast(A("سجّل دخولك أولًا.","Sign in first."));
   if(!("Notification"in window)||!("PushManager"in window))return toast(A("هذا المتصفح لا يدعم إشعارات الجهاز؛ استخدم الصندوق داخل المنصة.","This browser does not support device notifications; use the inbox."));
-  /* يجب أن يبقى طلب الإذن في نقرة المستخدم مباشرة. */
   const uid=st.user.uid,permission=await Notification.requestPermission();
   if(permission!=="granted")return toast(A("لم تُفعّل إشعارات الجهاز. صندوق الرسائل يعمل بدونها.","Device notifications were not enabled. Your inbox still works."));
   try{
@@ -456,7 +492,7 @@ async function loadFirebaseRuntimeConfig(config){
     for(const key of ["apiKey","authDomain","projectId","storageBucket","messagingSenderId","appId","measurementId"]){
       if(typeof runtime[key]==="string")config[key]=runtime[key];
     }
-  }catch(e){/* Setup notice below; never log configuration values. */}
+  }catch(e){}
 }
 await loadFirebaseRuntimeConfig(firebaseConfig);
 const ok=!/^PASTE/.test(firebaseConfig.apiKey);let db,auth,pers;
@@ -564,7 +600,6 @@ function rd(k){
 }
 function chkSeed(){if(st.adm&&st.seeded===false&&st.metaSrv&&!st.seeding){st.seeding=1;run(async()=>{const b=writeBatch(db);DEF_ADS.forEach(({id,...d})=>b.set(doc(db,"ads",id),d));DEF_TEAM.forEach(({id,...d})=>b.set(doc(db,"team",id),d));b.set(doc(db,"site","about"),{text:DEF_ABOUT});b.set(doc(db,"site","meta"),{seeded:true});await b.commit()},A("تم تحميل البيانات الأولية","Starter data loaded"))}}
 
-/* ---------- محمّلات PDF.js و JSZip مع كاش وتحميل مسبق ---------- */
 let pdfjsLibCache=null,jszipCache=null;
 const pdfPageCache=new Map();
 let pdfPrefetching=new Set();
@@ -585,7 +620,6 @@ async function loadJsZip(){
   return jszipCache;
 }
 
-/* ---------- قناة مزامنة فورية محلية + WebRTC صوت/فيديو حي ---------- */
 const zoomBC=(typeof BroadcastChannel!=="undefined")?new BroadcastChannel("alnoor_zoom_live_v1"):null;
 
 const ZS={
@@ -636,16 +670,6 @@ function canvasToFastSyncedImage(canvas,maxLen=560000,maxDim=1120,quality=0.72){
     out=s2.toDataURL("image/jpeg",Math.max(0.45,quality-0.1));
   }
   return out.length<=740000?out:"";
-}
-
-function captureActiveVideoFrame(){
-  const vidEl=ZS.scr?$("zsv"):((ZS.sharedType==="video"&&ZS.vidEl)||$("zsv"));
-  if(!vidEl||vidEl.readyState<2||!vidEl.videoWidth||!vidEl.videoHeight)return"";
-  const c=document.createElement("canvas");
-  c.width=vidEl.videoWidth;
-  c.height=vidEl.videoHeight;
-  c.getContext("2d").drawImage(vidEl,0,0,c.width,c.height);
-  return canvasToFastSyncedImage(c,420000,960,0.62);
 }
 
 function startLiveFrameSync(){
@@ -790,7 +814,6 @@ async function parsePptxSlides(file){
   return slides;
 }
 
-/* ---------- WebRTC: صوت + كاميرا + مشاركة شاشة + فيديو ملف ---------- */
 const MY_TURN=null;
 const RTC_CFG={iceCandidatePoolSize:2,bundlePolicy:"max-bundle",iceServers:[
   {urls:["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:global.stun.twilio.com:3478"]},
@@ -1887,7 +1910,6 @@ function vAdm(){if(!st.adm)return`<h1>${A("لوحة الإدارة","Admin dashb
 <h2>${T("مراجعة التقييمات","Review moderation")}</h2><div class="grid">${st.revs.map(r=>`<div class="card"><div style="color:#F5A623">${stars(r.s)}</div><p>${esc(r.c)}</p><span class="sub">${esc(r.n)}</span><div class="row"><button type="button" class="btn ${r.ok?"g":"t"}" data-a="rv" data-p="${r.id}|${r.ok?0:1}">${r.ok?T("إخفاء","Hide"):T("نشر","Publish")}</button><button type="button" class="btn g" data-a="del" data-p="reviews|${r.id}">${T("حذف","Delete")}</button></div></div>`).join("")||none()}</div>
 <h2>${T("الطلاب","Students")} (${st.studs.length})</h2><div class="card scroll"><table><tr><th>${T("الاسم","Name")}</th><th>Email</th><th>${T("الهاتف","Phone")}</th><th>${T("التخصص","Major")}</th><th>${T("الجامعة","University")}</th><th>${T("آخر دخول","Last visit")}</th><th></th></tr>${st.studs.map(x=>`<tr><td>${esc(x.name)}</td><td dir="ltr">${esc(x.email)}</td><td dir="ltr">${esc(x.phone)}</td><td>${esc(x.major)}</td><td>${esc(x.uni)}</td><td>${x.last?new Date(x.last).toLocaleDateString():""}</td><td><button type="button" class="btn g" data-a="del" data-p="students|${x.id}">${T("حذف","Delete")}</button></td></tr>`).join("")}</table></div>`}
 
-/* جولة تعريفية خفيفة: لا وصول للأجهزة ولا كتابة إلى قاعدة البيانات. */
 const onboarding={step:0,key:"",role:"",timer:0,seen:new Set(),returnFocus:null};
 function onboardingRole(){return !st.user?"guest":st.adm?"admin":"student"}
 function onboardingKey(){return "alnoor_onboarding_v2_"+onboardingRole()+"_"+(st.user?.uid||"visitor")}
@@ -2551,85 +2573,3 @@ draw();
 </script>
 </body>
 </html>
-(() => {
-  const patchInboxRuntime = () => {
-    if (typeof db === "undefined" || typeof auth === "undefined") return;
-
-    window.reloadInboxNow = async function reloadInboxNow(targetUser) {
-      const u = targetUser || auth.currentUser || (typeof st !== "undefined" ? st.user : null);
-      if (!u || !u.uid) return [];
-      try {
-        const notifRef = collection(db, "notifications");
-        const buckets = new Map();
-
-        const pullBucket = async (key, recipientValue) => {
-          try {
-            const qOrdered = query(
-              notifRef,
-              where("recipient", "==", recipientValue),
-              orderBy("ts", "desc"),
-              limit(100)
-            );
-            const snap = await getDocs(qOrdered);
-            buckets.set(key, snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-          } catch (e) {
-            if (e?.code === "failed-precondition") {
-              const qSimple = query(
-                notifRef,
-                where("recipient", "==", recipientValue),
-                limit(100)
-              );
-              const snap = await getDocs(qSimple);
-              buckets.set(key, snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-            } else {
-              throw e;
-            }
-          }
-        };
-
-        await Promise.all([pullBucket("user", u.uid), pullBucket("all", "all")]);
-
-        const merged = new Map();
-        buckets.forEach((list) => list.forEach((item) => merged.set(item.id, item)));
-        const list = Array.from(merged.values())
-          .sort((a, b) => Number(b.ts || 0) - Number(a.ts || 0))
-          .slice(0, 100);
-
-        if (typeof st !== "undefined") {
-          st.inbox = list;
-          st.inboxError = "";
-          if (typeof updateInboxBadge === "function") updateInboxBadge();
-          if (typeof route === "function" && typeof draw === "function" && route() === "inbox") {
-            draw();
-          }
-        }
-        return list;
-      } catch (err) {
-        console.error("Inbox patch load failed:", err);
-        if (typeof st !== "undefined") {
-          st.inboxError =
-            "تعذر تحميل الرسائل (" +
-            (err?.code || "error") +
-            "): " +
-            (err?.message || "تحقق من قواعد Firestore");
-          if (typeof route === "function" && typeof draw === "function" && route() === "inbox") {
-            draw();
-          }
-        }
-        return [];
-      }
-    };
-
-    if (typeof onAuthStateChanged === "function") {
-      onAuthStateChanged(auth, (u) => {
-        if (u && u.uid) {
-          setTimeout(() => {
-            window.reloadInboxNow(u);
-          }, 400);
-        }
-      });
-    }
-  };
-
-  setTimeout(patchInboxRuntime, 800);
-})();
