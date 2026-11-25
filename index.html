@@ -75,8 +75,10 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-tile video,.z-tile img{width:100%;height:100%;max-height:62svh;object-fit:contain;background:#090a0d}
 .z-tile.cam-tile video{object-fit:cover}
 .z-doc-box{width:100%;display:flex;flex-direction:column;gap:10px;padding:14px}
-.z-doc-frame{width:100%;height:56svh;min-height:340px;border:1px solid #383c49;border-radius:12px;background:#fff}
-.z-slide-card{width:100%;min-height:260px;background:linear-gradient(145deg,#1b1f2b,#12151e);border:1px solid #363c4d;border-radius:14px;padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.z-pdf-wrap{width:100%;max-height:58svh;overflow:auto;background:#111318;border:1px solid #383c49;border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center}
+#z-pdf-canvas{max-width:100%;height:auto;border-radius:6px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.z-slide-card{width:100%;min-height:280px;background:linear-gradient(145deg,#1b1f2b,#12151e);border:1px solid #363c4d;border-radius:14px;padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
+.z-slide-lines{max-width:720px;width:100%;text-align:start;background:rgba(10,12,18,.65);border:1px solid #2d3344;border-radius:12px;padding:14px 16px;white-space:pre-wrap;font-size:15px;line-height:1.75;color:#f1f5f9;max-height:36svh;overflow-y:auto}
 .z-avatar-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px}
 .z-avatar-circle{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#1e6fd9);color:#fff;display:grid;place-items:center;font-size:28px;font-weight:700;box-shadow:0 6px 18px rgba(79,70,229,.35)}
 .z-tag-lbl{position:absolute;bottom:8px;inset-inline-start:10px;background:rgba(15,17,22,.78);backdrop-filter:blur(6px);padding:3px 10px;border-radius:999px;font-size:12px;color:#f9fafb;border:1px solid rgba(255,255,255,.12)}
@@ -252,12 +254,33 @@ function rd(k){
 }
 function chkSeed(){if(st.adm&&st.seeded===false&&st.metaSrv&&!st.seeding){st.seeding=1;run(async()=>{const b=writeBatch(db);DEF_ADS.forEach(({id,...d})=>b.set(doc(db,"ads",id),d));DEF_TEAM.forEach(({id,...d})=>b.set(doc(db,"team",id),d));b.set(doc(db,"site","about"),{text:DEF_ABOUT});b.set(doc(db,"site","meta"),{seeded:true});await b.commit()},A("تم تحميل البيانات الأولية","Starter data loaded"))}}
 
-/* ---------- حالة غرفة ZOOM ALNOOR والمزامنة المباشرة (مُحسّنة لـ 300+ طالب) ---------- */
+/* ---------- محمّلات PDF.js و JSZip لعرض PDF و PowerPoint داخل الغرفة ---------- */
+let pdfjsLibCache=null,jszipCache=null;
+async function loadPdfJs(){
+  if(pdfjsLibCache)return pdfjsLibCache;
+  if(window.pdfjsLib){pdfjsLibCache=window.pdfjsLib;return pdfjsLibCache}
+  const mod=await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.min.mjs");
+  mod.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.worker.min.mjs";
+  pdfjsLibCache=mod;
+  return mod;
+}
+async function loadJsZip(){
+  if(jszipCache)return jszipCache;
+  if(window.JSZip){jszipCache=window.JSZip;return jszipCache}
+  const mod=await import("https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm");
+  jszipCache=mod.default||mod;
+  return jszipCache;
+}
+
+/* ---------- حالة غرفة ZOOM ALNOOR والمزامنة المباشرة ---------- */
 const ZS={
   cam:null,micStream:null,scr:null,rec:null,ch:[],
   hand:0,mic:0,cam1:0,speaker:1,shareAudio:1,audioOnly:0,batterySaver:0,captions:0,expanded:0,
   menu:null,side:null,
-  sharedImg:"",sharedVid:"",sharedPdf:"",sharedDoc:"",pdfPage:1,slideIdx:1,
+  sharedImg:"",sharedVid:"",sharedUrl:"",sharedName:"",sharedType:"",
+  pdfDoc:null,pdfNumPages:1,pdfPage:1,pdfRendering:false,
+  slides:[],slideIdx:1,
+  textContent:"",
   reactions:[],
   msgs:[],
   hands:{},
@@ -266,6 +289,61 @@ const ZS={
   audioCtx:null,analyser:null,meterRaf:0,presenceTimer:0
 };
 let zoomSubStarted=false;
+
+async function renderPdfPageToCanvas(pageNum){
+  const canvas=$("z-pdf-canvas");
+  if(!canvas||!ZS.pdfDoc||ZS.pdfRendering)return;
+  ZS.pdfRendering=true;
+  try{
+    const safePage=Math.max(1,Math.min(ZS.pdfNumPages||1,pageNum||1));
+    ZS.pdfPage=safePage;
+    const page=await ZS.pdfDoc.getPage(safePage);
+    const container=$("z-pdf-wrap");
+    const maxW=container?Math.max(320,container.clientWidth-28):760;
+    const unscaled=page.getViewport({scale:1});
+    const scale=Math.min(2.2,Math.max(0.8,maxW/unscaled.width));
+    const viewport=page.getViewport({scale});
+    const ctx=canvas.getContext("2d");
+    canvas.width=Math.round(viewport.width);
+    canvas.height=Math.round(viewport.height);
+    await page.render({canvasContext:ctx,viewport}).promise;
+    const lbl=$("z-pdf-page-lbl");
+    if(lbl)lbl.textContent=`${A("صفحة","Page")} ${ZS.pdfPage} / ${ZS.pdfNumPages}`;
+  }catch(e){
+    console.error(e);
+  }finally{
+    ZS.pdfRendering=false;
+  }
+}
+
+async function parsePptxSlides(file){
+  const JSZip=await loadJsZip();
+  const zip=await JSZip.loadAsync(await file.arrayBuffer());
+  const slideFiles=Object.keys(zip.files)
+    .filter(n=>/^ppt\/slides\/slide\d+\.xml$/i.test(n))
+    .sort((a,b)=>{
+      const na=parseInt((a.match(/slide(\d+)\.xml/i)||[])[1]||"0",10);
+      const nb=parseInt((b.match(/slide(\d+)\.xml/i)||[])[1]||"0",10);
+      return na-nb;
+    });
+  if(!slideFiles.length)return[];
+  const parser=new DOMParser();
+  const slides=[];
+  for(let i=0;i<slideFiles.length;i++){
+    const xmlStr=await zip.files[slideFiles[i]].async("string");
+    const xmlDoc=parser.parseFromString(xmlStr,"application/xml");
+    const paragraphs=[...xmlDoc.getElementsByTagNameNS("*","p")];
+    const lines=paragraphs.map(p=>{
+      const runs=[...p.getElementsByTagNameNS("*","t")].map(t=>t.textContent||"").join("");
+      return runs.trim();
+    }).filter(Boolean);
+    slides.push({
+      index:i+1,
+      text:lines.length?lines.join("\n"):A("شريحة تحتوي على عناصر بصرية/رسومية — استخدم مشاركة الشاشة لعرضها كاملة.","Slide contains visual/graphic elements — use screen share to view full visual layout.")
+    });
+  }
+  return slides;
+}
 
 function touchPresence(active=true){
   if(!db||!st.user)return;
@@ -430,6 +508,9 @@ function attachMediaElements(){
     zvv.volume=ZS.speaker?1:0;
     zvv.play?.().catch(()=>{});
   }
+  if(ZS.sharedType==="pdf"&&ZS.pdfDoc){
+    renderPdfPageToCanvas(ZS.pdfPage);
+  }
 }
 
 function zroom(){
@@ -437,7 +518,8 @@ function zroom(){
   const initial=esc(myName.trim().charAt(0).toUpperCase()||"ن");
   const hasScreen=!!ZS.scr;
   const hasCam=!!(ZS.cam&&ZS.cam1&&!ZS.audioOnly);
-  const hasAnyVisual=hasScreen||hasCam||!!ZS.sharedImg||!!ZS.sharedVid||!!ZS.sharedPdf||!!ZS.sharedDoc;
+  const hasSharedDoc=!!ZS.sharedType;
+  const hasAnyVisual=hasScreen||hasCam||!!ZS.sharedImg||!!ZS.sharedVid||hasSharedDoc;
   const raisedList=Object.values(ZS.hands||{}).filter(h=>h.raised);
   const presList=Object.values(ZS.presence||{});
   const totalCount=Math.max(1,presList.length);
@@ -474,10 +556,12 @@ function zroom(){
   }else if(ZS.menu==="share"){
     popover=`<div class="z-popover" data-zpop="1">
       <div class="z-pop-handle"></div>
+      <button type="button" class="z-pop-item" data-a="zscr"><span>🖥 ${A("مشاركة الشاشة كاملة (4K)","Share full screen (4K)")}</span><span>${hasScreen?A("إيقاف","Stop"):"↑"}</span></button>
+      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p=".pdf,application/pdf"><span>📕 ${A("مشاركة ملف PDF (صفحة بصفحة)","Share PDF file")}</span></button>
+      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p=".pptx,.ppt,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.ms-powerpoint"><span>📊 ${A("مشاركة عرض PowerPoint","Share PowerPoint")}</span></button>
       <button type="button" class="z-pop-item" data-a="zpickmedia" data-p="image/*"><span>🖼 ${A("مشاركة صورة","Share photo")}</span></button>
       <button type="button" class="z-pop-item" data-a="zpickmedia" data-p="video/*"><span>🎬 ${A("مشاركة مقطع فيديو","Share video")}</span></button>
-      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p=".pdf,.ppt,.pptx,application/pdf"><span>📄 ${A("مشاركة ملف / PowerPoint","Share file / PowerPoint")}</span></button>
-      <button type="button" class="z-pop-item" data-a="zscr"><span>🖥 ${A("مشاركة الشاشة (4K)","Share screen (4K)")}</span><span>${hasScreen?A("إيقاف","Stop"):"↑"}</span></button>
+      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p="*/*"><span>📁 ${A("مشاركة أي ملف آخر","Share any file")}</span></button>
       <div style="height:1px;background:#323644;margin:4px 0"></div>
       <button type="button" class="z-pop-item" data-a="ztoggleopt" data-p="shareAudio"><span>🔊 ${A("الصوت","Audio")}</span><span class="z-switch${ZS.shareAudio?" on":""}"></span></button>
       ${hasAnyVisual?`<button type="button" class="z-pop-item" style="color:#fca5a5" data-a="zclearshare"><span>✕ ${A("إيقاف المشاركة الحالية","Stop current share")}</span></button>`:""}
@@ -530,38 +614,48 @@ function zroom(){
       tiles.push(`<div class="z-tile main-share"><video id="zsv" autoplay playsinline></video><span class="z-tag-lbl">🖥 ${A("مشاركة الشاشة 4K","4K Screen share")}</span></div>`);
     }
     if(ZS.sharedVid){
-      tiles.push(`<div class="z-tile main-share"><video id="z-shared-vid" src="${esc(ZS.sharedVid)}" controls autoplay playsinline></video><span class="z-tag-lbl">🎬 ${A("مقطع فيديو مشارك","Shared video")}</span></div>`);
+      tiles.push(`<div class="z-tile main-share"><video id="z-shared-vid" src="${esc(ZS.sharedVid)}" controls autoplay playsinline></video><span class="z-tag-lbl">🎬 ${esc(ZS.sharedName||A("مقطع فيديو مشارك","Shared video"))}</span></div>`);
     }
     if(ZS.sharedImg){
-      tiles.push(`<div class="z-tile main-share"><img src="${esc(ZS.sharedImg)}" alt=""><span class="z-tag-lbl">🖼 ${A("صورة مشاركة","Shared photo")}</span></div>`);
+      tiles.push(`<div class="z-tile main-share"><img src="${esc(ZS.sharedImg)}" alt="${esc(ZS.sharedName||"")}"><span class="z-tag-lbl">🖼 ${esc(ZS.sharedName||A("صورة مشاركة","Shared photo"))}</span></div>`);
     }
-    if(ZS.sharedPdf){
+    if(ZS.sharedType==="pdf"){
       tiles.push(`<div class="z-tile main-share"><div class="z-doc-box">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-          <b>📄 ${esc(ZS.sharedDoc||"PDF")} · ${A("صفحة","Page")} ${ZS.pdfPage}</b>
+          <b>📕 ${esc(ZS.sharedName||"PDF")} · <span id="z-pdf-page-lbl">${A("صفحة","Page")} ${ZS.pdfPage} / ${ZS.pdfNumPages}</span></b>
           <div class="row" style="margin:0">
             <button type="button" class="z-btn on" style="height:30px;padding:0 10px;font-size:12px" data-a="zpdfpage" data-p="-1">◀ ${A("سابقة","Prev")}</button>
             <button type="button" class="z-btn on" style="height:30px;padding:0 10px;font-size:12px" data-a="zpdfpage" data-p="1">${A("تالية","Next")} ▶</button>
-            <a class="z-btn" style="height:30px;padding:0 10px;font-size:12px;text-decoration:none" href="${esc(ZS.sharedPdf)}" target="_blank" rel="noopener">↗ ${A("فتح الملف","Open file")}</a>
+            <a class="z-btn" style="height:30px;padding:0 10px;font-size:12px;text-decoration:none" href="${esc(ZS.sharedUrl)}" target="_blank" rel="noopener">↗ ${A("فتح في تبويب","Open tab")}</a>
           </div>
         </div>
-        <iframe class="z-doc-frame" src="${esc(ZS.sharedPdf)}#page=${ZS.pdfPage}"></iframe>
+        <div id="z-pdf-wrap" class="z-pdf-wrap"><canvas id="z-pdf-canvas"></canvas></div>
       </div></div>`);
-    }
-    if(ZS.sharedDoc&&!ZS.sharedPdf){
+    }else if(ZS.sharedType==="pptx"){
+      const curSlide=ZS.slides[ZS.slideIdx-1]||{index:ZS.slideIdx,text:A("شريحة عرض تقديمي","Presentation slide")};
       tiles.push(`<div class="z-tile main-share"><div class="z-slide-card">
-        <div class="z-pill">PowerPoint / ${A("عرض تقديمي","Presentation")} · ${A("شريحة","Slide")} ${ZS.slideIdx}</div>
-        <div style="font-size:20px;font-weight:700">${esc(ZS.sharedDoc)}</div>
-        <div class="sub" style="font-size:13px">${A("قلّب الشرائح من هنا أو افتح العرض بوضع ملء الشاشة (F5) في جهازك","Flip slides here or open full-screen slideshow (F5) on your device")}</div>
+        <div class="z-pill">📊 PowerPoint · ${esc(ZS.sharedName||"")} · ${A("شريحة","Slide")} ${curSlide.index} / ${Math.max(1,ZS.slides.length)}</div>
+        <div class="z-slide-lines">${esc(curSlide.text)}</div>
         <div class="row" style="justify-content:center">
           <button type="button" class="z-btn on" data-a="zslide" data-p="-1">◀ ${A("السابق","Prev")}</button>
           <button type="button" class="z-btn on" data-a="zslide" data-p="1">${A("التالي","Next")} ▶</button>
+          <a class="z-btn" style="text-decoration:none" href="${esc(ZS.sharedUrl)}" download="${esc(ZS.sharedName||"presentation.pptx")}">⬇ ${A("تنزيل الملف","Download")}</a>
+        </div>
+      </div></div>`);
+    }else if(ZS.sharedType==="text"||ZS.sharedType==="other"){
+      tiles.push(`<div class="z-tile main-share"><div class="z-slide-card">
+        <div class="z-pill">📄 ${esc(ZS.sharedName||A("ملف مشارك","Shared file"))}</div>
+        ${ZS.textContent?`<div class="z-slide-lines">${esc(ZS.textContent)}</div>`:`<div class="sub">${A("تم إرفاق الملف بنجاح. يمكنك تنزيله أو مشاركة شاشتك لعرضه مباشرة.","File attached. Download it or use screen share to display it live.")}</div>`}
+        <div class="row" style="justify-content:center">
+          <a class="z-btn on" style="text-decoration:none" href="${esc(ZS.sharedUrl)}" target="_blank" rel="noopener">↗ ${A("فتح الملف","Open file")}</a>
+          <a class="z-btn" style="text-decoration:none" href="${esc(ZS.sharedUrl)}" download="${esc(ZS.sharedName||"file")}">⬇ ${A("تنزيل","Download")}</a>
         </div>
       </div></div>`);
     }
+
     if(hasCam){
       tiles.push(`<div class="z-tile cam-tile"><video id="zv" autoplay playsinline muted></video><span class="z-tag-lbl">${myName}${ZS.hand?" ✋":""}</span></div>`);
-    }else{
+    }else if(!hasSharedDoc&&!ZS.sharedImg&&!ZS.sharedVid&&!hasScreen){
       tiles.push(`<div class="z-tile"><div class="z-avatar-card"><div class="z-avatar-circle">${initial}</div><small>${myName}${ZS.hand?" ✋":""}</small></div></div>`);
     }
     stageContent=`<div class="z-media-grid">${tiles.join("")}</div>`;
@@ -831,38 +925,71 @@ const ACT={
  },
  zpickmedia(accept){
   const fi=$("z-media-input");if(!fi)return;
-  fi.accept=accept||"image/*,video/*,.pdf,application/pdf";
+  fi.accept=accept||"*/*";
   fi.onchange=async()=>{
     const file=fi.files?.[0];if(!file)return;
     const realName=String(file.name||A("ملف مرفق","Attached file")).split(/[/\\]/).pop()||A("ملف مرفق","Attached file");
     ZS.menu=null;ZS.audioOnly=0;
-    ZS.sharedImg="";ZS.sharedVid="";ZS.sharedPdf="";ZS.sharedDoc="";ZS.pdfPage=1;ZS.slideIdx=1;
-    if(/^image\//.test(file.type)){
-      ZS.sharedImg=URL.createObjectURL(file);
-    }else if(/^video\//.test(file.type)){
-      ZS.sharedVid=URL.createObjectURL(file);
-    }else if(/pdf/i.test(file.type)||/\.pdf$/i.test(realName)){
-      ZS.sharedPdf=URL.createObjectURL(file);
-      ZS.sharedDoc=realName;
-    }else{
-      ZS.sharedDoc=realName;
+    ZS.sharedImg="";ZS.sharedVid="";ZS.sharedUrl=URL.createObjectURL(file);ZS.sharedName=realName;ZS.sharedType="";
+    ZS.pdfDoc=null;ZS.pdfNumPages=1;ZS.pdfPage=1;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";
+    try{
+      if(/^image\//.test(file.type)){
+        ZS.sharedImg=ZS.sharedUrl;
+        ZS.sharedType="img";
+      }else if(/^video\//.test(file.type)){
+        ZS.sharedVid=ZS.sharedUrl;
+        ZS.sharedType="video";
+      }else if(/pdf/i.test(file.type)||/\.pdf$/i.test(realName)){
+        ZS.sharedType="pdf";
+        const pdfjs=await loadPdfJs();
+        const buf=await file.arrayBuffer();
+        ZS.pdfDoc=await pdfjs.getDocument({data:buf}).promise;
+        ZS.pdfNumPages=ZS.pdfDoc.numPages||1;
+        ZS.pdfPage=1;
+      }else if(/\.pptx$/i.test(realName)||/presentationml/i.test(file.type)){
+        ZS.sharedType="pptx";
+        ZS.slides=await parsePptxSlides(file);
+        ZS.slideIdx=1;
+      }else if(/\.ppt$/i.test(realName)||/ms-powerpoint/i.test(file.type)){
+        ZS.sharedType="pptx";
+        ZS.slides=[{index:1,text:A("ملف PowerPoint قديم (.ppt) — يُنصح بتصديره إلى (.pptx) أو PDF لعرض الشرائح تلقائياً، أو استخدام مشاركة الشاشة.","Legacy .ppt file — export to .pptx or PDF for automatic slide rendering, or use screen share.")}];
+        ZS.slideIdx=1;
+      }else if(/^(text\/|application\/(json|xml|javascript))|\.(txt|csv|md|json|html|log)$/i.test(file.type+" "+realName)){
+        ZS.sharedType="text";
+        ZS.textContent=(await file.text()).slice(0,12000);
+      }else{
+        ZS.sharedType="other";
+      }
+      draw();
+      toast("✅ "+A("تم فتح: ","Opened: ")+realName);
+    }catch(err){
+      console.error(err);
+      ZS.sharedType="other";
+      draw();
+      toast("⚠️ "+A("تعذر عرض محتوى الملف داخلياً، يمكنك فتحه أو تنزيله","Could not render preview inline; open or download file"));
     }
-    draw();
     fi.value="";
   };
   fi.click();
  },
- zpdfpage(step){
-  ZS.pdfPage=Math.max(1,ZS.pdfPage+(+step||1));
-  draw();
+ async zpdfpage(step){
+  if(!ZS.pdfDoc)return;
+  const next=Math.max(1,Math.min(ZS.pdfNumPages,ZS.pdfPage+(+step||1)));
+  if(next===ZS.pdfPage)return;
+  ZS.pdfPage=next;
+  await renderPdfPageToCanvas(next);
  },
  zslide(step){
-  ZS.slideIdx=Math.max(1,ZS.slideIdx+(+step||1));
+  const maxS=Math.max(1,ZS.slides.length||1);
+  ZS.slideIdx=Math.max(1,Math.min(maxS,ZS.slideIdx+(+step||1)));
   draw();
  },
  zclearshare(){
   if(ZS.scr){ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null}
-  ZS.sharedImg="";ZS.sharedVid="";ZS.sharedPdf="";ZS.sharedDoc="";ZS.pdfPage=1;ZS.slideIdx=1;ZS.menu=null;draw();
+  if(ZS.sharedUrl&&ZS.sharedUrl.startsWith("blob:")){try{URL.revokeObjectURL(ZS.sharedUrl)}catch(e){}}
+  ZS.sharedImg="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedName="";ZS.sharedType="";
+  ZS.pdfDoc=null;ZS.pdfNumPages=1;ZS.pdfPage=1;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";
+  ZS.menu=null;draw();
  },
  zleave(){zStop();toast(A("تمت مغادرة الجلسة","Left session"));go("dashboard")},
 
