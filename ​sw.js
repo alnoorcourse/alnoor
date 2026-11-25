@@ -13,40 +13,12 @@ function resolveSafeUrl(relativeOrUrl, fallbackPath) {
   const base = self.location.href;
   try {
     const candidate = new URL(String(relativeOrUrl || fallbackPath), base);
-    if (candidate.origin === self.location.origin) {
-      return candidate.href;
+    if (candidate.origin !== self.location.origin) {
+      return new URL(fallbackPath, base).href;
     }
-  } catch (_) {}
-  return new URL(fallbackPath, base).href;
-}
-
-function resolveInboxTargetUrl(rawUrl) {
-  const fallback = new URL(INBOX_PAGE_PATH, self.location.href);
-  if (!rawUrl) return fallback.href;
-
-  try {
-    const resolved = new URL(resolveSafeUrl(rawUrl, fallback.href));
-    if (resolved.hash === "#inbox" && resolved.pathname.endsWith("/index.html")) {
-      return fallback.href;
-    }
-    return resolved.href;
-  } catch (_) {
-    return fallback.href;
-  }
-}
-
-function parsePushPayload(event) {
-  if (!event || !event.data) return {};
-  try {
-    const parsed = event.data.json();
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch (_) {
-    try {
-      const text = String(event.data.text() || "").trim();
-      return text ? { body: text } : {};
-    } catch (__) {
-      return {};
-    }
+    return candidate.href;
+  } catch (e) {
+    return new URL(fallbackPath, base).href;
   }
 }
 
@@ -59,85 +31,41 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  event.waitUntil((async () => {
-    const payload = parsePushPayload(event);
-    const rawId = typeof payload.id === "string" && payload.id.trim()
-      ? payload.id.trim()
-      : `msg-${Date.now()}`;
-    const id = rawId.slice(0, 180);
-    const tag = `alnoor-${id}`;
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch (e) {
+    payload = { body: event.data ? event.data.text() : "" };
+  }
 
-    const existing = await self.registration.getNotifications({ tag });
-    if (existing && existing.length > 0) return;
+  const title = payload.title || "منصة النور";
+  const body = payload.body || "لديك رسالة جديدة في صندوق الرسائل.";
+  const targetUrl = resolveSafeUrl(payload.url, INDEX_INBOX_HASH);
 
-    const title = typeof payload.title === "string" && payload.title.trim()
-      ? payload.title.trim().slice(0, 120)
-      : "منصة النور · رسالة جديدة";
+  const options = {
+    body,
+    icon: resolveSafeUrl(payload.icon, DEFAULT_ICON_PATH),
+    badge: resolveSafeUrl(payload.badge, DEFAULT_BADGE_PATH),
+    data: { url: targetUrl }
+  };
 
-    // Keep lock-screen notification generic so private message text or group links stay protected until inbox opens.
-    const body = typeof payload.body === "string" && payload.body.trim()
-      ? payload.body.trim().slice(0, 220)
-      : "وصلك تحديث في صندوق الرسائل. افتح المنصة لقراءة الرسالة والرابط.";
-
-    const targetUrl = resolveInboxTargetUrl(payload.url);
-    const icon = resolveSafeUrl(payload.icon, DEFAULT_ICON_PATH);
-    const badge = resolveSafeUrl(payload.badge, DEFAULT_BADGE_PATH);
-
-    await self.registration.showNotification(title, {
-      body,
-      icon,
-      badge,
-      tag,
-      renotify: false,
-      data: {
-        id,
-        url: targetUrl
-      }
-    });
-  })());
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  event.waitUntil((async () => {
-    const defaultInboxUrl = new URL(INBOX_PAGE_PATH, self.location.href);
-    const indexInboxUrl = new URL(INDEX_INBOX_HASH, self.location.href);
-    const requestedUrl = event.notification?.data?.url
-      ? new URL(resolveInboxTargetUrl(event.notification.data.url))
-      : defaultInboxUrl;
+  const rawUrl = event.notification.data?.url || INDEX_INBOX_HASH;
+  const targetUrl = resolveSafeUrl(rawUrl, INDEX_INBOX_HASH);
 
-    const clientsList = await self.clients.matchAll({
-      type: "window",
-      includeUncontrolled: true
-    });
-
-    // Reuse an existing platform tab only if it is not currently in an active lecture room.
-    const reusableClient = clientsList.find((client) => {
-      try {
-        const current = new URL(client.url);
-        const sameOrigin = current.origin === defaultInboxUrl.origin;
-        const isInboxOrIndex =
-          current.pathname === defaultInboxUrl.pathname ||
-          current.pathname === indexInboxUrl.pathname;
-        const inLecture = current.hash.startsWith(LECTURE_HASH_PREFIX);
-        return sameOrigin && isInboxOrIndex && !inLecture;
-      } catch (_) {
-        return false;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if ("focus" in client) {
+          client.navigate(targetUrl).catch(() => {});
+          return client.focus();
+        }
       }
-    });
-
-    if (reusableClient) {
-      if (typeof reusableClient.navigate === "function" && reusableClient.url !== requestedUrl.href) {
-        await reusableClient.navigate(requestedUrl.href);
-      }
-      if (typeof reusableClient.focus === "function") {
-        await reusableClient.focus();
-      }
-      return;
-    }
-
-    if (typeof self.clients.openWindow === "function") {
-      await self.clients.openWindow(requestedUrl.href);
-    }
-  })());
+      return self.clients.openWindow(targetUrl);
+    })
+  );
 });
