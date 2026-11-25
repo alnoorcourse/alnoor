@@ -208,7 +208,27 @@ const ads=()=>st.seeded?st.ads:DEF_ADS;
 const about=()=>st.seeded?st.about:(st.about||DEF_ABOUT);
 function team(){const map=new Map(st.team.map(x=>[x.id,x]));return DEF_TEAM.map(d=>({...d,...(map.get(d.id)||{})}))}
 
-function toast(m){const e=$("toast");if(!e)return;e.textContent=m;e.className="show";clearTimeout(toast.t);toast.t=setTimeout(()=>e.className="",2600)}
+function toast(m){const e=$("toast");if(!e)return;e.textContent=m;e.className="show";clearTimeout(toast.t);toast.t=setTimeout(()=>e.className="",3600)}
+function mediaErrorMsg(err,kind="both"){
+  const dev=kind==="mic"?A("المايكروفون","microphone"):kind==="cam"?A("الكاميرا","camera"):A("المايكروفون أو الكاميرا","microphone or camera");
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    return A(`المتصفح لا يدعم الوصول إلى ${dev} في هذا الاتصال (تأكد من فتح الصفحة عبر HTTPS).`,`Your browser does not support ${dev} access here (use HTTPS).`);
+  }
+  const name=err?.name||"";
+  if(name==="NotAllowedError"||name==="PermissionDeniedError"){
+    return A(`تم منع الوصول إلى ${dev} من المتصفح أو إعدادات النظام. افتح إعدادات الموقع/الجهاز واسمح باستخدام ${dev} ثم أعد المحاولة.`,`Access to ${dev} was blocked by the browser or system settings. Allow ${dev} in site/system settings and try again.`);
+  }
+  if(name==="NotFoundError"||name==="DevicesNotFoundError"){
+    return A(`لم يتم العثور على ${dev} متصل بالجهاز.`,`No ${dev} was found on this device.`);
+  }
+  if(name==="NotReadableError"||name==="TrackStartError"){
+    return A(`تعذر تشغيل ${dev} لأنه مستخدم في تطبيق أو تبويب آخر. أغلق التطبيقات الأخرى وأعد المحاولة.`,`${dev} is busy in another app or tab. Close other apps using it and try again.`);
+  }
+  if(name==="OverconstrainedError"||name==="ConstraintNotSatisfiedError"){
+    return A(`إعدادات الجودة المطلوبة غير مدعومة على ${dev}، جرّب جودة أقل.`,`Requested quality is not supported by ${dev}; try a lower resolution.`);
+  }
+  return A(`تعذر الوصول إلى ${dev}: تحقق من صلاحيات المتصفح والنظام وتوصيل الجهاز.`,`Could not access ${dev}: check browser/system permissions and device connection.`);
+}
 async function run(f,msg,b){if(!db)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));if(b)b.disabled=true;
   try{await f();toast("✅ "+(msg||A("تم الحفظ بنجاح","Saved successfully")))}catch(e){console.error(e);toast("⚠️ "+A("تعذر الحفظ: ","Save failed: ")+(e.code||e.message))}finally{if(b)b.disabled=false}}
 const igC=h=>{h=String(h||"").trim();const m=h.match(/instagram\.com\/([A-Za-z0-9._]+)/i);if(m)h=m[1];return h.replace(/^@/,"").replace(/[^A-Za-z0-9._]/g,"")};
@@ -1203,6 +1223,7 @@ document.addEventListener("pointerup",()=>{dragCrop=null});
 
 async function ensureMic(){
   if(ZS.micStream&&ZS.micStream.active)return ZS.micStream;
+  if(!navigator.mediaDevices?.getUserMedia)throw new Error("Unsupported");
   const s=await navigator.mediaDevices.getUserMedia({
     audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1,sampleRate:48000},
     video:false
@@ -1213,6 +1234,7 @@ async function ensureMic(){
 }
 async function ensureCam(){
   if(ZS.cam&&ZS.cam.active)return ZS.cam;
+  if(!navigator.mediaDevices?.getUserMedia)throw new Error("Unsupported");
   const h=ZS.batterySaver?720:1080,w=ZS.batterySaver?1280:1920,fps=ZS.batterySaver?24:30;
   const s=await navigator.mediaDevices.getUserMedia({
     video:{width:{ideal:w},height:{ideal:h},frameRate:{ideal:fps},facingMode:"user"},
@@ -1484,10 +1506,10 @@ const ACT={
     draw();
     const s=ZS.cam.getVideoTracks()[0]?.getSettings();
     if(s?.width)zs((s.width||1280)+"×"+(s.height||720));
-  }catch(e){toast("⚠️")}
+  }catch(e){toast("⚠️ "+mediaErrorMsg(e,"cam"))}
  },
  async zquickmic(){
-  if(!st.adm&&!ZS.roomCtrl.allowMic)return toast("🔇");
+  if(!st.adm&&!ZS.roomCtrl.allowMic)return toast("🔇 "+A("الإدارة أوقفت المايكروفون مؤقتاً للطلاب","Host temporarily muted student microphones"));
   try{
     const ms=await ensureMic();
     const tr=ms.getAudioTracks()[0];
@@ -1495,11 +1517,11 @@ const ACT={
     ZS.mic=1;
     await syncTracksToPeers();
     draw();
-  }catch(e){toast("⚠️")}
+  }catch(e){toast("⚠️ "+mediaErrorMsg(e,"mic"))}
  },
  async zt(k){
   if(k==="mic"){
-    if(!st.adm&&!ZS.roomCtrl.allowMic&&!ZS.mic)return toast("🔇");
+    if(!st.adm&&!ZS.roomCtrl.allowMic&&!ZS.mic)return toast("🔇 "+A("الإدارة أوقفت المايكروفون مؤقتاً للطلاب","Host temporarily muted student microphones"));
     try{
       const next=ZS.mic?0:1;
       const ms=await ensureMic();
@@ -1507,7 +1529,7 @@ const ACT={
       ZS.mic=next;
       await syncTracksToPeers();
       draw();
-    }catch(e){toast("⚠️")}
+    }catch(e){toast("⚠️ "+mediaErrorMsg(e,"mic"))}
     return;
   }
   if(k==="cam1"){
@@ -1521,7 +1543,7 @@ const ACT={
         draw();
         const s=ZS.cam.getVideoTracks()[0]?.getSettings();
         if(s?.width)zs(s.width+"×"+s.height);
-      }catch(e){toast("⚠️")}
+      }catch(e){toast("⚠️ "+mediaErrorMsg(e,"cam"))}
     }else{
       ZS.cam1=0;
       if(ZS.cam)ZS.cam.getVideoTracks().forEach(t=>{t.enabled=false});
@@ -1545,7 +1567,7 @@ const ACT={
     return;
   }
   if(!navigator.mediaDevices?.getDisplayMedia){
-    toast("⚠️");
+    toast("⚠️ "+A("مشاركة الشاشة غير مدعومة في هذا المتصفح أو الجهاز","Screen sharing is not supported in this browser or device"));
     return;
   }
   try{
@@ -1568,7 +1590,7 @@ const ACT={
     await syncTracksToPeers();
     syncStageToCloud({screenActive:true});
     toast("✅");
-  }catch(e){toast("⚠️")}
+  }catch(e){toast("⚠️ "+mediaErrorMsg(e,"both"))}
  },
  async zrec(b){
   if(ZS.rec&&ZS.rec.state!=="inactive"){ZS.rec.stop();return}
@@ -1577,9 +1599,9 @@ const ACT={
   if(ZS.scr)tracks.push(...ZS.scr.getVideoTracks(),...ZS.scr.getAudioTracks());
   else if(ZS.cam&&ZS.cam1)tracks.push(...ZS.cam.getVideoTracks());
   if(ZS.micStream&&ZS.mic)tracks.push(...ZS.micStream.getAudioTracks());
-  if(!tracks.length)return toast("⚠️");
+  if(!tracks.length)return toast("⚠️ "+A("لا يوجد صوت أو صورة نشطة للتسجيل","No active audio or video to record"));
   const mt=["video/webm;codecs=vp9,opus","video/webm","video/mp4"].find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m));
-  if(!mt)return toast("⚠️");
+  if(!mt)return toast("⚠️ "+A("التسجيل غير مدعوم في هذا المتصفح","Recording is not supported in this browser"));
   ZS.ch=[];
   const r=new MediaRecorder(new MediaStream(tracks),{mimeType:mt,videoBitsPerSecond:8000000,audioBitsPerSecond:128000});
   ZS.rec=r;
@@ -1609,7 +1631,7 @@ const CHG={
       const s=target.getSettings();
       zs((s.width||q[0])+"×"+(s.height||q[1]));
       toast("✅");
-    }catch(e){toast("⚠️")}
+    }catch(e){toast("⚠️ "+mediaErrorMsg(e,"cam"))}
   }
 };
 
