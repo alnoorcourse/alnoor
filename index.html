@@ -2551,3 +2551,85 @@ draw();
 </script>
 </body>
 </html>
+(() => {
+  const patchInboxRuntime = () => {
+    if (typeof db === "undefined" || typeof auth === "undefined") return;
+
+    window.reloadInboxNow = async function reloadInboxNow(targetUser) {
+      const u = targetUser || auth.currentUser || (typeof st !== "undefined" ? st.user : null);
+      if (!u || !u.uid) return [];
+      try {
+        const notifRef = collection(db, "notifications");
+        const buckets = new Map();
+
+        const pullBucket = async (key, recipientValue) => {
+          try {
+            const qOrdered = query(
+              notifRef,
+              where("recipient", "==", recipientValue),
+              orderBy("ts", "desc"),
+              limit(100)
+            );
+            const snap = await getDocs(qOrdered);
+            buckets.set(key, snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+          } catch (e) {
+            if (e?.code === "failed-precondition") {
+              const qSimple = query(
+                notifRef,
+                where("recipient", "==", recipientValue),
+                limit(100)
+              );
+              const snap = await getDocs(qSimple);
+              buckets.set(key, snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+            } else {
+              throw e;
+            }
+          }
+        };
+
+        await Promise.all([pullBucket("user", u.uid), pullBucket("all", "all")]);
+
+        const merged = new Map();
+        buckets.forEach((list) => list.forEach((item) => merged.set(item.id, item)));
+        const list = Array.from(merged.values())
+          .sort((a, b) => Number(b.ts || 0) - Number(a.ts || 0))
+          .slice(0, 100);
+
+        if (typeof st !== "undefined") {
+          st.inbox = list;
+          st.inboxError = "";
+          if (typeof updateInboxBadge === "function") updateInboxBadge();
+          if (typeof route === "function" && typeof draw === "function" && route() === "inbox") {
+            draw();
+          }
+        }
+        return list;
+      } catch (err) {
+        console.error("Inbox patch load failed:", err);
+        if (typeof st !== "undefined") {
+          st.inboxError =
+            "تعذر تحميل الرسائل (" +
+            (err?.code || "error") +
+            "): " +
+            (err?.message || "تحقق من قواعد Firestore");
+          if (typeof route === "function" && typeof draw === "function" && route() === "inbox") {
+            draw();
+          }
+        }
+        return [];
+      }
+    };
+
+    if (typeof onAuthStateChanged === "function") {
+      onAuthStateChanged(auth, (u) => {
+        if (u && u.uid) {
+          setTimeout(() => {
+            window.reloadInboxNow(u);
+          }, 400);
+        }
+      });
+    }
+  };
+
+  setTimeout(patchInboxRuntime, 800);
+})();
