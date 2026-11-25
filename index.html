@@ -180,6 +180,7 @@ const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorag
 const st={lang:ls("lang")||"ar",user:null,adm:false,ready:false,regMode:false,me:{},regs:{},items:[],ads:[],team:[],lecs:[],revs:[],about:"",zoom:null,seeded:null,metaSrv:false,all:[],studs:[],filt:"",rs:0,fc:"",zok:0,crops:{}};
 const A=(a,e)=>st.lang=="ar"?a:e,L=s=>s.docs.map(d=>({id:d.id,...d.data()}));
 let AT=0,AI=0,un=[];
+const MY_SID=Math.random().toString(36).slice(2,10);
 
 const ok=!/^PASTE/.test(firebaseConfig.apiKey);let db,auth,pers;
 if(ok){const app=initializeApp(firebaseConfig);
@@ -311,7 +312,9 @@ async function loadJsZip(){
 const zoomBC=(typeof BroadcastChannel!=="undefined")?new BroadcastChannel("alnoor_zoom_live_v1"):null;
 
 const ZS={
-  cam:null,micStream:null,scr:null,vidShareStream:null,rec:null,ch:[],
+  cam:null,
+  sid:MY_SID,sigReady:0,tick:0,
+  micStream:null,scr:null,vidShareStream:null,rec:null,ch:[],
   hand:0,mic:0,cam1:0,speaker:1,shareAudio:1,audioOnly:0,batterySaver:0,captions:0,expanded:0,
   menu:null,side:null,
   sharedImg:"",sharedVid:"",sharedUrl:"",sharedType:"",
@@ -518,14 +521,18 @@ async function parsePptxSlides(file){
 }
 
 /* ---------- WebRTC (نسخة مُصلحة): صوت + كاميرا + مشاركة شاشة + فيديو ملف ---------- */
-const RTC_CFG={iceServers:[
-  {urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"},
-  {urls:["turn:openrelay.metered.ca:80","turn:openrelay.metered.ca:443","turn:openrelay.metered.ca:443?transport=tcp"],username:"openrelayproject",credential:"openrelayproject"}
+/* ضع هنا بيانات TURN الخاصة بك (مجاني من metered.ca أو Cloudflare) لأفضل ضمان. اتركه null إن لم يتوفر */
+const MY_TURN=null; /* مثال: {urls:["turn:HOST:80","turn:HOST:443","turns:HOST:443?transport=tcp"],username:"USER",credential:"PASS"} */
+const RTC_CFG={iceCandidatePoolSize:4,iceServers:[
+  {urls:["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:global.stun.twilio.com:3478"]},
+  ...(MY_TURN?[MY_TURN]:[]),
+  {urls:["turn:staticauth.openrelay.metered.ca:80","turn:staticauth.openrelay.metered.ca:443","turns:staticauth.openrelay.metered.ca:443?transport=tcp"],username:"openrelayproject",credential:"openrelayproject"},
+  {urls:["turn:openrelay.metered.ca:80","turn:openrelay.metered.ca:443","turns:openrelay.metered.ca:443?transport=tcp"],username:"openrelayproject",credential:"openrelayproject"}
 ]};
 /* كل اتصال فيه 4 مسارات ثابتة بنفس الترتيب عند الطرفين: مايك / كاميرا / شاشة(أو فيديو) / صوت الشاشة(أو الفيديو) */
 const RTC_ROLES=[["mic","audio"],["cam","video"],["screen","video"],["sys","audio"]];
 let rtcRedrawT=0,audioWarnT=0;
-function scheduleRtcRedraw(){clearTimeout(rtcRedrawT);rtcRedrawT=setTimeout(()=>{if(route()=="zoom-alnoor"&&$("zr"))draw()},200)}
+function scheduleRtcRedraw(){clearTimeout(rtcRedrawT);rtcRedrawT=setTimeout(()=>{const a=document.activeElement;if(a&&/INPUT|TEXTAREA/.test(a.tagName))return;if(route()=="zoom-alnoor"&&$("zr"))draw()},200)}
 
 function dropVidEl(){
   const v=ZS.vidEl;if(!v)return;
@@ -613,27 +620,32 @@ function closePeer(uid){
   syncAudioElements();scheduleRtcRedraw();
 }
 
-async function sendRtcSignal(toUid,type,data){
-  if(!db||!st.user||!toUid)return;
+const MESH=true; /* true: الكل يسمع الكل | false: الطالب يسمع الإدارة فقط */
+/* المتصل (caller) دائماً الإدارة، وبين طالبين الأصغر uid. هيك ما في تعارض عروض (glare) */
+const imCaller=(uid,peerAdmin)=>st.adm?true:(peerAdmin?false:st.user.uid<uid);
+const newId=()=>Math.random().toString(36).slice(2,10);
+
+async function sendRtcSignal(c,type,data){
+  if(!db||!st.user||!c)return;
   try{
-    await addDoc(collection(db,"zoom_rtc"),{from:st.user.uid,fromName:displayName(),fromAdmin:!!st.adm,to:toUid,type,data:JSON.stringify(data),ts:Date.now()});
+    await addDoc(collection(db,"zoom_rtc"),{from:st.user.uid,fromName:displayName(),fromAdmin:!!st.adm,fromSid:ZS.sid,to:c.uid,toSid:c.sid||"",cid:c.cid,type,data:JSON.stringify(data),ts:Date.now()});
   }catch(e){
     console.error(e);
     if(!ZS.sigErr){ZS.sigErr=1;toast("⚠️ "+A("تعذر إرسال إشارات الاتصال: افتح قواعد Firestore واسمح بـ zoom_rtc","Cannot send signaling: allow zoom_rtc in Firestore rules"))}
   }
 }
 
-function getPeer(uid,name,isAdmin){
-  let c=ZS.peers.get(uid);if(c)return c;
+function makePeer(uid,name,isAdmin,sid,cid,caller){
   const pc=new RTCPeerConnection(RTC_CFG);
-  c={pc,uid,name:name||"",isAdmin:!!isAdmin,polite:st.user.uid<uid,makingOffer:false,ignoreOffer:false,pending:[],q:Promise.resolve(),born:Date.now(),tr:{}};
+  const c={pc,uid,sid:sid||"",cid,caller:!!caller,name:name||"",isAdmin:!!isAdmin,pending:[],q:Promise.resolve(),born:Date.now(),tr:{}};
   ZS.peers.set(uid,c);
   RTC_ROLES.forEach(([role,kind])=>{c.tr[role]=pc.addTransceiver(kind,{direction:"sendrecv"})});
   applyTracks(c);
-  pc.onicecandidate=ev=>{if(ev.candidate)sendRtcSignal(uid,"ice",ev.candidate.toJSON())};
+  pc.onicecandidate=ev=>{if(ev.candidate)sendRtcSignal(c,"ice",ev.candidate.toJSON())};
   pc.onnegotiationneeded=async()=>{
-    try{c.makingOffer=true;await pc.setLocalDescription();await sendRtcSignal(uid,"desc",pc.localDescription.toJSON())}
-    catch(e){console.error(e)}finally{c.makingOffer=false}
+    if(!c.caller)return; /* المستقبِل لا يرسل عروضاً أبداً */
+    try{await pc.setLocalDescription();await sendRtcSignal(c,"desc",pc.localDescription.toJSON())}
+    catch(e){console.error(e)}
   };
   pc.ontrack=ev=>{
     const role=Object.keys(c.tr).find(r=>c.tr[r]===ev.transceiver);
@@ -644,74 +656,88 @@ function getPeer(uid,name,isAdmin){
     ZS.remoteStreams.set(uid,info);
     syncAudioElements();scheduleRtcRedraw();
   };
-  pc.oniceconnectionstatechange=()=>{if(pc.iceConnectionState==="failed"){try{pc.restartIce()}catch(e){}}};
+  pc.oniceconnectionstatechange=()=>{
+    if(pc.iceConnectionState==="failed"&&c.caller){try{pc.restartIce()}catch(e){}}
+  };
   pc.onconnectionstatechange=()=>{
     const s=pc.connectionState;
-    if(s==="connected")Object.keys(c.tr).forEach(r=>tuneSender(c.tr[r].sender,r));
-    if(s==="failed"||s==="closed"){closePeer(uid);setTimeout(connectToPresentPeers,3000)}
+    if(s==="connected"){Object.keys(c.tr).forEach(r=>tuneSender(c.tr[r].sender,r));syncAudioElements()}
+    scheduleRtcRedraw();
+    if((s==="failed"||s==="closed")&&ZS.peers.get(uid)===c){closePeer(uid);setTimeout(connectToPresentPeers,2000)}
   };
   return c;
 }
 
-async function handleSignal(c,d){
-  const pc=c.pc;let data;
-  try{data=typeof d.data==="string"?JSON.parse(d.data):d.data}catch(e){return}
-  if(!data)return;
-  if(d.fromName)c.name=d.fromName;
-  if(d.fromAdmin)c.isAdmin=true;
+async function handleSignal(c,d,data){
+  const pc=c.pc;
   try{
     if(d.type==="desc"){
-      const collision=data.type==="offer"&&(c.makingOffer||pc.signalingState!=="stable");
-      c.ignoreOffer=!c.polite&&collision;
-      if(c.ignoreOffer)return;
       await pc.setRemoteDescription(data);
       for(const cand of c.pending.splice(0))await pc.addIceCandidate(cand).catch(()=>{});
       if(data.type==="offer"){
         await pc.setLocalDescription();
-        await sendRtcSignal(c.uid,"desc",pc.localDescription.toJSON());
+        await sendRtcSignal(c,"desc",pc.localDescription.toJSON());
       }
     }else if(d.type==="ice"){
-      if(pc.remoteDescription)await pc.addIceCandidate(data).catch(e=>{if(!c.ignoreOffer)console.warn(e)});
-      else if(!c.ignoreOffer)c.pending.push(data);
+      if(pc.remoteDescription)await pc.addIceCandidate(data).catch(e=>console.warn(e));
+      else c.pending.push(data);
     }
   }catch(e){console.error(e)}
 }
 
+function routeSignal(d){
+  let data;try{data=JSON.parse(d.data)}catch(e){return}
+  if(!data)return;
+  const isOffer=d.type==="desc"&&data.type==="offer";
+  let c=ZS.peers.get(d.from);
+  if(c&&c.cid!==d.cid){
+    if(c.caller)return;              /* أنا المتصل: أتجاهل ردود اتصال قديم */
+    if(isOffer){closePeer(d.from);c=null} /* المتصل بدأ اتصال جديد */
+    else return;
+  }
+  if(!c){
+    if(!isOffer)return;
+    if(imCaller(d.from,d.fromAdmin))return; /* أنا المفروض أبدأ، مش هو */
+    c=makePeer(d.from,d.fromName,d.fromAdmin,d.fromSid,d.cid,false);
+  }
+  if(d.fromName)c.name=d.fromName;
+  if(d.fromAdmin)c.isAdmin=true;
+  c.q=c.q.then(()=>handleSignal(c,d,data)).catch(()=>{});
+}
+
 function connectToPresentPeers(){
-  if(!ZS.joined||!st.user||!db)return;
-  Object.values(ZS.presence||{}).forEach(p=>{
-    if(!p.uid||p.uid===st.user.uid)return;
-    const c=getPeer(p.uid,p.name,p.isAdmin);
-    if(p.name)c.name=p.name;
-    if(p.isAdmin)c.isAdmin=true;
+  if(!ZS.joined||!ZS.sigReady||!st.user||!db)return;
+  const now=Date.now();
+  ZS.peers.forEach((c,uid)=>{
+    const p=ZS.presence?.[uid];
+    const gone=!p&&now-c.born>15000;
+    const newSess=p&&p.sid&&c.sid&&p.sid!==c.sid;
+    const stuck=c.caller&&c.pc.connectionState!=="connected"&&now-c.born>20000;
+    if(gone||newSess||stuck)closePeer(uid);
   });
-  [...ZS.peers.entries()].forEach(([uid,c])=>{
-    if(!ZS.presence[uid]&&Date.now()-c.born>15000)closePeer(uid);
+  Object.values(ZS.presence||{}).forEach(p=>{
+    if(!p.uid||p.uid===st.user.uid||!p.sid)return;
+    if(!MESH&&!st.adm&&!p.isAdmin)return;
+    if(!imCaller(p.uid,p.isAdmin))return;
+    const c=ZS.peers.get(p.uid);
+    if(c){if(p.name)c.name=p.name;return}
+    makePeer(p.uid,p.name,p.isAdmin,p.sid,newId(),true);
   });
 }
 
-function startRtcSignalingSub(onReady){
+function startRtcSignalingSub(){
   if(!db||!st.user)return;
   try{ZS.rtcUnsub?.()}catch(e){}
-  let first=true,tm=0;
-  const ready=()=>{if(!first)return;first=false;clearTimeout(tm);onReady&&onReady()};
-  tm=setTimeout(ready,3500);
   ZS.rtcUnsub=onSnapshot(query(collection(db,"zoom_rtc"),where("to","==",st.user.uid)),snap=>{
-    if(first){
-      /* أول لقطة من السيرفر = إشارات قديمة، نحذفها ونتجاهلها */
-      if(snap.metadata.fromCache)return;
-      snap.docs.forEach(x=>{ZS.seenSignals.add(x.id);deleteDoc(x.ref).catch(()=>{})});
-      ready();return;
-    }
     const adds=snap.docChanges().filter(x=>x.type==="added").map(x=>({id:x.doc.id,ref:x.doc.ref,d:x.doc.data()})).sort((a,b)=>(a.d.ts||0)-(b.d.ts||0));
     adds.forEach(({id,ref,d})=>{
       if(ZS.seenSignals.has(id))return;
       ZS.seenSignals.add(id);
       deleteDoc(ref).catch(()=>{});
       if(!d||!d.from||d.from===st.user.uid)return;
-      if(d.ts&&Date.now()-d.ts>120000)return;
-      const c=getPeer(d.from,d.fromName,d.fromAdmin);
-      c.q=c.q.then(()=>handleSignal(c,d)).catch(()=>{});
+      if(d.toSid!==ZS.sid)return; /* موجهة لجلسة قديمة */
+      if(!MESH&&!st.adm&&!d.fromAdmin)return;
+      routeSignal(d);
     });
   },err=>{console.error(err);toast("⚠️ "+A("تعذرت قراءة إشارات الاتصال: ","Signaling read failed: ")+(err.code||""))});
 }
@@ -754,6 +780,7 @@ function touchPresence(active=true){
   if(!db||!st.user)return;
   setDoc(doc(db,"zoom_presence",st.user.uid),{
     uid:st.user.uid,
+    sid:ZS.sid,
     name:displayName(),
     isAdmin:!!st.adm,
     active:!!active,
@@ -764,12 +791,16 @@ function touchPresence(active=true){
 function inRoom(){return !!st.user&&(st.adm||(!!st.zoom&&st.zok==st.zoom.ts))}
 function joinRoom(){
   if(ZS.joined||!db||!st.user)return;
-  ZS.joined=1;
-  startRtcSignalingSub(()=>{
-    touchPresence(true);
-    clearInterval(ZS.presenceTimer);
-    ZS.presenceTimer=setInterval(()=>{if(route()=="zoom-alnoor"&&st.user&&ZS.joined){touchPresence(true);connectToPresentPeers()}},25000);
-  });
+  ZS.joined=1;ZS.tick=0;
+  startRtcSignalingSub();
+  ZS.sigReady=1;
+  touchPresence(true);
+  clearInterval(ZS.presenceTimer);
+  ZS.presenceTimer=setInterval(()=>{
+    if(!(route()=="zoom-alnoor"&&st.user&&ZS.joined))return;
+    if(++ZS.tick%4==0)touchPresence(true);
+    connectToPresentPeers();
+  },6000);
 }
 
 function startZoomRealtimeSubs(){
@@ -791,7 +822,7 @@ function startZoomRealtimeSubs(){
 
   un.push(sub(collection(db,"zoom_presence"),s=>{
     const now=Date.now(),map={};
-    s.docs.forEach(d=>{const x=d.data();if(x.active&&(!x.lastSeen||now-x.lastSeen<75000))map[d.id]={uid:d.id,...x}});
+    s.docs.forEach(d=>{const x=d.data();if(x.active&&(!x.lastSeen||now-x.lastSeen<180000))map[d.id]={uid:d.id,...x}});
     const sig=Object.values(map).map(p=>p.uid+":"+(p.cam?1:0)+":"+(p.name||"")).sort().join("|");
     ZS.presChanged=sig!==ZS.presSig?1:0;
     ZS.presSig=sig;
@@ -851,7 +882,7 @@ if(ok){
   sub(collection(db,"ads"),s=>st.ads=L(s).sort((a,b)=>a.ts-b.ts),"ads");
   sub(collection(db,"team"),s=>{st.team=L(s);if(st.team.length)st.seeded=true},"team");
   sub(collection(db,"lecs"),s=>st.lecs=L(s).sort((a,b)=>a.ts-b.ts),"lecs");
-  onAuthStateChanged(auth,u=>{un.forEach(f=>f());un=[];zoomSubStarted=false;ZS.rtcSubStarted=false;ZS.joined=0;try{ZS.rtcUnsub?.()}catch(e){}clearInterval(ZS.presenceTimer);stopLiveFrameSync();st.user=u;st.adm=!!u&&(u.email||"").toLowerCase()==ADMIN_EMAIL.toLowerCase();st.me={};st.regs={};st.all=[];st.studs=[];st.revs=[];ZS.hands={};ZS.presence={};ZS.remoteStreams.clear();st.ready=true;
+  onAuthStateChanged(auth,u=>{un.forEach(f=>f());un=[];zoomSubStarted=false;ZS.rtcSubStarted=false;ZS.joined=0;try{ZS.rtcUnsub?.()}catch(e){}clearInterval(ZS.presenceTimer);stopLiveFrameSync();st.user=u;st.adm=!!u&&(u.email||"").toLowerCase()==ADMIN_EMAIL.toLowerCase();st.me={};st.regs={};st.all=[];st.studs=[];st.revs=[];ZS.hands={};ZS.presence={};ZS.peers.forEach(c=>{try{c.pc.close()}catch(e){}});ZS.peers.clear();ZS.sigReady=0;ZS.remoteStreams.clear();st.ready=true;
     if(u){un.push(sub(doc(db,"students",u.uid),s=>st.me=s.exists()?s.data():{},"me"),sub(doc(db,"regs",u.uid),s=>st.regs=s.exists()?s.data().list||{}:{},"me"));
       if(!st.adm)setDoc(doc(db,"students",u.uid),{email:u.email||"",last:Date.now()},{merge:true}).catch(()=>{});
       un.push(sub(st.adm?collection(db,"reviews"):query(collection(db,"reviews"),where("ok","==",true)),s=>st.revs=L(s).sort((a,b)=>b.ts-a.ts),"revs"));
@@ -1208,6 +1239,7 @@ function zroom(){
         <span>ZOOM ALNOOR</span>
         <span class="z-pill">${A("بث مباشر","Live")}</span>
         <span class="z-pill">👥 ${totalCount}</span>
+        ${(()=>{const a=[...ZS.peers.values()],n=a.filter(c=>c.pc.connectionState==="connected").length;return a.length?`<span class="z-pill">🔗 ${n}/${a.length}</span>`:""})()}
       </div>
       <div class="row" style="margin:0;align-items:center;gap:8px">
         <span class="z-meter">🎤<span class="z-bar"><i id="z-mic-bar"></i></span><span id="zst">${ZS.mic?A("المايك شغال","Mic on"):A("المايك مطفي","Mic off")}</span></span>
@@ -1258,7 +1290,8 @@ function vZm(){const z=st.zoom;
 const zs=m=>{const e=$("zst");if(e)e.textContent=m};
 
 function zStop(){
-  dropVidEl();ZS.joined=0;try{ZS.rtcUnsub?.()}catch(e){}ZS.rtcUnsub=null;
+  dropVidEl();ZS.sigReady=0;
+  ZS.joined=0;try{ZS.rtcUnsub?.()}catch(e){}ZS.rtcUnsub=null;
   stopAudioMeter();
   stopLiveFrameSync();
   clearInterval(ZS.presenceTimer);
@@ -1398,7 +1431,7 @@ const ACT={
  rv(p,b){const[id,v]=p.split("|");run(()=>updateDoc(doc(db,"reviews",id),{ok:v=="1"}),null,b)},
  csv(){const q=s=>'"'+String(s??"").replace(/"/g,'""')+'"',rows=st.all.filter(r=>!st.filt||r.item==st.filt),c="\ufeff"+"name,phone,email,type,title,price,status,date\n"+rows.map(r=>[r.name,r.phone,r.email,r.kind=="v"?"volunteering":"course",r.title,r.price,r.status||"pending",new Date(r.ts).toISOString()].map(q).join(",")).join("\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([c],{type:"text/csv"}));a.download="alnoor-registrations.csv";document.body.appendChild(a);a.click();a.remove()},
  async zenter(){const v=$("zin")?.value.trim().toUpperCase()||"";if(v&&await sha("zoom|"+v)==st.zoom?.h){st.zok=st.zoom.ts;draw()}else toast(A("الكود غير صحيح","Wrong code"))},
- async zcreate(b){let v=$("zc")?.value.trim().toUpperCase()||"";if(!v){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";v=[...crypto.getRandomValues(new Uint8Array(8))].map(x=>c[x%c.length]).join("")}run(async()=>{await setDoc(doc(db,"site","zoom"),{h:await sha("zoom|"+v),ts:Date.now()});ls("zc",v)},null,b)},
+ async zcreate(b){let v=$("zc")?.value.trim().toUpperCase()||"";if(!v){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";v=[...crypto.getRandomValues(new Uint8Array(8))].map(x=>c[x%c.length]).join("")}run(async()=>{await setDoc(doc(db,"site","zoom"),{h:await sha("zoom|"+v),ts:Date.now()});await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:true,ts:Date.now()},{merge:true});ls("zc",v)},null,b)},
  zclose(b){ls("zc","");run(()=>deleteDoc(doc(db,"site","zoom")),A("تم إغلاق المحاضرة","Lecture closed"),b)},
 
  zexpand(){ZS.expanded=ZS.expanded?0:1;ZS.menu=null;ZS.side=null;draw()},
