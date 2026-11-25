@@ -68,7 +68,6 @@ footer{background:var(--ink);color:var(--bg);text-align:center;padding:18px 14px
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import{initializeFirestore,persistentLocalCache,persistentMultipleTabManager,collection,doc,onSnapshot,setDoc,addDoc,updateDoc,deleteDoc,deleteField,query,where,writeBatch}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import{getAuth,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import{getStorage,ref,uploadBytes,getDownloadURL}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 /* ============ مفاتيح مشروع Alnoor Course في Firebase ============ */
 const firebaseConfig={
@@ -80,52 +79,47 @@ const firebaseConfig={
   appId:"1:146848688690:web:ba4550114efde495f56a2b",
   measurementId:"G-9E6Z1EHYTE"
 };
-/* إيميل الإدارة: يطابق المستخدم المضاف في Authentication وقواعد الأمان */
 const ADMIN_EMAIL="alnoorcourse0@gmail.com";
 /* ================================================================================================ */
 
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}};
-const st={lang:ls("lang")||"ar",user:null,adm:false,ready:false,me:{},regs:{},items:[],ads:[],team:[],lecs:[],revs:[],about:"",zoom:null,seeded:null,metaSrv:false,all:[],studs:[],filt:"",rs:0,fc:"",zok:0};
+const st={lang:ls("lang")||"ar",user:null,adm:false,ready:false,regMode:false,me:{},regs:{},items:[],ads:[],team:[],lecs:[],revs:[],about:"",zoom:null,seeded:null,metaSrv:false,all:[],studs:[],filt:"",rs:0,fc:"",zok:0};
 const A=(a,e)=>st.lang=="ar"?a:e,L=s=>s.docs.map(d=>({id:d.id,...d.data()}));
 let AT=0,AI=0,un=[];
 
-/* ---------- Firebase: Firestore (كاش محلي IndexedDB متعدد التبويبات) + Auth (جلسة دائمة) + Storage ---------- */
-const ok=!/^PASTE/.test(firebaseConfig.apiKey);let db,auth,stg,pers;
+const ok=!/^PASTE/.test(firebaseConfig.apiKey);let db,auth,pers;
 if(ok){const app=initializeApp(firebaseConfig);
   db=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});
-  auth=getAuth(app);stg=getStorage(app);pers=setPersistence(auth,browserLocalPersistence)}
+  auth=getAuth(app);pers=setPersistence(auth,browserLocalPersistence)}
 
-/* ---------- بيانات أولية (تُحمَّل مرة واحدة في Firestore ثم تصبح قابلة للتعديل/الحذف من الإدارة) ---------- */
 const DEF_ABOUT="منصة النور منصة تطوعية وتعليمية تجمع الطلاب في مكان واحد: تطوّع في الحملات، تدرّب في الدورات الوجاهية، وتابع المحاضرات والبث المباشر.";
-const DEF_ADS=[{id:"welcome",type:"text",title:"أهلاً بك في منصة النور 🌟",desc:"سجّل دخولك بالبريد وكلمة المرور، وأكمل ملفك الشخصي، وابدأ بالتطوع وحجز الدورات.",ts:1},
+const DEF_ADS=[{id:"welcome",type:"text",title:"أهلاً بك في منصة النور 🌟",desc:"أنشئ حسابك بالبريد ورمز من 6 أرقام ثم سجل دخولك لتصل إلى ملفك الشخصي والدورات والتطوعات.",ts:1},
 {id:"alert",type:"text",title:"تنبيه مهم",desc:"تابع الإعلانات باستمرار، وأكمل اسمك ورقم هاتفك في «لوحتي» قبل التسجيل في أي تطوع أو دورة.",ts:2}];
 const DEF_TEAM=["الأول","الثاني","الثالث","الرابع"].map((n,i)=>({id:"f"+(i+1),name:"المؤسس "+n,ig:"alnoor_course",photo:""}));
 const ads=()=>st.seeded?st.ads:DEF_ADS,team=()=>st.seeded?st.team:DEF_TEAM,about=()=>st.seeded?st.about:(st.about||DEF_ABOUT);
 
-/* ---------- أدوات ---------- */
-function toast(m){const e=$("toast");e.textContent=m;e.className="show";clearTimeout(toast.t);toast.t=setTimeout(()=>e.className="",2600)}
+function toast(m){const e=$("toast");e.textContent=m;e.className="show";clearTimeout(toast.t);toast.t=setTimeout(()=>e.className="",2800)}
 async function run(f,msg,b){if(!db)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));if(b)b.disabled=true;
   try{await f();toast("✅ "+(msg||A("تم الحفظ بنجاح","Saved successfully")))}catch(e){console.error(e);toast("⚠️ "+A("تعذر التنفيذ: ","Failed: ")+(e.code||e.message))}finally{if(b)b.disabled=false}}
 const igC=h=>{h=String(h||"").trim();const m=h.match(/instagram\.com\/([A-Za-z0-9._]+)/i);if(m)h=m[1];return h.replace(/^@/,"").replace(/[^A-Za-z0-9._]/g,"")};
 const ig=h=>(h=igC(h))?`<a class="ig" href="https://instagram.com/${h}" target="_blank" rel="noopener">@${h}</a>`:"";
-function compress(file,kb){return new Promise(res=>{if(!/^image\//.test(file.type)||/svg/.test(file.type))return res(file);const im=new Image(),u=URL.createObjectURL(file);
-  im.onload=()=>{const k=Math.min(1,1280/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);let q=.85;
-  (function t(){c.toBlob(b=>{if(!b||b.size/1024<=kb||q<=.4){URL.revokeObjectURL(u);res(b||file)}else{q-=.1;t()}},"image/jpeg",q)})()};im.onerror=()=>res(file);im.src=u})}
-async function blobToDataUrl(b){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result||""));r.onerror=rej;r.readAsDataURL(b)})}
-async function up(file){const b=await compress(file,140);
-  try{const ext=b.type=="image/jpeg"?"jpg":(file.name.split(".").pop()||"bin").toLowerCase(),r=ref(stg,"uploads/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"."+ext);
-    await uploadBytes(r,b,{contentType:b.type||file.type});return await getDownloadURL(r)}
-  catch(e){if(/^image\//.test(b.type||file.type)){const d=await blobToDataUrl(b);if(d.length<750000)return d}throw e}}
-const fdata=async(c,f)=>{const u=await up(f);return c=="team"?{photo:u}:c=="ads"?{src:u,type:f.type.startsWith("video")?"video":"img"}:{src:u}};
+function compressToDataUrl(file,maxW,maxH,maxLen){return new Promise((res,rej)=>{if(!file||!/^image\//.test(file.type)||/svg/.test(file.type))return rej(new Error(A("اختر صورة صحيحة","Choose a valid image")));
+  const im=new Image(),u=URL.createObjectURL(file);
+  im.onload=()=>{let w=im.width,h=im.height;const k=Math.min(1,maxW/w,maxH/h);w=Math.max(1,Math.round(w*k));h=Math.max(1,Math.round(h*k));
+    const c=document.createElement("canvas");let q=.82,out="";
+    (function step(){c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);out=c.toDataURL("image/jpeg",q);
+      if(out.length<=maxLen||q<=.35){if(out.length>maxLen&&w>240){w=Math.round(w*.75);h=Math.round(h*.75);q=.65;step()}else{URL.revokeObjectURL(u);res(out)}}else{q-=.12;step()}})()};
+  im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error(A("تعذر قراءة الصورة","Cannot read image")))};im.src=u})}
+const fdata=async(c,f)=>{const u=await compressToDataUrl(f,c=="team"?480:720,c=="team"?480:540,c=="team"?220000:320000);return c=="team"?{photo:u}:{src:u,type:"img"}};
 async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 function qr(seed){let s="",h=0;for(const ch of seed)h=(h*31+ch.charCodeAt(0))>>>0;for(let y=0;y<11;y++)for(let x=0;x<11;x++){const f=(x<3&&y<3)||(x>7&&y<3)||(x<3&&y>7);h=(h*1103515245+12345)>>>0;if(f||(h>>16)&1)s+=`<rect x="${x}" y="${y}" width="1" height="1"/>`}return`<svg class="qr" viewBox="0 0 11 11" fill="#000" role="img" aria-label="QR">${s}</svg>`}
 const none=()=>`<p class="sub">${A("لا يوجد بعد","Nothing yet")}</p>`,route=()=>location.hash.slice(1)||"dashboard",go=r=>location.hash=r;
 const tag=s=>`<span class="tag${s=="pending"?" r":""}">${s=="pending"?A("قيد الانتظار","Pending"):s=="ok"?A("مقبول","Accepted"):A("مكتمل","Done")}</span>`;
 const price=p=>p>0?`<span class="price">${p} ${A("د.أ","JD")}</span>`:`<span class="tag">${A("مجاني","Free")}</span>`;
 const stars=n=>"★".repeat(n)+"☆".repeat(5-n);
+const pin6=v=>/^\d{6}$/.test(String(v||"").trim());
 
-/* ---------- المستمعات الفورية (onSnapshot) ---------- */
 const sub=(q,cb,k)=>onSnapshot(q,s=>{cb(s);rd(k)},e=>{console.error(e);toast("⚠️ "+A("تعذرت المزامنة: ","Sync error: ")+e.code)});
 function rd(k){const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&$("app").contains(a))return;if(route()=="ads"&&k&&k!="ads")return;draw()}
 function chkSeed(){if(st.adm&&st.seeded===false&&st.metaSrv&&!st.seeding){st.seeding=1;run(async()=>{const b=writeBatch(db);DEF_ADS.forEach(({id,...d})=>b.set(doc(db,"ads",id),d));DEF_TEAM.forEach(({id,...d})=>b.set(doc(db,"team",id),d));b.set(doc(db,"site","about"),{text:DEF_ABOUT});b.set(doc(db,"site","meta"),{seeded:true});await b.commit()},A("تم تحميل البيانات الأولية","Starter data loaded"))}}
@@ -146,37 +140,41 @@ if(ok){
     draw()})
 }else{st.ready=true}
 
-/* ---------- حقول قابلة للتعديل (CRUD كامل) ---------- */
 const FS=c=>({ads:[["title",A("عنوان الإعلان","Ad title")],["desc",A("شرح الإعلان","Description")]],
- items:[["kind","","sel"],["t",A("العنوان","Title")],["p",A("المكان","Place")],["d",A("التاريخ","Date")],["price",A("السعر (0 = مجاني)","Price (0 = free)"),"number"]],
+ courses:[["t",A("عنوان الدورة","Course title")],["p",A("المكان","Place")],["d",A("التاريخ","Date")],["price",A("السعر (0 = مجاني)","Price (0 = free)"),"number"]],
+ vols:[["t",A("عنوان التطوع","Volunteering title")],["p",A("المكان","Place")],["d",A("التاريخ","Date")]],
  lecs:[["title",A("عنوان المحاضرة","Title")],["desc",A("شرح المحاضرة","Description")],["url",A("رابط https:// (اختياري)","https:// link (optional)")]],
  team:[["name",A("الاسم","Name")],["ig",A("حساب الانستغرام (اسم أو رابط)","Instagram (handle or link)")]]})[c];
-const inp=(id,[k,ph,ty],v)=>ty=="sel"?`<select id="${id}-${k}"><option value="v"${v=="v"?" selected":""}>${A("تطوع","Volunteering")}</option><option value="c"${v=="c"?" selected":""}>${A("دورة","Course")}</option></select>`:`<input id="${id}-${k}" type="${ty||"text"}" ${ty=="number"?'min="0" step="0.5"':""} placeholder="${esc(ph)}" value="${esc(v??"")}">`;
+const colOf=c=>c=="courses"||c=="vols"?"items":c;
+const inp=(id,[k,ph,ty],v,fixedKind)=>fixedKind?`<input type="hidden" id="${id}-${k}" value="${fixedKind}">`:`<input id="${id}-${k}" type="${ty||"text"}" ${ty=="number"?'min="0" step="0.5"':""} placeholder="${esc(ph)}" value="${esc(v??"")}">`;
 const ef=(c,o,acc)=>`<div class="fld">${FS(c).map(f=>inp(`e-${c}-${o.id}`,f,o[f[0]])).join("")}${acc?`<input id="e-${c}-${o.id}-file" type="file" accept="${acc}">`:""}</div><div class="row"><button class="btn t" data-a="save" data-p="${c}|${o.id}">${A("حفظ","Save")}</button><button class="btn g" data-a="del" data-p="${c}|${o.id}">${A("حذف","Delete")}</button></div>`;
-const af=(c,acc)=>`<div class="card"><div class="fld">${FS(c).map(f=>inp(`n-${c}`,f,"v")).join("")}${acc?`<input id="n-${c}-file" type="file" accept="${acc}">`:""}</div><button class="btn t" data-a="add" data-p="${c}">${A("إضافة","Add")}</button></div>`;
-const rdF=(id,c)=>{const d={};FS(c).forEach(([k,,ty])=>{let v=$(`${id}-${k}`).value.trim();if(k=="ig")v=igC(v);d[k]=ty=="number"?+v||0:v});return d};
+const af=(c,acc,fixedKind)=>`<div class="card"><div class="fld">${FS(c).map(f=>inp(`n-${c}`,f,"",fixedKind&&f[0]=="kind"?fixedKind:null)).join("")}${acc?`<input id="n-${c}-file" type="file" accept="${acc}">`:""}</div><button class="btn t" data-a="add" data-p="${c}">${A("إضافة","Add")}</button></div>`;
+const rdF=(id,c)=>{const d={};FS(c).forEach(([k,,ty])=>{let v=$(`${id}-${k}`).value.trim();if(k=="ig")v=igC(v);d[k]=ty=="number"?+v||0:v});if(c=="courses")d.kind="c";if(c=="vols"){d.kind="v";d.price=0}return d};
 
-/* ---------- الواجهات ---------- */
-function vDash(){const u=st.user,m=st.me,r=Object.entries(st.regs),nv=r.filter(x=>x[1].kind=="v").length,f=(k,l)=>`<label>${l}<input id="p_${k}" value="${esc(m[k]??(k=="name"?u.displayName:""))}"></label>`;
- return`<div class="hero"><h1>${A("مرحباً","Hello")} ${esc(m.name||u.displayName||"")}</h1><p class="sub" style="margin:0">${A("تطوع، تدرّب، وتابع محاضراتك من مكان واحد.","Volunteer, train, and follow your lectures in one place.")}</p><div class="stats"><div><b>${nv}</b>${A("التطوعات","Volunteering")}</div><div><b>${r.length-nv}</b>${A("الدورات الوجاهية","Courses")}</div></div></div>
+function vDash(){const u=st.user,m=st.me,r=Object.entries(st.regs),nv=r.filter(x=>x[1].kind=="v").length,f=(k,l)=>`<label>${l}<input id="p_${k}" value="${esc(m[k]??"")}"></label>`;
+ return`<div class="hero"><h1>${A("مرحباً","Hello")} ${esc(m.name||u.email||"")}</h1><p class="sub" style="margin:0">${A("تطوع، تدرّب، وتابع محاضراتك من مكان واحد.","Volunteer, train, and follow your lectures in one place.")}</p><div class="stats"><div><b>${nv}</b>${A("التطوعات","Volunteering")}</div><div><b>${r.length-nv}</b>${A("الدورات الوجاهية","Courses")}</div></div></div>
 <div class="grid"><div class="card"><h3>${A("ملفي الشخصي","My profile")}</h3>${f("name",A("الاسم","Name"))}${f("phone",A("الهاتف","Phone"))}${f("major",A("التخصص","Major"))}${f("uni",A("الجامعة","University"))}<button class="btn t" data-a="saveP">${A("حفظ البيانات","Save profile")}</button></div>
 <div class="card"><h3>${A("سجل نشاطاتي","My activity log")}</h3>${r.map(([k,x])=>`<div class="meta" style="margin:0 0 6px"><b>${esc(x.title)}</b> ${x.kind=="v"?tag(x.status||"pending"):`<span class="tag">${A("مقعد مؤكد","Seat")}</span>`}</div>`).join("")||none()}</div></div>`}
 const vItems=k=>`<h1>${k=="v"?A("التطوعات","Volunteering"):A("الدورات الوجاهية","On-site courses")}</h1><div class="grid">${st.items.filter(i=>i.kind==k).map(i=>{const g=st.regs[i.id];return`<div class="card"><h3>${esc(i.t)}</h3><div class="meta"><span>📍 ${esc(i.p)}</span><span>📅 ${esc(i.d)}</span></div><div style="margin-bottom:10px">${price(+i.price)}</div>${g?(k=="v"?tag(g.status||"pending"):`<span class="tag">${A("مقعدك مؤكد","Seat confirmed")}</span><div class="meta" style="margin:8px 0 0">${A("تذكرة الدخول (QR)","Entry ticket (QR)")}</div>${qr(i.id+st.user.uid)}`):`<button class="btn" data-a="reg" data-p="${i.id}">${k=="v"?A("تقدم الآن","Apply now"):A("احجز مقعداً","Book a seat")}</button>`}</div>`}).join("")||none()}</div>`;
 function vAds(){const a=ads();return`<h1>${A("الإعلانات","Announcements")}</h1>`+(a.length?`<div class="at"><div class="atb">${a.map((x,k)=>`<button id="atb${k}" data-a="ad" data-p="${k}">${esc(x.title||A("إعلان ","Ad ")+(k+1))}</button>`).join("")}</div><div class="atc" id="atc"></div></div>`:none())}
 function adShow(i){clearTimeout(AT);const a=ads(),c=$("atc");if(!c||!a.length)return;AI=(i%a.length+a.length)%a.length;const x=a[AI],nx=()=>adShow(AI+1);a.forEach((_,k)=>{const e=$("atb"+k);if(e)e.className=k==AI?"on":""});
- c.innerHTML=(x.src?`<div class="atm">${x.type=="video"?`<video src="${esc(x.src)}" autoplay muted playsinline></video><button class="atm2" data-a="mute">🔇</button>`:`<img src="${esc(x.src)}" alt="">`}</div>`:"")+`<div class="atx"><h2>${esc(x.title||"")}</h2><p>${esc(x.desc||"")}</p></div><div class="atg"><b id="atg"></b></div>`;
- const g=$("atg"),v=c.querySelector("video");if(v){v.onended=nx;v.onerror=()=>AT=setTimeout(nx,4000);v.ontimeupdate=()=>g.style.width=v.currentTime/(v.duration||1)*100+"%"}else{void g.offsetWidth;g.style.transition="width 4s linear";g.style.width="100%";AT=setTimeout(nx,4000)}}
-function vLec(){return`<h1>${A("المحاضرات","Lectures")}</h1><p class="sub">🔒 ${A("محمي ضد التنزيل","Download-protected")}</p>`+(st.lecs.length?`<div class="grid">${st.lecs.map(l=>`<div class="card"><h3>${esc(l.title)}</h3>${l.src?`<video controls controlsList="nodownload" playsinline preload="metadata" src="${esc(l.src)}" style="width:100%;border-radius:12px;background:#000;margin-bottom:8px"></video>`:""}${l.desc?`<p class="sub" style="white-space:pre-wrap">${esc(l.desc)}</p>`:""}${l.url&&/^https:\/\//.test(l.url)?`<a class="btn t" style="display:inline-block;text-decoration:none" href="${esc(l.url)}" target="_blank" rel="noopener">▶ ${A("تشغيل","Play")}</a>`:""}</div>`).join("")}</div>`:`<p class="sub">${A("لا توجد محاضرات بعد","No lectures yet")}</p>`)}
+ c.innerHTML=(x.src?`<div class="atm"><img src="${esc(x.src)}" alt=""></div>`:"")+`<div class="atx"><h2>${esc(x.title||"")}</h2><p>${esc(x.desc||"")}</p></div><div class="atg"><b id="atg"></b></div>`;
+ const g=$("atg");if(g){void g.offsetWidth;g.style.transition="width 4s linear";g.style.width="100%";AT=setTimeout(nx,4000)}}
+function vLec(){return`<h1>${A("المحاضرات","Lectures")}</h1><p class="sub">🔒 ${A("محمي ضد التنزيل","Download-protected")}</p>`+(st.lecs.length?`<div class="grid">${st.lecs.map(l=>`<div class="card"><h3>${esc(l.title)}</h3>${l.desc?`<p class="sub" style="white-space:pre-wrap">${esc(l.desc)}</p>`:""}${l.url&&/^https:\/\//.test(l.url)?`<a class="btn t" style="display:inline-block;text-decoration:none" href="${esc(l.url)}" target="_blank" rel="noopener">▶ ${A("تشغيل","Play")}</a>`:""}</div>`).join("")}</div>`:`<p class="sub">${A("لا توجد محاضرات بعد","No lectures yet")}</p>`)}
 function vFb(){return`<h1>${A("الفيدباك","Feedback")}</h1><div class="card" style="max-width:520px"><b>${A("قيّم تجربتك","Rate your experience")}</b><div>${[1,2,3,4,5].map(i=>`<button class="star${i<=st.rs?" on":""}" data-a="star" data-p="${i}" aria-label="${i}">★</button>`).join("")}</div><textarea id="fc" placeholder="${A("تعليقك","Your comment")}">${esc(st.fc)}</textarea><div style="height:8px"></div><button class="btn" data-a="sfb">${A("أرسل للمراجعة","Submit for review")}</button><p class="sub" style="font-size:13px;margin:8px 0 0">${A("سيظهر تقييمك بعد موافقة الإدارة","Your review appears after admin approval")}</p></div><h2>★</h2><div class="grid">${st.revs.filter(r=>r.ok).map(r=>`<div class="card"><div style="color:#F5A623">${stars(r.s)}</div><p>${esc(r.c)}</p><span class="sub">${esc(r.n)}</span></div>`).join("")||none()}</div>`}
 const slot=(m,i)=>`<div class="card" style="text-align:center">${m.photo?`<img class="av" alt="" src="${esc(m.photo)}">`:`<div class="av">${A("صورة","Photo")}</div>`}<h3 style="margin:8px 0 2px;min-height:26px">${esc(m.name||"")}</h3>${m.ig?"📷 "+ig(m.ig):""}</div>`;
 const aboutBlock=()=>`<div class="card"><h2 style="margin-top:0">${A("عن النور","About")}</h2><p style="white-space:pre-wrap;margin:0">${esc(about())}</p></div><h2>${A("مؤسسو منصة النور","Al-Noor Founders")}</h2><div class="grid">${[1,2,3,4].map(i=>slot(team().find(x=>x.id=="f"+i)||{},i)).join("")}</div>`;
 const vAbout=()=>`<h1>${A("عن النور","About")}</h1>`+aboutBlock();
-function vLogin(){return`<div class="nl"><div class="nlc"><div style="font-size:32px;color:var(--red)">✚</div><h1 style="color:#fff">${A("تسجيل دخول الطالب","Student sign in")}</h1><p>${A("ادخل ببريدك الإلكتروني وكلمة المرور (6 أحرف فأكثر)","Sign in with your email and password (6+ chars)")}</p><input id="se" type="email" dir="ltr" placeholder="${A("البريد الإلكتروني","Email")}"><input id="sp" type="password" dir="ltr" placeholder="${A("كلمة المرور","Password")}" data-e="studin"><button class="nlb main" data-a="studin">${A("دخول الطالب","Student sign in")}</button><button class="nlb" data-a="studreg">${A("إنشاء حساب طالب جديد","Create student account")}</button><details${route()=="admin-secret-portal"?" open":""}><summary>${A("دخول الإدارة","Admin sign in")}</summary><input id="ae" type="email" dir="ltr" placeholder="Admin email" value="${esc(ADMIN_EMAIL)}"><input id="ac2" type="password" dir="ltr" placeholder="${A("الرمز","Password")}" data-e="adminin"><button class="nlb" data-a="adminin">${A("دخول الإدارة","Admin sign in")}</button></details></div></div>${aboutBlock()}`}
 
-/* ZOOM ALNOOR */
+function vLogin(){
+ const regFields=st.regMode
+  ?`<input id="sp2" type="password" inputmode="numeric" maxlength="6" pattern="\\d{6}" dir="ltr" placeholder="${A("تأكيد الرمز (6 أرقام)","Confirm 6-digit PIN")}" data-e="studreg"><button class="nlb main" data-a="studreg">${A("تأكيد وإنشاء الحساب","Create account")}</button><button class="nlb" data-a="togglemode" data-p="0">${A("لدي حساب بالفعل · دخول","Already have an account · Sign in")}</button>`
+  :`<button class="nlb main" data-a="studin">${A("دخول الطالب","Student sign in")}</button><button class="nlb" data-a="togglemode" data-p="1">${A("إنشاء حساب طالب جديد","Create student account")}</button>`;
+ return`<div class="nl"><div class="nlc"><div style="font-size:32px;color:var(--red)">✚</div><h1 style="color:#fff">${st.regMode?A("إنشاء حساب طالب جديد","Create student account"):A("تسجيل دخول الطالب","Student sign in")}</h1><p>${st.regMode?A("أدخل بريدك الإلكتروني ورمزاً من 6 أرقام ثم أكده","Enter your email and a 6-digit PIN, then confirm it"):A("أدخل بريدك الإلكتروني ورمزك المكون من 6 أرقام","Enter your email and 6-digit PIN")}</p><input id="se" type="email" dir="ltr" placeholder="${A("البريد الإلكتروني","Email")}"><input id="sp" type="password" inputmode="numeric" maxlength="6" pattern="\\d{6}" dir="ltr" placeholder="${A("الرمز (6 أرقام)","6-digit PIN")}" data-e="${st.regMode?"studreg":"studin"}">${regFields}<details${route()=="admin-secret-portal"?" open":""}><summary>${A("دخول الإدارة","Admin sign in")}</summary><input id="ae" type="email" dir="ltr" placeholder="${A("بريد الإدارة","Admin email")}"><input id="ac2" type="password" dir="ltr" placeholder="${A("الرمز","Password")}" data-e="adminin"><button class="nlb" data-a="adminin">${A("دخول الإدارة","Admin sign in")}</button></details></div></div>${aboutBlock()}`}
+
 const ZS={cam:null,scr:null,rec:null,ch:[],hand:0,mic:1,cam1:1},ZQ={2160:[3840,2160],1080:[1920,1080],720:[1280,720],480:[854,480],360:[640,360]};
 function zroom(){return`<h1>ZOOM ALNOOR</h1><p class="sub"><span class="tag r">● ${A("بث مباشر الآن","Live now")}</span></p><div id="zr" class="room"><div class="tiles"><div class="tile share"><video id="zsv" autoplay playsinline muted style="display:none;object-fit:contain"></video><span id="zsp">🖥</span></div><div class="tile"><video id="zv" autoplay playsinline muted style="object-fit:cover"></video><small id="zn">${esc(st.me.name||"")}</small></div></div>
-<div class="ctrl"><button data-a="zjoin">▶ ${A("ابدأ الكاميرا والمايك","Start cam & mic")}</button><button id="zb1" data-a="zt" data-p="mic">🎙 ${A("المايك","Mic")}</button><button id="zb2" data-a="zt" data-p="cam1">📷 ${A("الكاميرا","Camera")}</button><button data-a="zscr">🖥 ${A("مشاركة الشاشة","Share screen")}</button><button id="zb3" data-a="zhand">✋ ${A("رفع اليد","Raise hand")}</button><select data-c="zq"><option value="2160">4K</option><option value="1080" selected>1080p</option><option value="720">720p</option><option value="480">480p</option><option value="360">360p</option></select>${st.adm?`<button id="zrb" data-a="zrec">⏺ ${A("تسجيل المحاضرة","Record lecture")}</button>`:""}</div><div id="zst" style="color:#94A3B8;font-size:13px"></div></div><p class="sub" style="font-size:13px">${A("المعاينة صامتة لمنع الصدى. البث متعدد المستخدمين (حتى 10,000) يحتاج خادم SFU مثل LiveKit أو Agora.","Preview is muted to prevent echo. Multi-user rooms (10,000+) need an SFU server such as LiveKit or Agora.")}</p>`}
+<div class="ctrl"><button data-a="zjoin">▶ ${A("ابدأ الكاميرا والمايك","Start cam & mic")}</button><button id="zb1" data-a="zt" data-p="mic">🎙 ${A("المايك","Mic")}</button><button id="zb2" data-a="zt" data-p="cam1">📷 ${A("الكاميرا","Camera")}</button><button data-a="zscr">🖥 ${A("مشاركة الشاشة","Share screen")}</button><button id="zb3" data-a="zhand">✋ ${A("رفع اليد","Raise hand")}</button><select data-c="zq"><option value="2160">4K</option><option value="1080" selected>1080p</option><option value="720">720p</option><option value="480">480p</option><option value="360">360p</option></select>${st.adm?`<button id="zrb" data-a="zrec">⏺ ${A("تسجيل المحاضرة","Record lecture")}</button>`:""}</div><div id="zst" style="color:#94A3B8;font-size:13px"></div></div>`}
 function vZm(){const z=st.zoom;
  if(st.adm)return`<h1>ZOOM ALNOOR</h1><div class="card" style="margin-bottom:12px"><b>${A("كود دخول المحاضرة","Lecture access code")}</b><div class="row"><input id="zc" dir="ltr" placeholder="${A("اكتب كوداً أو اتركه فارغاً لإنشاء كود عشوائي","Type a code or leave empty for a random one")}"><button class="btn t" data-a="zcreate">${A("إنشاء وتفعيل","Create")}</button></div>${z?`<p style="margin:10px 0 0">${ls("zc")?A("الكود الحالي: ","Current code: ")+`<b dir="ltr" style="font-size:22px;color:var(--red)">${esc(ls("zc"))}</b>`:A("يوجد كود فعّال (أنشئ جديداً لعرضه)","A code is active (create a new one to see it)")}</p><button class="btn g" style="margin-top:10px" data-a="zclose">${A("إغلاق المحاضرة","Close lecture")}</button>`:""}</div>`+zroom();
  if(!z)return`<h1>ZOOM ALNOOR</h1><div class="card"><p class="sub" style="margin:0">${A("لا توجد محاضرة مفتوحة حالياً.","No lecture is open right now.")}</p></div>`;
@@ -185,20 +183,19 @@ function vZm(){const z=st.zoom;
 const zs=m=>{const e=$("zst");if(e)e.textContent=m};
 function zStop(){if(ZS.rec)ZS.rec.stop();[ZS.cam,ZS.scr].forEach(s=>s&&s.getTracks().forEach(t=>t.stop()));ZS.cam=ZS.scr=null}
 
-/* الإدارة: صلاحيات كاملة على كل البيانات */
 function vAdm(){if(!st.adm)return`<h1>${A("لوحة الإدارة","Admin dashboard")}</h1><div class="card"><p class="sub" style="margin:0">${A("هذه الصفحة للإدارة فقط.","This page is for admins only.")}</p></div>`;
- const rows=st.all.filter(r=>!st.filt||r.item==st.filt),T=A;
+ const rows=st.all.filter(r=>!st.filt||r.item==st.filt),T=A,courses=st.items.filter(i=>i.kind!="v"),vols=st.items.filter(i=>i.kind=="v");
  return`<h1>${T("لوحة الإدارة","Admin dashboard")}</h1>
 <h2>${T("عن النور","About")}</h2><div class="card"><textarea id="ab">${esc(about())}</textarea><div style="height:8px"></div><button class="btn t" data-a="saveA">${T("حفظ النبذة","Save about")}</button></div>
 <h2>${T("مؤسسو منصة النور","Founders")}</h2><div class="grid">${[1,2,3,4].map(i=>{const m=team().find(x=>x.id=="f"+i)||{};return`<div class="card" style="text-align:center">${m.photo?`<img class="av" alt="" src="${esc(m.photo)}">`:`<div class="av">${T("صورة","Photo")}</div>`}<div style="height:8px"></div>${ef("team",{...m,id:"f"+i},"image/*")}</div>`}).join("")}</div>
-<h2>${T("الإعلانات","Ads")}</h2>${af("ads","image/*,video/*")}<div class="grid" style="margin-top:12px">${ads().map(a=>`<div class="card"><span class="tag">${a.type=="video"?"🎬":a.src?"🖼":"📝"}</span>${ef("ads",a,"image/*,video/*")}</div>`).join("")}</div>
-<h2>${T("التطوعات والدورات","Volunteering & courses")}</h2>${af("items")}<div class="grid" style="margin-top:12px">${st.items.map(i=>`<div class="card">${ef("items",i)}</div>`).join("")}</div>
-<h2>${T("المحاضرات","Lectures")}</h2>${af("lecs","video/*")}<div class="grid" style="margin-top:12px">${st.lecs.map(l=>`<div class="card">${ef("lecs",l,"video/*")}</div>`).join("")}</div>
+<h2>${T("الإعلانات","Ads")}</h2>${af("ads","image/*")}<div class="grid" style="margin-top:12px">${ads().map(a=>`<div class="card"><span class="tag">${a.src?"🖼":"📝"}</span>${ef("ads",a,"image/*")}</div>`).join("")}</div>
+<h2>${T("الدورات الوجاهية (مستقل)","Courses")}</h2>${af("courses")}<div class="grid" style="margin-top:12px">${courses.map(i=>`<div class="card">${ef("courses",i)}</div>`).join("")}</div>
+<h2>${T("التطوعات (مستقل)","Volunteering")}</h2>${af("vols")}<div class="grid" style="margin-top:12px">${vols.map(i=>`<div class="card">${ef("vols",i)}</div>`).join("")}</div>
+<h2>${T("المحاضرات","Lectures")}</h2>${af("lecs")}<div class="grid" style="margin-top:12px">${st.lecs.map(l=>`<div class="card">${ef("lecs",l)}</div>`).join("")}</div>
 <h2>${T("المسجلون","Registrations")} (${rows.length})</h2><div class="card"><div class="row" style="margin:0 0 10px"><select data-c="filt"><option value="">${T("الكل","All")}</option>${st.items.map(i=>`<option value="${i.id}"${st.filt==i.id?" selected":""}>${esc(i.t)}</option>`).join("")}</select><button class="btn" data-a="csv">⬇ ${T("تنزيل ملف Excel/CSV","Download Excel/CSV")}</button></div><div class="scroll"><table><tr><th>${T("الاسم","Name")}</th><th>${T("الهاتف","Phone")}</th><th>${T("العنوان","Title")}</th><th>${T("الحالة","Status")}</th><th></th></tr>${rows.map(r=>`<tr><td>${esc(r.name)}</td><td dir="ltr">${esc(r.phone)}</td><td>${esc(r.title)}</td><td><select data-c="rst" data-p="${r.uid}|${r.item}">${["pending","ok","done"].map(s=>`<option value="${s}"${(r.status||"pending")==s?" selected":""}>${s=="pending"?T("قيد الانتظار","Pending"):s=="ok"?T("مقبول","Accepted"):T("مكتمل","Done")}</option>`).join("")}</select></td><td><button class="btn g" data-a="rdel" data-p="${r.uid}|${r.item}">${T("حذف","Delete")}</button></td></tr>`).join("")}</table></div></div>
 <h2>${T("مراجعة التقييمات","Review moderation")}</h2><div class="grid">${st.revs.map(r=>`<div class="card"><div style="color:#F5A623">${stars(r.s)}</div><p>${esc(r.c)}</p><span class="sub">${esc(r.n)}</span><div class="row"><button class="btn ${r.ok?"g":"t"}" data-a="rv" data-p="${r.id}|${r.ok?0:1}">${r.ok?T("إخفاء","Hide"):T("نشر","Publish")}</button><button class="btn g" data-a="del" data-p="reviews|${r.id}">${T("حذف","Delete")}</button></div></div>`).join("")||none()}</div>
 <h2>${T("الطلاب","Students")} (${st.studs.length})</h2><div class="card scroll"><table><tr><th>${T("الاسم","Name")}</th><th>Email</th><th>${T("الهاتف","Phone")}</th><th>${T("التخصص","Major")}</th><th>${T("الجامعة","University")}</th><th>${T("آخر دخول","Last visit")}</th><th></th></tr>${st.studs.map(x=>`<tr><td>${esc(x.name)}</td><td dir="ltr">${esc(x.email)}</td><td dir="ltr">${esc(x.phone)}</td><td>${esc(x.major)}</td><td>${esc(x.uni)}</td><td>${x.last?new Date(x.last).toLocaleDateString():""}</td><td><button class="btn g" data-a="del" data-p="students|${x.id}">${T("حذف","Delete")}</button></td></tr>`).join("")}</table></div>`}
 
-/* ---------- الرسم والتنقل ---------- */
 function draw(){const r=route(),d=document.documentElement;if(r=="zoom-alnoor"&&st.user&&$("zr")&&ZS.cam)return;
  d.lang=st.lang;d.dir=st.lang=="ar"?"rtl":"ltr";$("bn").textContent=A("منصة النور","Al-Noor Platform");$("lg").textContent=A("English","العربية");$("lo").textContent=A("خروج","Logout");$("lo").style.display=st.user?"":"none";$("ft").textContent=A("© منصة النور · جميع الحقوق محفوظة","© Al-Noor Platform · All rights reserved");document.title=$("bn").textContent;
  const lt=Math.max(0,...ads().map(a=>a.ts||0)),nw=r!="ads"&&lt>+(ls("seen")||0);if(r=="ads")ls("seen",lt);
@@ -210,27 +207,30 @@ function draw(){const r=route(),d=document.documentElement;if(r=="zoom-alnoor"&&
  if(r!="ads")clearTimeout(AT);else adShow(AI)}
 addEventListener("hashchange",()=>{if(route()!="zoom-alnoor")zStop();draw()});
 
-/* ---------- الإجراءات ---------- */
 const ACT={
  home(){go("dashboard")},lang(){st.lang=st.lang=="ar"?"en":"ar";ls("lang",st.lang);draw()},
  theme(){const d=document.documentElement.dataset.theme!="dark";ls("dark",d?1:0);document.documentElement.dataset.theme=d?"dark":"light"},
  out(){zStop();if(ok)signOut(auth).then(()=>{go("dashboard");toast(A("تم تسجيل الخروج","Signed out"))})},
- async studin(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));const e=$("se").value.trim(),p=$("sp").value;if(!e||!p)return toast(A("أدخل البريد وكلمة المرور","Enter email and password"));
+ togglemode(v){st.regMode=v=="1";draw()},
+ async studin(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));const e=$("se").value.trim(),p=$("sp").value.trim();
+  if(!e||!pin6(p))return toast(A("أدخل البريد الإلكتروني ورمزاً من 6 أرقام","Enter email and a 6-digit PIN"));
   try{await pers;await signInWithEmailAndPassword(auth,e,p);go("dashboard")}catch(err){toast("⚠️ "+A("تعذر الدخول: ","Sign-in failed: ")+(err.code||err.message))}},
- async studreg(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));const e=$("se").value.trim(),p=$("sp").value;if(!e||p.length<6)return toast(A("أدخل بريداً صحيحاً وكلمة مرور 6 أحرف فأكثر","Enter a valid email and 6+ char password"));
-  try{await pers;await createUserWithEmailAndPassword(auth,e,p);go("dashboard");toast("✅ "+A("تم إنشاء الحساب","Account created"))}catch(err){toast("⚠️ "+A("تعذر إنشاء الحساب: ","Sign-up failed: ")+(err.code||err.message))}},
+ async studreg(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));const e=$("se").value.trim(),p=$("sp").value.trim(),p2=$("sp2")?.value.trim();
+  if(!e||!pin6(p))return toast(A("أدخل بريداً صحيحاً ورمزاً مكوناً من 6 أرقام","Enter a valid email and a 6-digit PIN"));
+  if(p!==p2)return toast(A("تأكيد الرمز غير مطابق للرمز الأول","PIN confirmation does not match"));
+  try{await pers;await createUserWithEmailAndPassword(auth,e,p);st.regMode=false;go("dashboard");toast("✅ "+A("تم إنشاء الحساب وتسجيل الدخول","Account created and signed in"))}catch(err){toast("⚠️ "+A("تعذر إنشاء الحساب: ","Sign-up failed: ")+(err.code||err.message))}},
  async adminin(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));try{await pers;await signInWithEmailAndPassword(auth,$("ae").value.trim(),$("ac2").value);go("admin-secret-portal")}catch(e){toast("⚠️ "+A("البريد أو الرمز غير صحيح","Wrong email or password"))}},
  saveP(b){const d={email:st.user.email||"",last:Date.now()};["name","phone","major","uni"].forEach(k=>d[k]=$("p_"+k).value.trim());run(()=>setDoc(doc(db,"students",st.user.uid),d,{merge:true}),A("تم حفظ بياناتك","Profile saved"),b)},
  reg(id,b){const it=st.items.find(x=>x.id==id),m=st.me;if(!m.name||!m.phone){toast(A("أكمل اسمك ورقم هاتفك في لوحتي أولاً","Add your name and phone in My space first"));return go("dashboard")}
   run(()=>setDoc(doc(db,"regs",st.user.uid),{name:m.name,phone:m.phone,email:st.user.email||"",list:{[id]:{title:it.t,kind:it.kind,price:+it.price||0,ts:Date.now(),status:"pending"}}},{merge:true}),it.kind=="v"?A("تم إرسال طلبك","Application sent"):A("مقعدك مؤكد","Seat confirmed"),b)},
  ad(i){adShow(+i)},mute(b){const v=b.parentNode.querySelector("video");v.muted=!v.muted;b.textContent=v.muted?"🔇":"🔊"},
  star(i){st.fc=$("fc").value;st.rs=+i;draw()},
- sfb(b){if(!st.rs)return toast(A("اختر عدد النجوم","Pick a star rating"));const c=$("fc").value.trim();run(async()=>{await addDoc(collection(db,"reviews"),{uid:st.user.uid,n:st.me.name||st.user.displayName||"",s:st.rs,c,ok:false,ts:Date.now()});st.rs=0;st.fc=""},A("سيظهر تقييمك بعد موافقة الإدارة","Your review appears after admin approval"),b)},
+ sfb(b){if(!st.rs)return toast(A("اختر عدد النجوم","Pick a star rating"));const c=$("fc").value.trim();run(async()=>{await addDoc(collection(db,"reviews"),{uid:st.user.uid,n:st.me.name||st.user.email||"",s:st.rs,c,ok:false,ts:Date.now()});st.rs=0;st.fc=""},A("سيظهر تقييمك بعد موافقة الإدارة","Your review appears after admin approval"),b)},
  saveA(b){run(()=>setDoc(doc(db,"site","about"),{text:$("ab").value}),null,b)},
- async save(p,b){const[c,id]=p.split("|"),d=rdF(`e-${c}-${id}`,c),f=$(`e-${c}-${id}-file`)?.files[0];if(!(d.t||d.title||d.name||c=="ads"))return toast(A("العنوان مطلوب","Title is required"));run(async()=>{if(f)Object.assign(d,await fdata(c,f));await setDoc(doc(db,c,id),d,{merge:true})},null,b)},
- async add(c,b){const d=rdF(`n-${c}`,c),f=$(`n-${c}-file`)?.files[0];if(!(d.t||d.title))return toast(A("العنوان مطلوب","Title is required"));d.ts=Date.now();if(c=="ads")d.type="text";
-  run(async()=>{if(f)Object.assign(d,await fdata(c,f));await addDoc(collection(db,c),d);FS(c).forEach(([k])=>$(`n-${c}-${k}`).value="");if(f)$(`n-${c}-file`).value=""},A("تمت الإضافة","Added"),b)},
- del(p,b){const[c,id]=p.split("|");if(confirm(A("تأكيد الحذف؟","Confirm delete?")))run(()=>deleteDoc(doc(db,c,id)),A("تم الحذف","Deleted"),b)},
+ async save(p,b){const[c,id]=p.split("|"),d=rdF(`e-${c}-${id}`,c),f=$(`e-${c}-${id}-file`)?.files[0];if(!(d.t||d.title||d.name||c=="ads"))return toast(A("العنوان مطلوب","Title is required"));run(async()=>{if(f)Object.assign(d,await fdata(c,f));await setDoc(doc(db,colOf(c),id),d,{merge:true})},null,b)},
+ async add(c,b){const d=rdF(`n-${c}`,c),f=$(`n-${c}-file`)?.files[0];if(!(d.t||d.title))return toast(A("العنوان مطلوب","Title is required"));d.ts=Date.now();if(c=="ads")d.type="img";
+  run(async()=>{if(f)Object.assign(d,await fdata(c,f));await addDoc(collection(db,colOf(c)),d);FS(c).forEach(([k])=>{const el=$(`n-${c}-${k}`);if(el&&el.type!="hidden")el.value=""});if(f)$(`n-${c}-file`).value=""},A("تمت الإضافة","Added"),b)},
+ del(p,b){const[c,id]=p.split("|");if(confirm(A("تأكيد الحذف؟","Confirm delete?")))run(()=>deleteDoc(doc(db,colOf(c),id)),A("تم الحذف","Deleted"),b)},
  rdel(p,b){const[u,i]=p.split("|");if(confirm(A("تأكيد الحذف؟","Confirm delete?")))run(()=>updateDoc(doc(db,"regs",u),{["list."+i]:deleteField()}),A("تم الحذف","Deleted"),b)},
  rv(p,b){const[id,v]=p.split("|");run(()=>updateDoc(doc(db,"reviews",id),{ok:v=="1"}),null,b)},
  csv(){const q=s=>'"'+String(s??"").replace(/"/g,'""')+'"',rows=st.all.filter(r=>!st.filt||r.item==st.filt),c="\ufeff"+"name,phone,email,type,title,price,status,date\n"+rows.map(r=>[r.name,r.phone,r.email,r.kind=="v"?"volunteering":"course",r.title,r.price,r.status||"pending",new Date(r.ts).toISOString()].map(q).join(",")).join("\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([c],{type:"text/csv"}));a.download="alnoor-registrations.csv";document.body.appendChild(a);a.click();a.remove()},
