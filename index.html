@@ -649,7 +649,6 @@ function captureActiveVideoFrame(){
 }
 
 function startLiveFrameSync(){
-  /* لا نبث لقطات الشاشة إلى Firestore؛ الفيديو ينقل عبر WebRTC فقط. */
   stopLiveFrameSync();
 }
 
@@ -791,23 +790,14 @@ async function parsePptxSlides(file){
   return slides;
 }
 
-/* ---------- WebRTC (نسخة مُصلحة): صوت + كاميرا + مشاركة شاشة + فيديو ملف ---------- */
-/* ضع هنا بيانات TURN الخاصة بك (مجاني من metered.ca أو Cloudflare) لأفضل ضمان. اتركه null إن لم يتوفر */
-const MY_TURN=null; /* مثال: {urls:["turn:HOST:80","turn:HOST:443","turns:HOST:443?transport=tcp"],username:"USER",credential:"PASS"} */
+/* ---------- WebRTC: صوت + كاميرا + مشاركة شاشة + فيديو ملف ---------- */
+const MY_TURN=null;
 const RTC_CFG={iceCandidatePoolSize:2,bundlePolicy:"max-bundle",iceServers:[
   {urls:["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:global.stun.twilio.com:3478"]},
   ...(MY_TURN?[MY_TURN]:[])
 ]};
-/*
- * للوصول إلى 300 طالب: فعّل SFU بخدمة LiveKit وخادم إصدار رموز موثوق.
- * ضع عنوان HTTPS فقط، لا تضع API secret أو رموز دخول في هذا الملف.
- * POST {roomId} + Firebase Bearer ID token -> {url:"wss://...",token:"..."}.
- * يجب على الخادم التحقق من العضوية ودور الإدارة وإصدار صلاحيات النشر.
- * اختبر 300 حاضر لمدة 3 ساعات على الخدمة الفعلية قبل التسليم.
- */
 const CONFERENCE={tokenEndpoint:"",sdkUrl:"https://cdn.jsdelivr.net/npm/livekit-client@2.15.6/+esm"};
 const useSFU=()=>!!CONFERENCE.tokenEndpoint;
-/* كل اتصال فيه 4 مسارات ثابتة بنفس الترتيب عند الطرفين: مايك / كاميرا / شاشة(أو فيديو) / صوت الشاشة(أو الفيديو) */
 const RTC_ROLES=[["mic","audio"],["cam","video"],["screen","video"],["sys","audio"]];
 let rtcRedrawT=0,audioWarnT=0;
 function scheduleRtcRedraw(){clearTimeout(rtcRedrawT);rtcRedrawT=setTimeout(()=>{const a=document.activeElement;if(a&&/INPUT|TEXTAREA/.test(a.tagName))return;if(route()=="zoom-alnoor"&&$("zr"))draw()},200)}
@@ -872,7 +862,6 @@ async function syncTracksToPeers(){
   if(ZS.joined)touchPresence(true);
 }
 
-/* عناصر الصوت الدائمة (خارج #app حتى لا تنحذف مع كل draw) */
 function syncAudioElements(){
   let h=$("rtc-audio");
   if(!h){h=document.createElement("div");h.id="rtc-audio";h.style.cssText="position:fixed;width:0;height:0;overflow:hidden;opacity:0;pointer-events:none";document.body.appendChild(h)}
@@ -902,7 +891,6 @@ function closePeer(uid){
   syncAudioElements();scheduleRtcRedraw();
 }
 
-/* شات مباشر في ذاكرة الجلسة فقط: لا Firestore ولا localStorage ولا سجل للوافدين. */
 function rememberChat(message){
   if(!ZS.joined||message.roomId!==ZS.roomId||typeof message.text!=="string")return false;
   if(!message.id||typeof message.id!=="string"||ZS.chatSeen.has(message.id))return false;
@@ -1052,7 +1040,6 @@ async function openDeviceTest(){
   await list().catch(()=>status(A("تعذر تعداد الأجهزة. تحقق من HTTPS والصلاحيات.","Cannot list devices. Check HTTPS and permissions.")));
 }
 
-/* محول SFU: لا يوجد رجوع صامت إلى P2P عند تعطل الخدمة. */
 async function connectSfu(){
   if(!useSFU()||ZS.sfu||ZS.sfuConnecting||!ZS.joined)return;
   const endpoint=new URL(CONFERENCE.tokenEndpoint,location.href);
@@ -1067,14 +1054,12 @@ async function connectSfu(){
     if(typeof access.url!=="string"||!access.url.startsWith("wss://")||typeof access.token!=="string")throw new Error(A("استجابة خادم البث غير صالحة","Invalid media server response"));
     const LK=ZS.sfuModule=await import(CONFERENCE.sdkUrl);
     if(!ZS.joined||epoch!==ZS.sfuEpoch)return;
-    /* عناصر العرض تستخدم srcObject، لذلك لا نفعل adaptiveStream الذي يحتاج track.attach(). */
     room=new LK.Room({adaptiveStream:false,dynacast:true,videoCaptureDefaults:{resolution:{width:1280,height:720,frameRate:24}},publishDefaults:{simulcast:true,videoEncoding:{maxBitrate:900000,maxFramerate:24},screenShareEncoding:{maxBitrate:1500000,maxFramerate:15}}});
     ZS.sfu=room;
     const updateSubscriptions=()=>{
       for(const participant of room.remoteParticipants.values()){
         let host=false;try{host=["admin","presenter"].includes(JSON.parse(participant.metadata||"{}").role)}catch(e){}
         for(const publication of participant.trackPublications.values()){
-          /* لا ننزل 300 كاميرا: صورة الإدارة فقط، وصوت الطلاب للإدارة. */
           publication.setSubscribed(host||(canPresent()&&publication.kind==="audio"));
         }
       }
@@ -1095,7 +1080,6 @@ async function connectSfu(){
       const S=LK.Track.Source;
       const role=publication.source===S.Microphone?"mic":publication.source===S.Camera?"cam":publication.source===S.ScreenShare?"screen":"sys";
       const info=ZS.remoteStreams.get(participant.identity)||{name:participant.name||A("مشارك","Participant"),streams:{}};
-      /* الخادم وحده يحدد role في metadata؛ لا يقبل الدور من طلب العميل. */
       try{const role=JSON.parse(participant.metadata||"{}").role;info.isAdmin=role==="admin";info.isPresenter=role==="presenter"}catch(e){info.isAdmin=false;info.isPresenter=false}
       info.streams[role]=new MediaStream([track.mediaStreamTrack]);
       ZS.remoteStreams.set(participant.identity,info);syncAudioElements();scheduleRtcRedraw();
@@ -1153,8 +1137,7 @@ function syncSfuPermissions(){
   if(!canPresent()&&!ZS.roomCtrl.allowMic)ZS.micStream?.getAudioTracks().forEach(t=>t.enabled=false);
 }
 
-const MESH=false; /* وضع احتياطي صغير: طالب ↔ إدارة. محاضرة 300 تحتاج SFU. */
-/* المتصل (caller) دائماً الإدارة، وبين طالبين الأصغر uid. هيك ما في تعارض عروض (glare) */
+const MESH=false;
 const imCaller=(uid,peerTeaching)=>canPresent()?(peerTeaching?st.user.uid<uid:true):false;
 const newId=()=>Math.random().toString(36).slice(2,10);
 
@@ -1175,8 +1158,6 @@ function makePeer(uid,name,isAdmin,sid,cid,caller,isPresenter=false){
   ZS.peers.set(uid,c);
   if(caller)setupChatChannel(c,pc.createDataChannel("alnoor-ephemeral",{ordered:true}));
   pc.ondatachannel=ev=>{if(ev.channel.label==="alnoor-ephemeral")setupChatChannel(c,ev.channel)};
-  /* المستقبِل لا ينشئ transceivers قبل العرض: المتصفح ينشئها من SDP.
-     إنشاؤها مسبقًا ينتج مسارات إضافية غير متفاوض عليها وصوتًا صامتًا. */
   if(caller){
     RTC_ROLES.forEach(([role,kind])=>{c.tr[role]=pc.addTransceiver(kind,{direction:"sendrecv"})});
     applyTracks(c);
@@ -1242,8 +1223,8 @@ function routeSignal(d){
   const isOffer=d.type==="desc"&&data.type==="offer";
   let c=ZS.peers.get(d.from);
   if(c&&c.cid!==d.cid){
-    if(c.caller)return;              /* أنا المتصل: أتجاهل ردود اتصال قديم */
-    if(isOffer){closePeer(d.from);c=null} /* المتصل بدأ اتصال جديد */
+    if(c.caller)return;
+    if(isOffer){closePeer(d.from);c=null}
     else return;
   }
   if(!c){
@@ -1300,7 +1281,7 @@ function startRtcSignalingSub(){
       if(ZS.seenSignals.size>2000)ZS.seenSignals=new Set([id]);
       deleteDoc(ref).catch(()=>{});
       if(!d||!d.from||d.from===st.user.uid)return;
-      if(d.toSid!==ZS.sid)return; /* موجهة لجلسة قديمة */
+      if(d.toSid!==ZS.sid)return;
       if(d.roomId!==ZS.roomId||Date.now()-(d.ts||0)>120000)return;
       if(!MESH&&!canPresent()&&!d.fromAdmin&&!d.fromPresenter)return;
       routeSignal(d);
@@ -1430,7 +1411,6 @@ function startZoomRealtimeSubs(){
     const changed=sig!==ZS.stageSig;
     ZS.stageSig=sig;
     applyRemoteStageData(d);
-    /* تحديث صورة البث الاحتياطي بدون إعادة رسم الغرفة */
     if(!st.adm&&!changed&&d.liveFrameUrl){const img=$("z-live-frame-img");if(img)img.src=d.liveFrameUrl}
     ZS.stageDraw=(changed&&(d.senderUid!==st.user?.uid||firstTime))?1:0;
   },"zoom_stage"));
@@ -1599,14 +1579,12 @@ function attachMediaElements(){
     zsv.muted=true;
     if(ZS.scr)zsv.play?.().catch(()=>{});
   }
-  /* فيديو الملف عند الإدارة: عنصر دائم يُنقل فقط (لا يُعاد إنشاؤه) فلا يعيد التشغيل */
   const slot=$("z-vid-slot");
   if(slot&&ZS.vidEl&&ZS.vidEl.parentNode!==slot)slot.appendChild(ZS.vidEl);
   if(!st.adm){
     const zvv=$("z-shared-vid");
     if(zvv){zvv.muted=!ZS.speaker;zvv.play?.().catch(()=>{})}
   }
-  /* شاشة/فيديو الإدارة عند الطالب (الصوت يأتي من عناصر الصوت الدائمة، لذلك الفيديو muted) */
   const rs=$("z-remote-screen-vid"),hs=hostScreenStream();
   if(rs&&hs){
     if(rs.srcObject!==hs)rs.srcObject=hs;
