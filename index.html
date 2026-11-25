@@ -49,11 +49,15 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .star{background:none;border:0;font-size:28px;color:#B8C4D0;padding:0 2px}.star.on{color:#F5A623}
 
 /* ---------- غرفة ZOOM ALNOOR العصرية ---------- */
-.z-wrap{background:#121316;border:3px solid #2a2c33;border-radius:24px;box-shadow:0 14px 36px rgba(0,0,0,.35);color:#f3f4f6;overflow:hidden;position:relative}
+.z-wrap{background:#121316;border:3px solid #2a2c33;border-radius:24px;box-shadow:0 14px 36px rgba(0,0,0,.35);color:#f3f4f6;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.z-wrap.expanded{position:fixed;inset:0;z-index:50;border-radius:0;border:0;width:100vw;height:100svh;max-height:100svh}
+.z-wrap.expanded .z-body{flex:1;min-height:0}
+.z-wrap.expanded .z-stage{min-height:0;height:100%;overflow-y:auto}
 .z-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;background:#1b1d22;border-bottom:1px solid #2b2e36;flex-wrap:wrap}
 .z-top-badge{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
 .z-dot{width:9px;height:9px;border-radius:50%;background:#ef4444;box-shadow:0 0 8px #ef4444}
 .z-pill{background:#262932;border:1px solid #383c47;border-radius:999px;padding:4px 10px;font-size:12px;color:#cbd5e1}
+.z-host-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 16px;background:#17202e;border-bottom:1px solid #26364d;font-size:12px;color:#bae6fd}
 .z-hands-alert{display:flex;flex-wrap:wrap;gap:6px;padding:8px 16px;background:#262111;border-bottom:1px solid #4d3f14;color:#fde68a;font-size:13px;align-items:center}
 .z-hand-chip{display:inline-flex;align-items:center;gap:6px;background:#3a3012;border:1px solid #f59e0b;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;color:#fef3c7}
 .z-body{display:grid;grid-template-columns:1fr;min-height:420px;position:relative}
@@ -67,17 +71,20 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-empty-btn:hover{background:#2d313e}
 .z-media-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;width:100%}
 .z-tile{position:relative;background:#1a1c23;border:1.5px solid #2e323d;border-radius:16px;overflow:hidden;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
-.z-tile.main-share{grid-column:1/-1;min-height:240px}
-.z-tile video,.z-tile img{width:100%;height:100%;object-fit:contain;background:#090a0d}
+.z-tile.main-share{grid-column:1/-1;min-height:280px;aspect-ratio:auto}
+.z-tile video,.z-tile img{width:100%;height:100%;max-height:62svh;object-fit:contain;background:#090a0d}
 .z-tile.cam-tile video{object-fit:cover}
+.z-doc-box{width:100%;display:flex;flex-direction:column;gap:10px;padding:14px}
+.z-doc-frame{width:100%;height:56svh;min-height:320px;border:1px solid #383c49;border-radius:12px;background:#fff}
+.z-slide-card{width:100%;min-height:260px;background:linear-gradient(145deg,#1b1f2b,#12151e);border:1px solid #363c4d;border-radius:14px;padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
 .z-avatar-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px}
 .z-avatar-circle{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#1e6fd9);color:#fff;display:grid;place-items:center;font-size:28px;font-weight:700;box-shadow:0 6px 18px rgba(79,70,229,.35)}
 .z-tag-lbl{position:absolute;bottom:8px;inset-inline-start:10px;background:rgba(15,17,22,.78);backdrop-filter:blur(6px);padding:3px 10px;border-radius:999px;font-size:12px;color:#f9fafb;border:1px solid rgba(255,255,255,.12)}
 .z-meter{display:inline-flex;align-items:center;gap:6px;background:#1f222b;border:1px solid #343844;border-radius:999px;padding:4px 10px;font-size:12px}
 .z-bar{width:64px;height:6px;background:#323642;border-radius:999px;overflow:hidden}
 .z-bar>i{display:block;height:100%;width:0%;background:#22c55e;transition:width .08s linear}
-.z-reaction-pop{position:absolute;top:16px;inset-inline-end:18px;background:rgba(28,31,40,.92);border:1px solid #454a59;border-radius:999px;padding:6px 14px;font-size:22px;animation:popFade 2.2s ease forwards;pointer-events:none;z-index:4}
-@keyframes popFade{0%{opacity:0;transform:translateY(8px) scale(.9)}15%{opacity:1;transform:translateY(0) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateY(-10px) scale(.95)}}
+.z-reactions-stack{position:absolute;top:14px;inset-inline-end:14px;display:flex;flex-direction:column;gap:6px;z-index:6;pointer-events:none}
+.z-reaction-pop{background:rgba(24,27,36,.92);border:1px solid #4b5266;border-radius:999px;padding:5px 12px;font-size:15px;color:#fff;display:inline-flex;align-items:center;gap:6px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
 
 /* القوائم المنبثقة فوق الشريط السفلي */
 .z-popover{position:absolute;bottom:76px;left:50%;transform:translateX(-50%);width:min(360px,92vw);background:#1e2028;border:1px solid #383c49;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.55);padding:10px;z-index:8;color:#f3f4f6}
@@ -93,7 +100,8 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-react-btn:hover{transform:scale(1.2);background:rgba(255,255,255,.08)}
 
 /* الشريط الجانبي (دردشة / مشاركون) */
-.z-side{background:#181a20;border-inline-start:1px solid #2b2e36;display:flex;flex-direction:column;max-height:460px}
+.z-side{background:#181a20;border-inline-start:1px solid #2b2e36;display:flex;flex-direction:column;max-height:480px}
+.z-wrap.expanded .z-side{max-height:none}
 .z-side-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #2b2e36;font-weight:700;font-size:14px}
 .z-msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
 .z-msg{background:#232630;border-radius:12px;padding:8px 10px;font-size:13px}
@@ -125,7 +133,7 @@ details{margin-top:16px;color:#9a9a9a}summary{cursor:pointer;margin-bottom:10px}
 .atg{position:absolute;left:0;right:0;bottom:0;height:6px;background:color-mix(in srgb,var(--ink) 12%,transparent)}.atg b{display:block;height:100%;width:0;background:var(--red)}
 .warn{background:var(--redS);border:2.5px solid var(--red);border-radius:12px;padding:10px 14px;margin-bottom:14px}
 footer{background:var(--ink);color:var(--bg);text-align:center;padding:18px 14px;font-size:14px}footer a{color:var(--sun);font-weight:700;text-decoration:none}
-#toast{position:fixed;inset-inline:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:440px;margin:auto;background:#17140D;color:var(--sun);border:2px solid var(--sun);border-radius:12px;padding:10px 16px;text-align:center;font-weight:700;opacity:0;pointer-events:none;transition:opacity .25s;z-index:20}#toast.show{opacity:1}
+#toast{position:fixed;inset-inline:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:440px;margin:auto;background:#17140D;color:var(--sun);border:2px solid var(--sun);border-radius:12px;padding:10px 16px;text-align:center;font-weight:700;opacity:0;pointer-events:none;transition:opacity .25s;z-index:60}#toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -231,6 +239,8 @@ const price=p=>p>0?`<span class="price">${p} ${A("د.أ","JD")}</span>`:`<span c
 const stars=n=>"★".repeat(n)+"☆".repeat(5-n);
 const pin6=v=>/^\d{6}$/.test(String(v||"").trim());
 
+const displayName=()=>st.adm?A("الإدارة","Host"):(st.me.name||A("طالب","Student"));
+
 const sub=(q,cb,k)=>onSnapshot(q,s=>{cb(s);rd(k)},e=>{console.error(e);toast("⚠️ "+A("تعذرت المزامنة: ","Sync error: ")+e.code)});
 function rd(k){const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&$("app").contains(a))return;if(route()=="ads"&&k&&k!="ads")return;draw()}
 function chkSeed(){if(st.adm&&st.seeded===false&&st.metaSrv&&!st.seeding){st.seeding=1;run(async()=>{const b=writeBatch(db);DEF_ADS.forEach(({id,...d})=>b.set(doc(db,"ads",id),d));DEF_TEAM.forEach(({id,...d})=>b.set(doc(db,"team",id),d));b.set(doc(db,"site","about"),{text:DEF_ABOUT});b.set(doc(db,"site","meta"),{seeded:true});await b.commit()},A("تم تحميل البيانات الأولية","Starter data loaded"))}}
@@ -238,29 +248,76 @@ function chkSeed(){if(st.adm&&st.seeded===false&&st.metaSrv&&!st.seeding){st.see
 /* ---------- حالة غرفة ZOOM ALNOOR والمزامنة المباشرة ---------- */
 const ZS={
   cam:null,micStream:null,scr:null,rec:null,ch:[],
-  hand:0,mic:0,cam1:0,speaker:1,shareAudio:1,audioOnly:0,batterySaver:0,captions:0,
+  hand:0,mic:0,cam1:0,speaker:1,shareAudio:1,audioOnly:0,batterySaver:0,captions:0,expanded:0,
   menu:null,side:null,
-  sharedImg:"",sharedVid:"",sharedDoc:"",
-  reaction:"",reactionKey:0,
+  sharedImg:"",sharedVid:"",sharedPdf:"",sharedDoc:"",slideIdx:1,
+  reactions:[],
   msgs:[],
   hands:{},
-  audioCtx:null,analyser:null,meterRaf:0
+  presence:{},
+  roomCtrl:{allowMic:1},
+  audioCtx:null,analyser:null,meterRaf:0,presenceTimer:0
 };
 let zoomSubStarted=false;
+
+function touchPresence(active=true){
+  if(!db||!st.user)return;
+  setDoc(doc(db,"zoom_presence",st.user.uid),{
+    uid:st.user.uid,
+    name:displayName(),
+    isAdmin:!!st.adm,
+    active:!!active,
+    lastSeen:Date.now()
+  },{merge:true}).catch(()=>{});
+}
 
 function startZoomRealtimeSubs(){
   if(!db||zoomSubStarted)return;
   zoomSubStarted=true;
+  touchPresence(true);
+  clearInterval(ZS.presenceTimer);
+  ZS.presenceTimer=setInterval(()=>{if(route()=="zoom-alnoor"&&st.user)touchPresence(true)},25000);
+
   un.push(sub(collection(db,"zoom_chat"),s=>{
     ZS.msgs=L(s).sort((a,b)=>(a.ts||0)-(b.ts||0));
     const box=document.querySelector(".z-msgs");
     if(box)setTimeout(()=>{box.scrollTop=box.scrollHeight},30);
   },"zoom_chat"));
+
   un.push(sub(collection(db,"zoom_hands"),s=>{
     const map={};
     s.docs.forEach(d=>{const x=d.data();if(x.raised)map[d.id]={uid:d.id,...x}});
     ZS.hands=map;
   },"zoom_hands"));
+
+  un.push(sub(collection(db,"zoom_presence"),s=>{
+    const now=Date.now(),map={};
+    s.docs.forEach(d=>{const x=d.data();if(x.active&&(!x.lastSeen||now-x.lastSeen<90000))map[d.id]={uid:d.id,...x}});
+    ZS.presence=map;
+  },"zoom_presence"));
+
+  un.push(sub(doc(db,"site","zoom_ctrl"),s=>{
+    if(s.exists()){
+      const d=s.data();
+      const prevAllow=ZS.roomCtrl.allowMic;
+      ZS.roomCtrl={allowMic:d.allowMic!==false?1:0};
+      if(prevAllow!==ZS.roomCtrl.allowMic&&!st.adm){
+        if(!ZS.roomCtrl.allowMic&&ZS.micStream){
+          ZS.mic=0;
+          ZS.micStream.getAudioTracks().forEach(t=>{t.enabled=false});
+          toast("🔇 "+A("قام المحاضر بكتم المايك للجميع","Host muted all microphones"));
+        }else if(ZS.roomCtrl.allowMic){
+          toast("🎙 "+A("سمح المحاضر بتشغيل المايك للجميع","Host allowed everyone to unmute"));
+        }
+      }
+    }
+  },"zoom_ctrl"));
+
+  un.push(sub(collection(db,"zoom_reactions"),s=>{
+    const now=Date.now();
+    const list=L(s).filter(r=>r.ts&&(now-r.ts<5000)).sort((a,b)=>(a.ts||0)-(b.ts||0)).slice(-5);
+    ZS.reactions=list;
+  },"zoom_reactions"));
 }
 
 if(ok){
@@ -271,7 +328,7 @@ if(ok){
   sub(collection(db,"ads"),s=>st.ads=L(s).sort((a,b)=>a.ts-b.ts),"ads");
   sub(collection(db,"team"),s=>{st.team=L(s);if(st.team.length)st.seeded=true},"team");
   sub(collection(db,"lecs"),s=>st.lecs=L(s).sort((a,b)=>a.ts-b.ts),"lecs");
-  onAuthStateChanged(auth,u=>{un.forEach(f=>f());un=[];zoomSubStarted=false;st.user=u;st.adm=!!u&&(u.email||"").toLowerCase()==ADMIN_EMAIL.toLowerCase();st.me={};st.regs={};st.all=[];st.studs=[];st.revs=[];ZS.hands={};st.ready=true;
+  onAuthStateChanged(auth,u=>{un.forEach(f=>f());un=[];zoomSubStarted=false;clearInterval(ZS.presenceTimer);st.user=u;st.adm=!!u&&(u.email||"").toLowerCase()==ADMIN_EMAIL.toLowerCase();st.me={};st.regs={};st.all=[];st.studs=[];st.revs=[];ZS.hands={};ZS.presence={};st.ready=true;
     if(u){un.push(sub(doc(db,"students",u.uid),s=>st.me=s.exists()?s.data():{},"me"),sub(doc(db,"regs",u.uid),s=>st.regs=s.exists()?s.data().list||{}:{},"me"));
       if(!st.adm)setDoc(doc(db,"students",u.uid),{email:u.email||"",last:Date.now()},{merge:true}).catch(()=>{});
       un.push(sub(st.adm?collection(db,"reviews"):query(collection(db,"reviews"),where("ok","==",true)),s=>st.revs=L(s).sort((a,b)=>b.ts-a.ts),"revs"));
@@ -368,12 +425,24 @@ function attachMediaElements(){
 }
 
 function zroom(){
-  const myName=esc(st.me.name||st.user?.email||A("مشارك","Participant"));
-  const initial=esc((st.me.name||st.user?.email||"ن").trim().charAt(0).toUpperCase());
+  const myName=esc(displayName());
+  const initial=esc(myName.trim().charAt(0).toUpperCase()||"ن");
   const hasScreen=!!ZS.scr;
   const hasCam=!!(ZS.cam&&ZS.cam1&&!ZS.audioOnly);
-  const hasAnyVisual=hasScreen||hasCam||!!ZS.sharedImg||!!ZS.sharedVid||!!ZS.sharedDoc;
+  const hasAnyVisual=hasScreen||hasCam||!!ZS.sharedImg||!!ZS.sharedVid||!!ZS.sharedPdf||!!ZS.sharedDoc;
   const raisedList=Object.values(ZS.hands||{}).filter(h=>h.raised);
+  const presList=Object.values(ZS.presence||{});
+  const totalCount=Math.max(1,presList.length);
+
+  let hostBar="";
+  if(st.adm){
+    hostBar=`<div class="z-host-bar">
+      <span>🎛 <b>${A("تحكم المحاضر بالصوت:","Host mic controls:")}</b></span>
+      <button type="button" class="z-btn${!ZS.roomCtrl.allowMic?" off":""}" style="height:28px;padding:0 10px;font-size:12px" data-a="zmuteall">🔇 ${A("كتم الكل","Mute all")}</button>
+      <button type="button" class="z-btn${ZS.roomCtrl.allowMic?" on":""}" style="height:28px;padding:0 10px;font-size:12px" data-a="zunmuteall">🎙 ${A("السماح للكل بفتح المايك","Allow all to unmute")}</button>
+      <span class="z-pill">👥 ${totalCount} ${A("متواجد","in room")}</span>
+    </div>`;
+  }
 
   let handsBar="";
   if(raisedList.length){
@@ -399,11 +468,11 @@ function zroom(){
       <div class="z-pop-handle"></div>
       <button type="button" class="z-pop-item" data-a="zpickmedia" data-p="image/*"><span>🖼 ${A("مشاركة صورة","Share photo")}</span></button>
       <button type="button" class="z-pop-item" data-a="zpickmedia" data-p="video/*"><span>🎬 ${A("مشاركة مقطع فيديو","Share video")}</span></button>
-      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p=".ppt,.pptx,.pdf"><span>📄 ${A("مشاركة PowerPoint","Share PowerPoint")}</span></button>
+      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p=".pdf,.ppt,.pptx"><span>📄 ${A("مشاركة ملف / PowerPoint","Share file / PowerPoint")}</span></button>
       <button type="button" class="z-pop-item" data-a="zscr"><span>🖥 ${A("مشاركة الشاشة (4K)","Share screen (4K)")}</span><span>${hasScreen?A("إيقاف","Stop"):"↑"}</span></button>
       <div style="height:1px;background:#323644;margin:4px 0"></div>
       <button type="button" class="z-pop-item" data-a="ztoggleopt" data-p="shareAudio"><span>🔊 ${A("الصوت","Audio")}</span><span class="z-switch${ZS.shareAudio?" on":""}"></span></button>
-      ${(ZS.sharedImg||ZS.sharedVid||ZS.sharedDoc||hasScreen)?`<button type="button" class="z-pop-item" style="color:#fca5a5" data-a="zclearshare"><span>✕ ${A("إيقاف المشاركة الحالية","Stop current share")}</span></button>`:""}
+      ${hasAnyVisual?`<button type="button" class="z-pop-item" style="color:#fca5a5" data-a="zclearshare"><span>✕ ${A("إيقاف المشاركة الحالية","Stop current share")}</span></button>`:""}
     </div>`;
   }else if(ZS.menu==="react"){
     popover=`<div class="z-popover" data-zpop="1">
@@ -423,10 +492,9 @@ function zroom(){
     </aside>`;
   }else if(ZS.side==="people"){
     sideHtml=`<aside class="z-side">
-      <div class="z-side-hd"><span>👥 ${A("المشاركون ورفع اليد","Participants & hands")}</span><button type="button" class="z-btn" style="height:28px;padding:0 8px;font-size:12px" data-a="zside" data-p="">✕</button></div>
+      <div class="z-side-hd"><span>👥 ${A("المشاركون","Participants")} (${totalCount})</span><button type="button" class="z-btn" style="height:28px;padding:0 8px;font-size:12px" data-a="zside" data-p="">✕</button></div>
       <div class="z-msgs">
-        <div class="z-msg"><b>${myName} ${ZS.hand?"✋":""}</b><span style="color:#9ca3af">${st.adm?A("منظم الجلسة","Host"):A("طالب","Student")} · ${ZS.mic?A("المايك شغال","Mic on"):A("المايك مطفي","Mic off")}</span></div>
-        ${raisedList.filter(h=>h.uid!==st.user?.uid).map(h=>`<div class="z-msg" style="border-inline-start:3px solid #f59e0b"><b>✋ ${esc(h.name||A("طالب","Student"))}</b><span style="color:#fde68a">${A("رافع يده الآن","Hand raised now")}</span></div>`).join("")}
+        ${presList.map(p=>`<div class="z-msg" style="${ZS.hands[p.uid]?.raised?"border-inline-start:3px solid #f59e0b":""}"><b>${esc(p.name||A("مشارك","Participant"))}${ZS.hands[p.uid]?.raised?" ✋":""}</b><span style="color:#9ca3af">${p.isAdmin?A("منظم الجلسة","Host"):A("طالب","Student")}</span></div>`).join("")||`<div class="z-msg"><b>${myName} ${ZS.hand?"✋":""}</b><span style="color:#9ca3af">${st.adm?A("منظم الجلسة","Host"):A("طالب","Student")}</span></div>`}
       </div>
     </aside>`;
   }
@@ -441,7 +509,7 @@ function zroom(){
   }else if(!hasAnyVisual){
     stageContent=`<div class="z-empty">
       <h3>${A("ادعُ أشخاصاً للانضمام إليك","Invite people to join you")}</h3>
-      <button type="button" class="z-empty-btn" data-a="zside" data-p="people">${A("إضافة مشاركين","Add participants")}</button>
+      <button type="button" class="z-empty-btn" data-a="zside" data-p="people">${A("إضافة مشاركين","Add participants")} (${totalCount})</button>
       <button type="button" class="z-empty-btn" data-a="zinvite">${A("مشاركة دعوة الاجتماع","Share meeting invite")}</button>
       <div class="row" style="justify-content:center;margin-top:10px">
         <button type="button" class="btn t" style="padding:6px 12px;font-size:13px" data-a="zquickcam">⚡ ${A("تشغيل الكاميرا","Start camera")}</button>
@@ -459,8 +527,11 @@ function zroom(){
     if(ZS.sharedImg){
       tiles.push(`<div class="z-tile main-share"><img src="${esc(ZS.sharedImg)}" alt=""><span class="z-tag-lbl">🖼 ${A("صورة مشاركة","Shared photo")}</span></div>`);
     }
-    if(ZS.sharedDoc){
-      tiles.push(`<div class="z-tile main-share"><div class="z-avatar-card"><div class="z-avatar-circle">📄</div><div style="font-weight:700">${esc(ZS.sharedDoc)}</div><div class="z-pill">PowerPoint / ${A("ملف معروض","Presented file")}</div></div></div>`);
+    if(ZS.sharedPdf){
+      tiles.push(`<div class="z-tile main-share"><div class="z-doc-box"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>📄 ${esc(ZS.sharedDoc||"PDF")}</b><a class="z-btn" style="height:30px;padding:0 10px;font-size:12px;text-decoration:none" href="${esc(ZS.sharedPdf)}" target="_blank" rel="noopener">↗ ${A("فتح في نافذة مستقلة","Open full tab")}</a></div><iframe class="z-doc-frame" src="${esc(ZS.sharedPdf)}"></iframe></div></div>`);
+    }
+    if(ZS.sharedDoc&&!ZS.sharedPdf){
+      tiles.push(`<div class="z-tile main-share"><div class="z-slide-card"><div class="z-pill">PowerPoint / ${A("عرض تقديمي","Presentation")} · ${A("شريحة","Slide")} ${ZS.slideIdx}</div><div style="font-size:20px;font-weight:700">${esc(ZS.sharedDoc)}</div><div class="sub" style="font-size:13px">${A("استخدم أزرار التقليب للتنقل بين الشرائح، أو شارك نافذة العرض المباشرة بدقة 4K","Use slide controls to flip pages, or share the live presentation window in 4K")}</div><div class="row" style="justify-content:center"><button type="button" class="z-btn on" data-a="zslide" data-p="-1">◀ ${A("السابق","Prev")}</button><button type="button" class="z-btn on" data-a="zslide" data-p="1">${A("التالي","Next")} ▶</button></div></div></div>`);
     }
     if(hasCam){
       tiles.push(`<div class="z-tile cam-tile"><video id="zv" autoplay playsinline muted></video><span class="z-tag-lbl">${myName}${ZS.hand?" ✋":""}</span></div>`);
@@ -470,9 +541,18 @@ function zroom(){
     stageContent=`<div class="z-media-grid">${tiles.join("")}</div>`;
   }
 
-  return`<div id="zr" class="z-wrap">
+  const reactionsHtml=ZS.reactions.length
+    ?`<div class="z-reactions-stack">${ZS.reactions.map(r=>`<div class="z-reaction-pop"><span>${esc(r.emoji)}</span><b>${esc(r.who||A("طالب","Student"))}</b></div>`).join("")}</div>`
+    :"";
+
+  return`<div id="zr" class="z-wrap${ZS.expanded?" expanded":""}">
     <div class="z-top">
-      <div class="z-top-badge"><span class="z-dot"></span><span>ZOOM ALNOOR</span><span class="z-pill">${A("بث مباشر","Live")}</span></div>
+      <div class="z-top-badge">
+        <span class="z-dot"></span>
+        <span>ZOOM ALNOOR</span>
+        <span class="z-pill">${A("بث مباشر","Live")}</span>
+        <span class="z-pill">👥 ${totalCount}</span>
+      </div>
       <div class="row" style="margin:0;align-items:center;gap:8px">
         <span class="z-meter">🎤<span class="z-bar"><i id="z-mic-bar"></i></span><span id="zst">${ZS.mic?A("المايك شغال","Mic on"):A("المايك مطفي","Mic off")}</span></span>
         <select data-c="zq" style="background:#232630;color:#fff;border:1px solid #3c4150;border-radius:999px;padding:3px 10px;font-size:12px">
@@ -481,13 +561,15 @@ function zroom(){
           <option value="720">720p</option>
           <option value="480">480p</option>
         </select>
+        <button type="button" class="z-btn${ZS.expanded?" on":""}" style="height:30px;padding:0 10px;font-size:12px" data-a="zexpand" title="${ZS.expanded?A("تصغير الشاشة","Exit fullscreen"):A("تكبير الشاشة","Expand room")}">${ZS.expanded?"🗗 "+A("تصغير","Minimize"):"⛶ "+A("تكبير","Expand")}</button>
         ${st.adm?`<button type="button" id="zrb" class="z-btn${ZS.rec?" off":""}" style="height:30px;padding:0 10px;font-size:12px" data-a="zrec">${ZS.rec?"⏹ "+A("إيقاف","Stop"):"⏺ "+A("تسجيل","Rec")}</button>`:""}
       </div>
     </div>
+    ${hostBar}
     ${handsBar}
     <div class="z-body${ZS.side?" with-side":""}">
       <div class="z-stage${ZS.audioOnly?" audio-only":""}">
-        ${ZS.reaction?`<div key="${ZS.reactionKey}" class="z-reaction-pop">${ZS.reaction}</div>`:""}
+        ${reactionsHtml}
         ${stageContent}
       </div>
       ${sideHtml}
@@ -506,7 +588,7 @@ function zroom(){
       <button type="button" class="z-btn${ZS.audioOnly?" on":""}" data-a="zviewmode" data-p="audio" title="${A("صوت فقط","Audio only")}">🎧</button>
       <button type="button" class="z-btn${(ZS.menu==="react"||ZS.hand)?" on":""}" data-a="zmenu" data-p="react" title="${A("التفاعلات ورفع اليد","Reactions & raise hand")}">${ZS.hand?"✋☺":"☺✋"}</button>
       <button type="button" class="z-btn${(ZS.menu==="share"||hasScreen)?" on":""}" data-a="zmenu" data-p="share" title="${A("مشاركة","Share")}">↑</button>
-      <button type="button" class="z-btn${ZS.side==="people"?" on":""}" data-a="zside" data-p="people" title="${A("المشاركون","Participants")}">👥${raisedList.length?` (${raisedList.length})`:""}</button>
+      <button type="button" class="z-btn${ZS.side==="people"?" on":""}" data-a="zside" data-p="people" title="${A("المشاركون","Participants")}">👥 ${totalCount}</button>
       <button type="button" class="z-btn${ZS.side==="chat"?" on":""}" data-a="zside" data-p="chat" title="${A("الشات المباشر","Live chat")}">💬${ZS.msgs.length?` (${ZS.msgs.length})`:""}</button>
     </div>
   </div>`;
@@ -520,11 +602,15 @@ function vZm(){const z=st.zoom;
 const zs=m=>{const e=$("zst");if(e)e.textContent=m};
 function zStop(){
   stopAudioMeter();
+  clearInterval(ZS.presenceTimer);
   if(ZS.rec&&ZS.rec.state!=="inactive"){try{ZS.rec.stop()}catch(e){}}
   [ZS.cam,ZS.micStream,ZS.scr].forEach(s=>s&&s.getTracks().forEach(t=>t.stop()));
   ZS.cam=ZS.micStream=ZS.scr=ZS.rec=null;
-  ZS.mic=0;ZS.cam1=0;ZS.menu=null;
-  if(db&&st.user&&ZS.hand){setDoc(doc(db,"zoom_hands",st.user.uid),{raised:false,ts:Date.now()},{merge:true}).catch(()=>{})}
+  ZS.mic=0;ZS.cam1=0;ZS.menu=null;ZS.expanded=0;
+  if(db&&st.user){
+    touchPresence(false);
+    if(ZS.hand)setDoc(doc(db,"zoom_hands",st.user.uid),{raised:false,ts:Date.now()},{merge:true}).catch(()=>{});
+  }
   ZS.hand=0;
 }
 
@@ -633,6 +719,7 @@ const ACT={
  async zcreate(b){let v=$("zc").value.trim().toUpperCase();if(!v){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";v=[...crypto.getRandomValues(new Uint8Array(8))].map(x=>c[x%c.length]).join("")}run(async()=>{await setDoc(doc(db,"site","zoom"),{h:await sha("zoom|"+v),ts:Date.now()});ls("zc",v)},null,b)},
  zclose(b){ls("zc","");run(()=>deleteDoc(doc(db,"site","zoom")),A("تم إغلاق المحاضرة","Lecture closed"),b)},
 
+ zexpand(){ZS.expanded=ZS.expanded?0:1;ZS.menu=null;draw()},
  zmenu(m){ZS.menu=ZS.menu===m?null:m;draw()},
  zside(s){ZS.side=ZS.side===s?null:s;ZS.menu=null;draw()},
  zviewmode(m){
@@ -648,22 +735,46 @@ const ACT={
   }
   draw();
  },
+ async zmuteall(){
+  if(!st.adm)return;
+  ZS.roomCtrl.allowMic=0;
+  if(db)await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:false,ts:Date.now()},{merge:true}).catch(()=>{});
+  draw();
+  toast("🔇 "+A("تم كتم المايك للجميع","Muted everyone"));
+ },
+ async zunmuteall(){
+  if(!st.adm)return;
+  ZS.roomCtrl.allowMic=1;
+  if(db)await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:true,ts:Date.now()},{merge:true}).catch(()=>{});
+  draw();
+  toast("🎙 "+A("تم السماح للجميع بتشغيل المايك","Allowed everyone to unmute"));
+ },
  async zsendreact(em){
-  ZS.reaction=em;ZS.reactionKey++;ZS.menu=null;
+  ZS.menu=null;
+  const who=displayName();
   if(em==="✋"){
     ZS.hand=ZS.hand?0:1;
     if(db&&st.user){
       setDoc(doc(db,"zoom_hands",st.user.uid),{
         uid:st.user.uid,
-        name:st.me.name||st.user.email||A("طالب","Student"),
+        name:who,
         raised:!!ZS.hand,
         ts:Date.now()
       },{merge:true}).catch(()=>{});
     }
     toast(ZS.hand?A("تم رفع يدك وستظهر للإدارة","Hand raised — visible to host"):A("تم إنزال يدك","Hand lowered"));
   }
+  if(db&&st.user){
+    addDoc(collection(db,"zoom_reactions"),{
+      uid:st.user.uid,
+      who,
+      emoji:em,
+      ts:Date.now()
+    }).catch(()=>{});
+  }else{
+    ZS.reactions.push({who,emoji:em,ts:Date.now()});
+  }
   draw();
-  setTimeout(()=>{if(ZS.reaction===em){ZS.reaction="";draw()}},2200);
  },
  zlowerhand(uid){
   if(!db||!uid)return;
@@ -680,7 +791,7 @@ const ACT={
  async zsendmsg(){
   const inp=$("z-chat-in");if(!inp)return;
   const text=inp.value.trim();if(!text)return;
-  const who=st.me.name||st.user?.email||A("مشارك","Participant");
+  const who=displayName();
   inp.value="";
   if(db&&st.user){
     await addDoc(collection(db,"zoom_chat"),{
@@ -694,25 +805,33 @@ const ACT={
  },
  zpickmedia(accept){
   const fi=$("z-media-input");if(!fi)return;
-  fi.accept=accept||"image/*,video/*";
+  fi.accept=accept||"image/*,video/*,.pdf";
   fi.onchange=async()=>{
     const file=fi.files?.[0];if(!file)return;
-    ZS.menu=null;
+    ZS.menu=null;ZS.audioOnly=0;
+    ZS.sharedImg="";ZS.sharedVid="";ZS.sharedPdf="";ZS.sharedDoc="";ZS.slideIdx=1;
     if(/^image\//.test(file.type)){
-      ZS.sharedVid="";ZS.sharedDoc="";ZS.sharedImg=URL.createObjectURL(file);draw();
+      ZS.sharedImg=URL.createObjectURL(file);
     }else if(/^video\//.test(file.type)){
-      ZS.sharedImg="";ZS.sharedDoc="";ZS.sharedVid=URL.createObjectURL(file);draw();
+      ZS.sharedVid=URL.createObjectURL(file);
+    }else if(/pdf/i.test(file.type)||/\.pdf$/i.test(file.name)){
+      ZS.sharedPdf=URL.createObjectURL(file);
+      ZS.sharedDoc=file.name;
     }else{
-      ZS.sharedImg="";ZS.sharedVid="";ZS.sharedDoc=file.name;draw();
-      toast("📄 "+file.name);
+      ZS.sharedDoc=file.name;
     }
+    draw();
     fi.value="";
   };
   fi.click();
  },
+ zslide(step){
+  ZS.slideIdx=Math.max(1,ZS.slideIdx+(+step||1));
+  draw();
+ },
  zclearshare(){
   if(ZS.scr){ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null}
-  ZS.sharedImg="";ZS.sharedVid="";ZS.sharedDoc="";ZS.menu=null;draw();
+  ZS.sharedImg="";ZS.sharedVid="";ZS.sharedPdf="";ZS.sharedDoc="";ZS.slideIdx=1;ZS.menu=null;draw();
  },
  zleave(){zStop();toast(A("تمت مغادرة الجلسة","Left session"));go("dashboard")},
 
@@ -727,6 +846,7 @@ const ACT={
   }catch(e){toast("⚠️ "+A("تعذر فتح الكاميرا – تحقق من الصلاحيات","Camera blocked – check permissions"))}
  },
  async zquickmic(){
+  if(!st.adm&&!ZS.roomCtrl.allowMic)return toast("🔇 "+A("المايك مقفل حالياً من قِبل المحاضر","Microphone is currently locked by host"));
   try{
     const ms=await ensureMic();
     const tr=ms.getAudioTracks()[0];
@@ -738,6 +858,7 @@ const ACT={
  },
  async zt(k){
   if(k==="mic"){
+    if(!st.adm&&!ZS.roomCtrl.allowMic&&!ZS.mic)return toast("🔇 "+A("قام المحاضر بكتم المايك للجميع","Host muted all microphones"));
     try{
       const next=ZS.mic?0:1;
       const ms=await ensureMic();
@@ -856,6 +977,7 @@ document.addEventListener("change",async e=>{
 });
 document.addEventListener("input",e=>{const sl=e.target.dataset?.cropSlider;if(!sl)return;const[id,prop]=sl.split("|"),cr=st.crops[id];if(!cr)return;cr[prop]=+e.target.value;syncCropPreview(id)});
 document.addEventListener("keydown",e=>{if(e.key=="Enter"&&e.target.dataset.e)ACT[e.target.dataset.e]()});
+addEventListener("beforeunload",()=>{if(route()=="zoom-alnoor")zStop()});
 initTheme();
 draw();
 </script>
