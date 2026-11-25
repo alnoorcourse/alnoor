@@ -39,7 +39,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:va
 .drawer-body{flex:1;overflow-y:auto;padding:14px 12px 24px;display:flex;flex-direction:column;gap:16px}
 .drawer-sec-lbl{font-size:11.5px;font-weight:700;color:var(--tx2);padding:0 10px;margin-bottom:6px;letter-spacing:.2px}
 .drawer-group{display:flex;flex-direction:column;gap:4px}
-.drawer-link{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--tx);font-size:14.5px;font-weight:600;border:1px solid transparent;transition:background-color .15s,color .15s}
+.drawer-link{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--tx);font-size:14.5px;font-weight:600;border:1px solid transparent;transition:background-color .15s,color .15s;cursor:pointer}
 .drawer-link:hover{background:color-mix(in srgb,var(--tealS) 65%,transparent);color:var(--teal)}
 .drawer-link.on{background:var(--teal);color:#fff;box-shadow:0 4px 12px color-mix(in srgb,var(--teal) 28%,transparent)}
 .drawer-link .dl-main{display:flex;align-items:center;gap:10px}
@@ -568,7 +568,7 @@ function initTheme(){
 const DEF_ABOUT="منصة النور منصة تطوعية وتعليمية تجمع الطلاب في مكان واحد: تطوّع في الحملات، تدرّب في الدورات الوجاهية والمهارات، وتابع المحاضرات والبث المباشر.";
 const DEF_ADS=[{id:"welcome",type:"text",title:"أهلاً بك في منصة النور 🌟",desc:"أنشئ حسابك بالبريد ورمز من 6 أرقام ثم سجل دخولك لتصل إلى ملفك الشخصي والدورات والتطوعات والمهارات.",ts:1},
 {id:"alert",type:"text",title:"تنبيه مهم",desc:"تابع الإعلانات باستمرار، وأكمل اسمك ورقم هاتفك في «لوحتي» قبل التسجيل في أي تطوع أو دورة.",ts:2}];
-const DEF_TEAM=["الأول","الثاني","الثالث","الرابع"].map((n,i)=>({id:"f"+(i+1),name:"المؤسس "+n,ig:"alnoor_course",photo:""}));
+const DEF_TEAM=["الأول","الثاني","الثالث","ال الرابع"].map((n,i)=>({id:"f"+(i+1),name:"المؤسس "+n,ig:"alnoor_course",photo:""}));
 const ads=()=>st.seeded?st.ads:DEF_ADS;
 const about=()=>st.seeded?st.about:(st.about||DEF_ABOUT);
 function team(){const map=new Map(st.team.map(x=>[x.id,x]));return DEF_TEAM.map(d=>({...d,...(map.get(d.id)||{})}))}
@@ -628,7 +628,18 @@ const fdata=async(c,f)=>{
 };
 async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 function qr(seed){let s="",h=0;for(const ch of seed)h=(h*31+ch.charCodeAt(0))>>>0;for(let y=0;y<11;y++)for(let x=0;x<11;x++){const f=(x<3&&y<3)||(x>7&&y<3)||(x<3&&y>7);h=(h*1103515245+12345)>>>0;if(f||(h>>16)&1)s+=`<rect x="${x}" y="${y}" width="1" height="1"/>`}return`<svg class="qr" viewBox="0 0 11 11" fill="#000" role="img" aria-label="QR">${s}</svg>`}
-const none=()=>`<p class="sub">${A("لا يوجد بعد","Nothing yet")}</p>`,route=()=>location.hash.slice(1)||"dashboard",go=r=>location.hash=r;
+const none=()=>`<p class="sub">${A("لا يوجد بعد","Nothing yet")}</p>`;
+const route=()=>location.hash.replace(/^#/,"")||"dashboard";
+function go(r){
+  const target=String(r||"dashboard").replace(/^#/,"");
+  setMenuOpen(false);
+  if(location.hash.replace(/^#/,"")===target){
+    if(target!=="zoom-alnoor")zStop();
+    draw();
+  }else{
+    location.hash=target;
+  }
+}
 const tag=s=>`<span class="tag${s=="pending"?" r":""}">${s=="pending"?A("قيد الانتظار","Pending"):s=="ok"?A("مقبول","Accepted"):A("مكتمل","Done")}</span>`;
 const price=p=>p>0?`<span class="price">${p} ${A("د.أ","JD")}</span>`:`<span class="tag">${A("مجاني","Free")}</span>`;
 const stars=n=>"★".repeat(n)+"☆".repeat(5-n);
@@ -2092,7 +2103,7 @@ function draw(){const r=route(),d=document.documentElement;
      {id:"ads",ico:"📢",label:A("الإعلانات","Ads"),badge:nw?A("جديد","New"):""}
    ]}
  ];
- if($("nav"))$("nav").innerHTML=groups.map(g=>`<div><div class="drawer-sec-lbl">${g.title}</div><div class="drawer-group">${g.links.map(x=>`<a href="#${x.id}" data-a="navSelect" class="drawer-link${r==x.id?" on":""}"><span class="dl-main"><span class="dl-ico">${x.ico}</span><span>${x.label}</span></span>${x.badge?`<span class="drawer-pill">${x.badge}</span>`:""}</a>`).join("")}</div></div>`).join("");
+ if($("nav"))$("nav").innerHTML=groups.map(g=>`<div><div class="drawer-sec-lbl">${g.title}</div><div class="drawer-group">${g.links.map(x=>`<a href="#${x.id}" data-a="navSelect" data-p="${x.id}" class="drawer-link${r==x.id?" on":""}"><span class="dl-main"><span class="dl-ico">${x.ico}</span><span>${x.label}</span></span>${x.badge?`<span class="drawer-pill">${x.badge}</span>`:""}</a>`).join("")}</div></div>`).join("");
  setMenuOpen(st.menuOpen);
 
  let v;if(!st.ready)v=`<p class="sub">…</p>`;else if(r=="ads")v=vAds();else if(!st.user)v=vLogin();else v=({dashboard:vDash,inbox:vInbox,skills:()=>vItems("s"),volunteering:()=>vItems("v"),courses:()=>vItems("c"),"zoom-alnoor":vZm,lectures:vLectureRegistration,feedback:vFb,about:vAbout,"admin-secret-portal":()=>st.adm?vCommunicationAdmin()+vAdm():vAdm()}[r]||vDash)();
@@ -2150,7 +2161,10 @@ async function ensureCam(){
 const ACT={
  toggleMenu(){setMenuOpen(!st.menuOpen)},
  closeMenu(){setMenuOpen(false)},
- navSelect(){setMenuOpen(false)},
+ navSelect(p,b){
+  const target=p||b?.getAttribute("href")?.replace(/^#/,"")||"dashboard";
+  go(target);
+ },
  async delMessageAll(id){
   if(!st.adm||!id)return;
   if(!confirm(A("حذف هذه الرسالة نهائيًا من صندوق جميع الطلاب؟","Permanently delete this message from all students' inboxes?")))return;
@@ -2218,8 +2232,8 @@ const ACT={
    toast(A("حُذف الأرشيف القديم. أعد العملية إذا كان أكبر من 8000 رسالة.","Old archive deleted. Repeat if it contained over 8,000 messages."));
   },A("تم تنظيف الشات القديم","Legacy chat cleaned"));
  },
- home(){setMenuOpen(false);go("dashboard")},
- goRoute(r){setMenuOpen(false);if(r)go(r)},
+ home(){go("dashboard")},
+ goRoute(r){go(r||"dashboard")},
  lang(){st.lang=st.lang=="ar"?"en":"ar";ls("lang",st.lang);draw()},
  theme(){const isDark=document.documentElement.getAttribute("data-theme")==="dark";applyTheme(isDark?"light":"dark");toast(isDark?A("تم التفعيل: وضع النهار","Light mode enabled"):A("تم التفعيل: وضع الليل","Dark mode enabled"))},
  async out(){try{await detachDeviceNotifications()}catch(e){return toast(A("تعذر فصل إشعارات هذا الجهاز؛ أعد المحاولة لحماية رسائلك قبل الخروج.","Could not unlink this device's notifications. Retry before signing out."))}zStop();setMenuOpen(false);if(ok)await signOut(auth);go("dashboard");toast(A("تم تسجيل الخروج","Signed out"))},
@@ -2570,95 +2584,91 @@ const ACT={
     if(!ZS.joined||epoch!==ZS.sfuEpoch){capture.getTracks().forEach(t=>t.stop());return}
     ZS.scr=capture;
     ZS.screenActive=1;
-    const vTrack=ZS.scr.getVideoTracks()[0];
-    if(vTrack)vTrack.onended=()=>{
-      stopLiveFrameSync();
-      ZS.scr?.getTracks().forEach(t=>t.stop());
-      ZS.scr=null;ZS.screenActive=0;
-      syncTracksToPeers();
-      draw();
-      syncStageToCloud({screenActive:false,liveFrameUrl:""});
-    };
+    const vTrack=capture.getVideoTracks()[0];
+    if(vTrack){
+      vTrack.onended=()=>{
+        stopLiveFrameSync();
+        ZS.scr=null;
+        ZS.screenActive=0;
+        syncTracksToPeers();
+        draw();
+        syncStageToCloud({screenActive:false,liveFrameUrl:""});
+      };
+    }
+    await syncTracksToPeers();
     draw();
     startLiveFrameSync();
-    await syncTracksToPeers();
     syncStageToCloud({screenActive:true});
-    toast("✅");
-  }catch(e){toast("⚠️ "+mediaErrorMsg(e,"both"))}
+  }catch(e){
+    if(e?.name==="NotAllowedError"||e?.name==="AbortError"){
+      toast(A("تم إلغاء مشاركة الشاشة","Screen sharing canceled"));
+    }else{
+      toast("⚠️ "+A("تعذر مشاركة الشاشة: تحقق من صلاحيات المتصفح","Could not share screen: check browser permissions"));
+    }
+  }
  },
- async zrec(b){
-  if(ZS.rec&&ZS.rec.state!=="inactive"){ZS.rec.stop();return}
-  try{if(!ZS.mic&&!ZS.cam&&!ZS.scr)await ensureMic()}catch(e){}
-  const tracks=[];
-  if(ZS.scr)tracks.push(...ZS.scr.getVideoTracks(),...ZS.scr.getAudioTracks());
-  else if(ZS.cam&&ZS.cam1)tracks.push(...ZS.cam.getVideoTracks());
-  if(ZS.micStream&&ZS.mic)tracks.push(...ZS.micStream.getAudioTracks());
-  if(!tracks.length)return toast("⚠️ "+A("لا يوجد صوت أو صورة نشطة للتسجيل","No active audio or video to record"));
-  const mix=new MediaStream(tracks);
-  if(!window.MediaRecorder)return toast("⚠️ "+A("التسجيل غير مدعوم في هذا المتصفح","Recording is not supported in this browser"));
-  const mt=["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm","audio/webm"].find(t=>MediaRecorder.isTypeSupported(t))||"";
-  try{
-    ZS.rec=mt?new MediaRecorder(mix,{mimeType:mt}):new MediaRecorder(mix);
-    ZS.ch=[];
-    ZS.rec.ondataavailable=e=>{if(e.data.size)ZS.ch.push(e.data)};
-    ZS.rec.onstop=()=>{
-      const blob=new Blob(ZS.ch,{type:ZS.rec?.mimeType||"video/webm"});
-      const a=document.createElement("a");
-      a.href=URL.createObjectURL(blob);
-      a.download="alnoor-lecture-"+Date.now()+".webm";
-      document.body.appendChild(a);a.click();a.remove();
-      ZS.rec=null;
-      const rb=$("zrb");if(rb){rb.textContent="⏺";rb.classList.remove("off")}
-      toast("💾");
-    };
-    ZS.rec.start(1000);
-    if(b){b.textContent="⏹";b.classList.add("off")}
-  }catch(e){toast("⚠️")}
+ zrec(){
+  if(!st.adm)return;
+  if(ZS.rec){ZS.rec.stop();return}
+  const tracks=[
+    ...(ZS.scr?ZS.scr.getVideoTracks():[]),
+    ...(!ZS.scr&&ZS.cam?ZS.cam.getVideoTracks():[]),
+    ...(ZS.micStream?ZS.micStream.getAudioTracks():[])
+  ];
+  if(!tracks.length)return toast("⚠️");
+  const stream=new MediaStream(tracks);
+  ZS.ch=[];
+  ZS.rec=new MediaRecorder(stream);
+  ZS.rec.ondataavailable=e=>{if(e.data.size)ZS.ch.push(e.data)};
+  ZS.rec.onstop=()=>{
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob(ZS.ch,{type:ZS.rec.mimeType}));
+    a.download="zoom-alnoor-"+Date.now()+".webm";
+    document.body.appendChild(a);a.click();a.remove();
+    ZS.rec=null;
+    draw();
+  };
+  ZS.rec.start();
+  draw();
  }
 };
 
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){
+    if(st.menuOpen){setMenuOpen(false);return}
+    if(ZS.expanded){ZS.expanded=0;draw();return}
+    if(ZS.menu){ZS.menu=null;draw();return}
+  }
+  const t=e.target;if(e.key=="Enter"&&t?.dataset?.e){e.preventDefault();ACT[t.dataset.e]?.(t.dataset.p,t)}
+});
 document.addEventListener("click",e=>{
   unlockRemoteAudioOnGesture();
   if(ZS.menu&&!e.target.closest("[data-zpop]")&&!e.target.closest('[data-a="zmenu"]')){
-    ZS.menu=null;
-    draw();
+    ZS.menu=null;draw();
   }
-  const b=e.target.closest("[data-a]");if(!b)return;
+  const b=e.target.closest("[data-a]");
+  if(!b)return;
   if(b.tagName==="A")e.preventDefault();
   ACT[b.dataset.a]?.(b.dataset.p,b);
 });
-
-document.addEventListener("change",async e=>{const s=e.target;
- if(s.id==="p-photo-file"){
-   const f=s.files?.[0];if(!f)return;
-   try{
-     const src=await compressToDataUrl(f,900,900,450000);
-     st.crops.me={src,x:0,y:0,zoom:1};
-     draw();
-   }catch(err){toast("⚠️ "+err.message)}
-   return;
- }
- const fm=s.id.match(/^e-team-(f[1-4])-file$/);
- if(fm){const f=s.files?.[0];if(!f)return;try{const src=await compressToDataUrl(f,900,900,450000);st.crops[fm[1]]={src,x:0,y:0,zoom:1};draw()}catch(err){toast("⚠️ "+err.message)}return}
- if(s.dataset.c=="filt"){st.filt=s.value;draw()}
- if(s.dataset.c=="rst"&&st.adm){const[u,i]=s.dataset.p.split("|");run(()=>changeRegistrationStatus(u,i,s.value),A("تم التحديث وإرسال رسالة الصندوق.","Updated and delivered to inbox."))}
- if(s.dataset.c=="zq"){
-   const [w,h]=ZQ[s.value]||[1280,720];
-   if(ZS.cam){
-     const vt=ZS.cam.getVideoTracks()[0];
-     if(vt?.applyConstraints)await vt.applyConstraints({width:{ideal:w},height:{ideal:h}}).catch(()=>{});
-     const stg=vt?.getSettings();
-     if(stg?.width)zs(stg.width+"×"+stg.height);
-   }
- }
-});
-
-document.addEventListener("input",e=>{const cs=e.target.dataset?.cropSlider;if(!cs)return;const[id,prop]=cs.split("|"),cr=st.crops[id];if(!cr)return;cr[prop]=+e.target.value;syncCropPreview(id)});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&st.menuOpen){setMenuOpen(false);return}if(e.key=="Enter"&&e.target.dataset?.e)ACT[e.target.dataset.e]?.()});
-
-setInterval(()=>{const e=$("z-duration");if(!e||!ZS.enteredAt)return;const s=Math.floor((Date.now()-ZS.enteredAt)/1000),p=n=>String(n).padStart(2,"0");e.textContent=`${p(Math.floor(s/3600))}:${p(Math.floor(s%3600/60))}:${p(s%60)}`},1000);
+document.addEventListener("change",async e=>{const t=e.target;
+  if(t?.id==="p-photo-file"&&t.files?.[0]){
+    const r=new FileReader();
+    r.onload=()=>{st.crops.me={src:String(r.result||""),zoom:1,x:0,y:0};draw()};
+    r.readAsDataURL(t.files[0]);
+    return;
+  }
+  const m=t?.id?.match(/^e-team-(f\d)-file$/);if(m&&t.files?.[0]){const id=m[1],r=new FileReader();r.onload=()=>{st.crops[id]={src:String(r.result||""),zoom:1,x:0,y:0};draw()};r.readAsDataURL(t.files[0]);return}
+  if(t?.dataset?.c=="filt"){st.filt=t.value;draw()}
+  if(t?.dataset?.c=="rst"){
+    const[u,i]=t.dataset.p.split("|");
+    run(()=>changeRegistrationStatus(u,i,t.value),A("تم التحديث وإيداع الرسالة.","Updated and delivered."));
+  }
+  if(t?.dataset?.c=="zq"&&ZS.cam){const[w,h]=ZQ[t.value];ZS.cam.getVideoTracks()[0]?.applyConstraints({width:{ideal:w},height:{ideal:h}}).then(()=>{const s=ZS.cam.getVideoTracks()[0].getSettings();zs(s.width+"×"+s.height)}).catch(()=>{})}});
+document.addEventListener("input",e=>{const s=e.target?.dataset?.cropSlider;if(!s)return;const[id,prop]=s.split("|"),cr=st.crops[id];if(!cr)return;cr[prop]=parseFloat(e.target.value)||0;syncCropPreview(id)});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")requestWakeLock();else releaseWakeLock()});
-
+addEventListener("pagehide",()=>{zStop()});
+setInterval(()=>{const el=$("z-duration");if(!el)return;if(!ZS.enteredAt){el.textContent="00:00:00";return}const sec=Math.floor((Date.now()-ZS.enteredAt)/1000);el.textContent=[sec/3600,(sec%3600)/60,sec%60].map(n=>String(Math.floor(n)).padStart(2,"0")).join(":")},1000);
 initTheme();
 draw();
 </script>
