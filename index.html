@@ -75,7 +75,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-tile video,.z-tile img{width:100%;height:100%;max-height:62svh;object-fit:contain;background:#090a0d}
 .z-tile.cam-tile video{object-fit:cover}
 .z-doc-box{width:100%;display:flex;flex-direction:column;gap:10px;padding:14px}
-.z-doc-frame{width:100%;height:56svh;min-height:320px;border:1px solid #383c49;border-radius:12px;background:#fff}
+.z-doc-frame{width:100%;height:56svh;min-height:340px;border:1px solid #383c49;border-radius:12px;background:#fff}
 .z-slide-card{width:100%;min-height:260px;background:linear-gradient(145deg,#1b1f2b,#12151e);border:1px solid #363c4d;border-radius:14px;padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
 .z-avatar-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px}
 .z-avatar-circle{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#1e6fd9);color:#fff;display:grid;place-items:center;font-size:28px;font-weight:700;box-shadow:0 6px 18px rgba(79,70,229,.35)}
@@ -84,7 +84,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-bar{width:64px;height:6px;background:#323642;border-radius:999px;overflow:hidden}
 .z-bar>i{display:block;height:100%;width:0%;background:#22c55e;transition:width .08s linear}
 .z-reactions-stack{position:absolute;top:14px;inset-inline-end:14px;display:flex;flex-direction:column;gap:6px;z-index:6;pointer-events:none}
-.z-reaction-pop{background:rgba(24,27,36,.92);border:1px solid #4b5266;border-radius:999px;padding:5px 12px;font-size:15px;color:#fff;display:inline-flex;align-items:center;gap:6px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.z-reaction-pop{background:rgba(24,27,36,.94);border:1px solid #525a70;border-radius:999px;padding:6px 14px;font-size:16px;color:#fff;display:inline-flex;align-items:center;gap:8px;box-shadow:0 6px 18px rgba(0,0,0,.45)}
 
 /* القوائم المنبثقة فوق الشريط السفلي */
 .z-popover{position:absolute;bottom:76px;left:50%;transform:translateX(-50%);width:min(360px,92vw);background:#1e2028;border:1px solid #383c49;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.55);padding:10px;z-index:8;color:#f3f4f6}
@@ -161,6 +161,7 @@ const firebaseConfig={
 const ADMIN_EMAIL="alnoorcourse0@gmail.com";
 /* ================================================================================================ */
 
+const ZQ={"2160":[3840,2160],"1080":[1920,1080],"720":[1280,720],"480":[854,480]};
 const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}};
 const st={lang:ls("lang")||"ar",user:null,adm:false,ready:false,regMode:false,me:{},regs:{},items:[],ads:[],team:[],lecs:[],revs:[],about:"",zoom:null,seeded:null,metaSrv:false,all:[],studs:[],filt:"",rs:0,fc:"",zok:0,crops:{}};
@@ -198,7 +199,7 @@ const ads=()=>st.seeded?st.ads:DEF_ADS;
 const about=()=>st.seeded?st.about:(st.about||DEF_ABOUT);
 function team(){const map=new Map(st.team.map(x=>[x.id,x]));return DEF_TEAM.map(d=>({...d,...(map.get(d.id)||{})}))}
 
-function toast(m){const e=$("toast");e.textContent=m;e.className="show";clearTimeout(toast.t);toast.t=setTimeout(()=>e.className="",3200)}
+function toast(m){const e=$("toast");e.textContent=m;e.className="show";clearTimeout(toast.t);toast.t=setTimeout(()=>e.className="",3400)}
 async function run(f,msg,b){if(!db)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));if(b)b.disabled=true;
   try{await f();toast("✅ "+(msg||A("تم الحفظ بنجاح","Saved successfully")))}catch(e){console.error(e);toast("⚠️ "+A("تعذر الحفظ: ","Save failed: ")+(e.code||e.message))}finally{if(b)b.disabled=false}}
 const igC=h=>{h=String(h||"").trim();const m=h.match(/instagram\.com\/([A-Za-z0-9._]+)/i);if(m)h=m[1];return h.replace(/^@/,"").replace(/[^A-Za-z0-9._]/g,"")};
@@ -242,15 +243,21 @@ const pin6=v=>/^\d{6}$/.test(String(v||"").trim());
 const displayName=()=>st.adm?A("الإدارة","Host"):(st.me.name||A("طالب","Student"));
 
 const sub=(q,cb,k)=>onSnapshot(q,s=>{cb(s);rd(k)},e=>{console.error(e);toast("⚠️ "+A("تعذرت المزامنة: ","Sync error: ")+e.code)});
-function rd(k){const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&$("app").contains(a))return;if(route()=="ads"&&k&&k!="ads")return;draw()}
+function rd(k){
+  if(route()=="zoom-alnoor"&&k&&/zoom_chat|zoom_reactions|zoom_presence/.test(k)){
+    const zr=$("zr");
+    if(zr){draw();return}
+  }
+  const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&$("app").contains(a))return;if(route()=="ads"&&k&&k!="ads")return;draw()
+}
 function chkSeed(){if(st.adm&&st.seeded===false&&st.metaSrv&&!st.seeding){st.seeding=1;run(async()=>{const b=writeBatch(db);DEF_ADS.forEach(({id,...d})=>b.set(doc(db,"ads",id),d));DEF_TEAM.forEach(({id,...d})=>b.set(doc(db,"team",id),d));b.set(doc(db,"site","about"),{text:DEF_ABOUT});b.set(doc(db,"site","meta"),{seeded:true});await b.commit()},A("تم تحميل البيانات الأولية","Starter data loaded"))}}
 
-/* ---------- حالة غرفة ZOOM ALNOOR والمزامنة المباشرة ---------- */
+/* ---------- حالة غرفة ZOOM ALNOOR والمزامنة المباشرة (مُحسّنة لـ 300+ طالب) ---------- */
 const ZS={
   cam:null,micStream:null,scr:null,rec:null,ch:[],
   hand:0,mic:0,cam1:0,speaker:1,shareAudio:1,audioOnly:0,batterySaver:0,captions:0,expanded:0,
   menu:null,side:null,
-  sharedImg:"",sharedVid:"",sharedPdf:"",sharedDoc:"",slideIdx:1,
+  sharedImg:"",sharedVid:"",sharedPdf:"",sharedDoc:"",pdfPage:1,slideIdx:1,
   reactions:[],
   msgs:[],
   hands:{},
@@ -276,10 +283,11 @@ function startZoomRealtimeSubs(){
   zoomSubStarted=true;
   touchPresence(true);
   clearInterval(ZS.presenceTimer);
-  ZS.presenceTimer=setInterval(()=>{if(route()=="zoom-alnoor"&&st.user)touchPresence(true)},25000);
+  ZS.presenceTimer=setInterval(()=>{if(route()=="zoom-alnoor"&&st.user)touchPresence(true)},45000);
 
   un.push(sub(collection(db,"zoom_chat"),s=>{
-    ZS.msgs=L(s).sort((a,b)=>(a.ts||0)-(b.ts||0));
+    const all=L(s).sort((a,b)=>(a.ts||0)-(b.ts||0));
+    ZS.msgs=all.slice(-120);
     const box=document.querySelector(".z-msgs");
     if(box)setTimeout(()=>{box.scrollTop=box.scrollHeight},30);
   },"zoom_chat"));
@@ -292,7 +300,7 @@ function startZoomRealtimeSubs(){
 
   un.push(sub(collection(db,"zoom_presence"),s=>{
     const now=Date.now(),map={};
-    s.docs.forEach(d=>{const x=d.data();if(x.active&&(!x.lastSeen||now-x.lastSeen<90000))map[d.id]={uid:d.id,...x}});
+    s.docs.forEach(d=>{const x=d.data();if(x.active&&(!x.lastSeen||now-x.lastSeen<150000))map[d.id]={uid:d.id,...x}});
     ZS.presence=map;
   },"zoom_presence"));
 
@@ -315,7 +323,7 @@ function startZoomRealtimeSubs(){
 
   un.push(sub(collection(db,"zoom_reactions"),s=>{
     const now=Date.now();
-    const list=L(s).filter(r=>r.ts&&(now-r.ts<5000)).sort((a,b)=>(a.ts||0)-(b.ts||0)).slice(-5);
+    const list=L(s).filter(r=>r.ts&&(now-r.ts<12000)).sort((a,b)=>(a.ts||0)-(b.ts||0)).slice(-8);
     ZS.reactions=list;
   },"zoom_reactions"));
 }
@@ -468,7 +476,7 @@ function zroom(){
       <div class="z-pop-handle"></div>
       <button type="button" class="z-pop-item" data-a="zpickmedia" data-p="image/*"><span>🖼 ${A("مشاركة صورة","Share photo")}</span></button>
       <button type="button" class="z-pop-item" data-a="zpickmedia" data-p="video/*"><span>🎬 ${A("مشاركة مقطع فيديو","Share video")}</span></button>
-      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p=".pdf,.ppt,.pptx"><span>📄 ${A("مشاركة ملف / PowerPoint","Share file / PowerPoint")}</span></button>
+      <button type="button" class="z-pop-item" data-a="zpickmedia" data-p=".pdf,.ppt,.pptx,application/pdf"><span>📄 ${A("مشاركة ملف / PowerPoint","Share file / PowerPoint")}</span></button>
       <button type="button" class="z-pop-item" data-a="zscr"><span>🖥 ${A("مشاركة الشاشة (4K)","Share screen (4K)")}</span><span>${hasScreen?A("إيقاف","Stop"):"↑"}</span></button>
       <div style="height:1px;background:#323644;margin:4px 0"></div>
       <button type="button" class="z-pop-item" data-a="ztoggleopt" data-p="shareAudio"><span>🔊 ${A("الصوت","Audio")}</span><span class="z-switch${ZS.shareAudio?" on":""}"></span></button>
@@ -528,10 +536,28 @@ function zroom(){
       tiles.push(`<div class="z-tile main-share"><img src="${esc(ZS.sharedImg)}" alt=""><span class="z-tag-lbl">🖼 ${A("صورة مشاركة","Shared photo")}</span></div>`);
     }
     if(ZS.sharedPdf){
-      tiles.push(`<div class="z-tile main-share"><div class="z-doc-box"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>📄 ${esc(ZS.sharedDoc||"PDF")}</b><a class="z-btn" style="height:30px;padding:0 10px;font-size:12px;text-decoration:none" href="${esc(ZS.sharedPdf)}" target="_blank" rel="noopener">↗ ${A("فتح في نافذة مستقلة","Open full tab")}</a></div><iframe class="z-doc-frame" src="${esc(ZS.sharedPdf)}"></iframe></div></div>`);
+      tiles.push(`<div class="z-tile main-share"><div class="z-doc-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <b>📄 ${esc(ZS.sharedDoc||"PDF")} · ${A("صفحة","Page")} ${ZS.pdfPage}</b>
+          <div class="row" style="margin:0">
+            <button type="button" class="z-btn on" style="height:30px;padding:0 10px;font-size:12px" data-a="zpdfpage" data-p="-1">◀ ${A("سابقة","Prev")}</button>
+            <button type="button" class="z-btn on" style="height:30px;padding:0 10px;font-size:12px" data-a="zpdfpage" data-p="1">${A("تالية","Next")} ▶</button>
+            <a class="z-btn" style="height:30px;padding:0 10px;font-size:12px;text-decoration:none" href="${esc(ZS.sharedPdf)}" target="_blank" rel="noopener">↗ ${A("فتح الملف","Open file")}</a>
+          </div>
+        </div>
+        <iframe class="z-doc-frame" src="${esc(ZS.sharedPdf)}#page=${ZS.pdfPage}"></iframe>
+      </div></div>`);
     }
     if(ZS.sharedDoc&&!ZS.sharedPdf){
-      tiles.push(`<div class="z-tile main-share"><div class="z-slide-card"><div class="z-pill">PowerPoint / ${A("عرض تقديمي","Presentation")} · ${A("شريحة","Slide")} ${ZS.slideIdx}</div><div style="font-size:20px;font-weight:700">${esc(ZS.sharedDoc)}</div><div class="sub" style="font-size:13px">${A("استخدم أزرار التقليب للتنقل بين الشرائح، أو شارك نافذة العرض المباشرة بدقة 4K","Use slide controls to flip pages, or share the live presentation window in 4K")}</div><div class="row" style="justify-content:center"><button type="button" class="z-btn on" data-a="zslide" data-p="-1">◀ ${A("السابق","Prev")}</button><button type="button" class="z-btn on" data-a="zslide" data-p="1">${A("التالي","Next")} ▶</button></div></div></div>`);
+      tiles.push(`<div class="z-tile main-share"><div class="z-slide-card">
+        <div class="z-pill">PowerPoint / ${A("عرض تقديمي","Presentation")} · ${A("شريحة","Slide")} ${ZS.slideIdx}</div>
+        <div style="font-size:20px;font-weight:700">${esc(ZS.sharedDoc)}</div>
+        <div class="sub" style="font-size:13px">${A("قلّب الشرائح من هنا أو افتح العرض بوضع ملء الشاشة (F5) في جهازك","Flip slides here or open full-screen slideshow (F5) on your device")}</div>
+        <div class="row" style="justify-content:center">
+          <button type="button" class="z-btn on" data-a="zslide" data-p="-1">◀ ${A("السابق","Prev")}</button>
+          <button type="button" class="z-btn on" data-a="zslide" data-p="1">${A("التالي","Next")} ▶</button>
+        </div>
+      </div></div>`);
     }
     if(hasCam){
       tiles.push(`<div class="z-tile cam-tile"><video id="zv" autoplay playsinline muted></video><span class="z-tag-lbl">${myName}${ZS.hand?" ✋":""}</span></div>`);
@@ -805,25 +831,30 @@ const ACT={
  },
  zpickmedia(accept){
   const fi=$("z-media-input");if(!fi)return;
-  fi.accept=accept||"image/*,video/*,.pdf";
+  fi.accept=accept||"image/*,video/*,.pdf,application/pdf";
   fi.onchange=async()=>{
     const file=fi.files?.[0];if(!file)return;
+    const realName=String(file.name||A("ملف مرفق","Attached file")).split(/[/\\]/).pop()||A("ملف مرفق","Attached file");
     ZS.menu=null;ZS.audioOnly=0;
-    ZS.sharedImg="";ZS.sharedVid="";ZS.sharedPdf="";ZS.sharedDoc="";ZS.slideIdx=1;
+    ZS.sharedImg="";ZS.sharedVid="";ZS.sharedPdf="";ZS.sharedDoc="";ZS.pdfPage=1;ZS.slideIdx=1;
     if(/^image\//.test(file.type)){
       ZS.sharedImg=URL.createObjectURL(file);
     }else if(/^video\//.test(file.type)){
       ZS.sharedVid=URL.createObjectURL(file);
-    }else if(/pdf/i.test(file.type)||/\.pdf$/i.test(file.name)){
+    }else if(/pdf/i.test(file.type)||/\.pdf$/i.test(realName)){
       ZS.sharedPdf=URL.createObjectURL(file);
-      ZS.sharedDoc=file.name;
+      ZS.sharedDoc=realName;
     }else{
-      ZS.sharedDoc=file.name;
+      ZS.sharedDoc=realName;
     }
     draw();
     fi.value="";
   };
   fi.click();
+ },
+ zpdfpage(step){
+  ZS.pdfPage=Math.max(1,ZS.pdfPage+(+step||1));
+  draw();
  },
  zslide(step){
   ZS.slideIdx=Math.max(1,ZS.slideIdx+(+step||1));
@@ -831,7 +862,7 @@ const ACT={
  },
  zclearshare(){
   if(ZS.scr){ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null}
-  ZS.sharedImg="";ZS.sharedVid="";ZS.sharedPdf="";ZS.sharedDoc="";ZS.slideIdx=1;ZS.menu=null;draw();
+  ZS.sharedImg="";ZS.sharedVid="";ZS.sharedPdf="";ZS.sharedDoc="";ZS.pdfPage=1;ZS.slideIdx=1;ZS.menu=null;draw();
  },
  zleave(){zStop();toast(A("تمت مغادرة الجلسة","Left session"));go("dashboard")},
 
@@ -897,7 +928,10 @@ const ACT={
     draw();
     return;
   }
-  if(!navigator.mediaDevices?.getDisplayMedia)return toast(A("مشاركة الشاشة غير مدعومة في هذا المتصفح","Screen share isn't supported in this browser"));
+  if(!navigator.mediaDevices?.getDisplayMedia){
+    toast("⚠️ "+A("مشاركة الشاشة غير مدعومة في هذا المتصفح — استخدم مشاركة الملف أو الصورة أو الفيديو","Screen share is not supported on this browser — use file, photo, or video share"));
+    return;
+  }
   try{
     ZS.audioOnly=0;
     ZS.scr=await navigator.mediaDevices.getDisplayMedia({
@@ -909,7 +943,7 @@ const ACT={
     draw();
     const stg=vTrack?.getSettings();
     toast("🖥 4K "+(stg?.width&&stg?.height?`(${stg.width}×${stg.height}) `:"")+A("تمت مشاركة الشاشة","Screen shared"));
-  }catch(e){toast("⚠️ "+A("تم إلغاء مشاركة الشاشة","Screen share cancelled"))}
+  }catch(e){toast("⚠️ "+A("تعذر بدء مشاركة الشاشة أو تم إلغاؤها","Screen share cancelled or unavailable"))}
  },
  async zrec(b){
   if(ZS.rec&&ZS.rec.state!=="inactive"){ZS.rec.stop();return}
