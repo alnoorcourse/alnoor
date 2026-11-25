@@ -57,7 +57,7 @@ details{margin-top:16px;color:#9a9a9a}summary{cursor:pointer;margin-bottom:10px}
 .at{max-width:760px;display:grid;gap:12px}.atb{display:flex;gap:6px;flex-wrap:wrap;padding:5px;background:var(--card);border:2.5px solid var(--ink);border-radius:16px;box-shadow:5px 5px 0 var(--ink)}
 .atb button{border:0;background:none;padding:8px 14px;border-radius:11px;font-weight:700;font-size:14px}.atb button.on{background:var(--ink);color:var(--sun)}
 .atc{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;align-items:center;padding:16px 16px 22px;background:var(--card);border:2.5px solid var(--ink);border-radius:18px;box-shadow:6px 6px 0 var(--ink);overflow:hidden;min-height:200px}
-.atm{position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:4/3;border:2px solid var(--ink)}.atm img,.atm video{width:100%;height:100%;object-fit:cover;display:block}.atm2{position:absolute;bottom:8px;inset-inline-end:8px;border:0;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;padding:4px 10px}
+.atm{position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:16/9;border:2px solid var(--ink)}.atm img,.atm video{width:100%;height:100%;object-fit:cover;display:block}.atm2{position:absolute;bottom:8px;inset-inline-end:8px;border:0;border-radius:999px;background:rgba(0,0,0,.65);color:#fff;padding:4px 10px}
 .atx h2{margin:0 0 8px;font-size:30px}.atx p{margin:0;color:var(--tx2);white-space:pre-wrap;font-size:16px;line-height:1.7}
 .atg{position:absolute;left:0;right:0;bottom:0;height:6px;background:color-mix(in srgb,var(--ink) 12%,transparent)}.atg b{display:block;height:100%;width:0;background:var(--red)}
 .warn{background:var(--redS);border:2.5px solid var(--red);border-radius:12px;padding:10px 14px;margin-bottom:14px}
@@ -108,7 +108,6 @@ const DEF_TEAM=["الأول","الثاني","الثالث","الرابع"].map((
 const ads=()=>st.seeded?st.ads:DEF_ADS;
 const about=()=>st.seeded?st.about:(st.about||DEF_ABOUT);
 
-/* دمج بيانات المؤسسين المحفوظة في Firestore فوق الافتراضية لتظهر التعديلات فوراً */
 function team(){
   const map=new Map(st.team.map(x=>[x.id,x]));
   return DEF_TEAM.map(d=>({...d,...(map.get(d.id)||{})}));
@@ -123,12 +122,23 @@ const ig=h=>(h=igC(h))?`<span class="ig-wrap">📷 <a class="ig" href="https://i
 function compressToDataUrl(file,maxW,maxH,maxLen){return new Promise((res,rej)=>{if(!file||!/^image\//.test(file.type)||/svg/.test(file.type))return rej(new Error(A("اختر صورة صحيحة","Choose a valid image")));
   const im=new Image(),u=URL.createObjectURL(file);
   im.onload=()=>{let w=im.width,h=im.height;const k=Math.min(1,maxW/w,maxH/h);w=Math.max(1,Math.round(w*k));h=Math.max(1,Math.round(h*k));
-    const c=document.createElement("canvas");let q=.84,out="";
+    const c=document.createElement("canvas");let q=.92,out="";
     (function step(){c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);out=c.toDataURL("image/jpeg",q);
-      if(out.length<=maxLen||q<=.35){if(out.length>maxLen&&w>240){w=Math.round(w*.75);h=Math.round(h*.75);q=.65;step()}else{URL.revokeObjectURL(u);res(out)}}else{q-=.12;step()}})()};
+      if(out.length<=maxLen||q<=.35){if(out.length>maxLen&&w>480){w=Math.round(w*.8);h=Math.round(h*.8);q=.75;step()}else{URL.revokeObjectURL(u);res(out)}}else{q-=.08;step()}})()};
   im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error(A("تعذر قراءة الصورة","Cannot read image")))};im.src=u})}
 
-/* قص الصورة وتمركزها داخل الإطار الدائري للمؤسس */
+function readVideoDataUrl(file,maxLen=720000){return new Promise((res,rej)=>{
+  if(!file||!/^video\//.test(file.type))return rej(new Error(A("اختر ملف فيديو صحيحاً","Choose a valid video file")));
+  const r=new FileReader();
+  r.onload=()=>{
+    const out=String(r.result||"");
+    if(out.length>maxLen)return rej(new Error(A("حجم الفيديو كبير جداً للحفظ المباشر (استخدم مقطعاً أقصر أو أصغر حجماً)","Video is too large for direct save (use a shorter/smaller clip)")));
+    res(out);
+  };
+  r.onerror=()=>rej(new Error(A("تعذر قراءة الفيديو","Cannot read video")));
+  r.readAsDataURL(file);
+})}
+
 function syncCropPreview(id){
   const cr=st.crops[id],img=$(`crop-img-${id}`);
   if(!cr||!img)return;
@@ -174,9 +184,15 @@ function founderCropBox(id){
   </div>`;
 }
 
+/* دعم صور بدقة تصل إلى 4K للإعلانات + دعم الفيديو */
 const fdata=async(c,f)=>{
   if(c=="team"&&st.crops[f]){return{photo:await renderCroppedAvatar(st.crops[f])}}
-  const u=await compressToDataUrl(f,c=="team"?480:720,c=="team"?480:540,c=="team"?220000:320000);
+  if(c=="ads"&&/^video\//.test(f.type)){
+    const u=await readVideoDataUrl(f,720000);
+    return{src:u,type:"video"};
+  }
+  const isAd=c=="ads";
+  const u=await compressToDataUrl(f,isAd?3840:480,isAd?2160:480,isAd?720000:220000);
   return c=="team"?{photo:u}:{src:u,type:"img"};
 };
 async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
@@ -225,8 +241,8 @@ function vDash(){const u=st.user,m=st.me,r=Object.entries(st.regs),nv=r.filter(x
 const vItems=k=>`<h1>${k=="v"?A("التطوعات","Volunteering"):A("الدورات الوجاهية","On-site courses")}</h1><div class="grid">${st.items.filter(i=>i.kind==k).map(i=>{const g=st.regs[i.id];return`<div class="card"><h3>${esc(i.t)}</h3><div class="meta"><span>📍 ${esc(i.p)}</span><span>📅 ${esc(i.d)}</span></div><div style="margin-bottom:10px">${price(+i.price)}</div>${g?(k=="v"?tag(g.status||"pending"):`<span class="tag">${A("مقعدك مؤكد","Seat confirmed")}</span><div class="meta" style="margin:8px 0 0">${A("تذكرة الدخول (QR)","Entry ticket (QR)")}</div>${qr(i.id+st.user.uid)}`):`<button class="btn" data-a="reg" data-p="${i.id}">${k=="v"?A("تقدم الآن","Apply now"):A("احجز مقعداً","Book a seat")}</button>`}</div>`}).join("")||none()}</div>`;
 function vAds(){const a=ads();return`<h1>${A("الإعلانات","Announcements")}</h1>`+(a.length?`<div class="at"><div class="atb">${a.map((x,k)=>`<button id="atb${k}" data-a="ad" data-p="${k}">${esc(x.title||A("إعلان ","Ad ")+(k+1))}</button>`).join("")}</div><div class="atc" id="atc"></div></div>`:none())}
 function adShow(i){clearTimeout(AT);const a=ads(),c=$("atc");if(!c||!a.length)return;AI=(i%a.length+a.length)%a.length;const x=a[AI],nx=()=>adShow(AI+1);a.forEach((_,k)=>{const e=$("atb"+k);if(e)e.className=k==AI?"on":""});
- c.innerHTML=(x.src?`<div class="atm"><img src="${esc(x.src)}" alt=""></div>`:"")+`<div class="atx"><h2>${esc(x.title||"")}</h2><p>${esc(x.desc||"")}</p></div><div class="atg"><b id="atg"></b></div>`;
- const g=$("atg");if(g){void g.offsetWidth;g.style.transition="width 4s linear";g.style.width="100%";AT=setTimeout(nx,4000)}}
+ c.innerHTML=(x.src?`<div class="atm">${x.type=="video"?`<video src="${esc(x.src)}" autoplay muted playsinline></video><button type="button" class="atm2" data-a="mute">🔇</button>`:`<img src="${esc(x.src)}" alt="">`}</div>`:"")+`<div class="atx"><h2>${esc(x.title||"")}</h2><p>${esc(x.desc||"")}</p></div><div class="atg"><b id="atg"></b></div>`;
+ const g=$("atg"),v=c.querySelector("video");if(v){v.onended=nx;v.onerror=()=>AT=setTimeout(nx,4000);v.ontimeupdate=()=>{if(g&&v.duration)g.style.width=(v.currentTime/v.duration)*100+"%"}}else if(g){void g.offsetWidth;g.style.transition="width 4s linear";g.style.width="100%";AT=setTimeout(nx,4000)}}
 function vLec(){return`<h1>${A("المحاضرات","Lectures")}</h1><p class="sub">🔒 ${A("محمي ضد التنزيل","Download-protected")}</p>`+(st.lecs.length?`<div class="grid">${st.lecs.map(l=>`<div class="card"><h3>${esc(l.title)}</h3>${l.desc?`<p class="sub" style="white-space:pre-wrap">${esc(l.desc)}</p>`:""}${l.url&&/^https:\/\//.test(l.url)?`<a class="btn t" style="display:inline-block;text-decoration:none" href="${esc(l.url)}" target="_blank" rel="noopener">▶ ${A("تشغيل","Play")}</a>`:""}</div>`).join("")}</div>`:`<p class="sub">${A("لا توجد محاضرات بعد","No lectures yet")}</p>`)}
 function vFb(){return`<h1>${A("الفيدباك","Feedback")}</h1><div class="card" style="max-width:520px"><b>${A("قيّم تجربتك","Rate your experience")}</b><div>${[1,2,3,4,5].map(i=>`<button class="star${i<=st.rs?" on":""}" data-a="star" data-p="${i}" aria-label="${i}">★</button>`).join("")}</div><textarea id="fc" placeholder="${A("تعليقك","Your comment")}">${esc(st.fc)}</textarea><div style="height:8px"></div><button class="btn" data-a="sfb">${A("أرسل للمراجعة","Submit for review")}</button><p class="sub" style="font-size:13px;margin:8px 0 0">${A("سيظهر تقييمك بعد موافقة الإدارة","Your review appears after admin approval")}</p></div><h2>★</h2><div class="grid">${st.revs.filter(r=>r.ok).map(r=>`<div class="card"><div style="color:#F5A623">${stars(r.s)}</div><p>${esc(r.c)}</p><span class="sub">${esc(r.n)}</span></div>`).join("")||none()}</div>`}
 const slot=(m,i)=>`<div class="card" style="text-align:center">${m.photo?`<img class="av" alt="${esc(m.name||"")}" src="${esc(m.photo)}">`:`<div class="av">${A("صورة","Photo")}</div>`}<h3 style="margin:8px 0 2px;min-height:26px">${esc(m.name||"")}</h3>${ig(m.ig)}</div>`;
@@ -255,7 +271,7 @@ function vAdm(){if(!st.adm)return`<h1>${A("لوحة الإدارة","Admin dashb
  return`<h1>${T("لوحة الإدارة","Admin dashboard")}</h1>
 <h2>${T("عن النور","About")}</h2><div class="card"><textarea id="ab">${esc(about())}</textarea><div style="height:8px"></div><button class="btn t" data-a="saveA">${T("حفظ النبذة","Save about")}</button></div>
 <h2>${T("مؤسسو منصة النور","Founders")}</h2><div class="grid">${[1,2,3,4].map(i=>{const m=team().find(x=>x.id=="f"+i)||{};return`<div class="card" style="text-align:center">${m.photo?`<img class="av" alt="${esc(m.name||"")}" src="${esc(m.photo)}">`:`<div class="av">${T("صورة","Photo")}</div>`}<div style="height:8px"></div>${ef("team",{...m,id:"f"+i},"image/*")}</div>`}).join("")}</div>
-<h2>${T("الإعلانات","Ads")}</h2>${af("ads","image/*")}<div class="grid" style="margin-top:12px">${ads().map(a=>`<div class="card"><span class="tag">${a.src?"🖼":"📝"}</span>${ef("ads",a,"image/*")}</div>`).join("")}</div>
+<h2>${T("الإعلانات (4K صورة أو فيديو)","Ads (4K image or video)")}</h2>${af("ads","image/*,video/*")}<div class="grid" style="margin-top:12px">${ads().map(a=>`<div class="card"><span class="tag">${a.type=="video"?"🎬":a.src?"🖼 4K":"📝"}</span>${ef("ads",a,"image/*,video/*")}</div>`).join("")}</div>
 <h2>${T("الدورات الوجاهية (مستقل)","Courses")}</h2>${af("courses")}<div class="grid" style="margin-top:12px">${courses.map(i=>`<div class="card">${ef("courses",i)}</div>`).join("")}</div>
 <h2>${T("التطوعات (مستقل)","Volunteering")}</h2>${af("vols")}<div class="grid" style="margin-top:12px">${vols.map(i=>`<div class="card">${ef("vols",i)}</div>`).join("")}</div>
 <h2>${T("المحاضرات","Lectures")}</h2>${af("lecs")}<div class="grid" style="margin-top:12px">${st.lecs.map(l=>`<div class="card">${ef("lecs",l)}</div>`).join("")}</div>
@@ -275,7 +291,6 @@ function draw(){const r=route(),d=document.documentElement;if(r=="zoom-alnoor"&&
  if(r!="ads")clearTimeout(AT);else adShow(AI)}
 addEventListener("hashchange",()=>{if(route()!="zoom-alnoor")zStop();draw()});
 
-/* سحب الصورة مباشرة داخل إطار القص */
 let dragCrop=null;
 document.addEventListener("pointerdown",e=>{
   const stage=e.target.closest(".crop-stage");
@@ -314,7 +329,7 @@ const ACT={
  saveP(b){const d={email:st.user.email||"",last:Date.now()};["name","phone","major","uni"].forEach(k=>d[k]=$("p_"+k).value.trim());run(()=>setDoc(doc(db,"students",st.user.uid),d,{merge:true}),A("تم حفظ بياناتك","Profile saved"),b)},
  reg(id,b){const it=st.items.find(x=>x.id==id),m=st.me;if(!m.name||!m.phone){toast(A("أكمل اسمك ورقم هاتفك في لوحتي أولاً","Add your name and phone in My space first"));return go("dashboard")}
   run(()=>setDoc(doc(db,"regs",st.user.uid),{name:m.name,phone:m.phone,email:st.user.email||"",list:{[id]:{title:it.t,kind:it.kind,price:+it.price||0,ts:Date.now(),status:"pending"}}},{merge:true}),it.kind=="v"?A("تم إرسال طلبك","Application sent"):A("مقعدك مؤكد","Seat confirmed"),b)},
- ad(i){adShow(+i)},mute(b){const v=b.parentNode.querySelector("video");v.muted=!v.muted;b.textContent=v.muted?"🔇":"🔊"},
+ ad(i){adShow(+i)},mute(b){const v=b.parentNode.querySelector("video");if(!v)return;v.muted=!v.muted;b.textContent=v.muted?"🔇":"🔊"},
  star(i){st.fc=$("fc").value;st.rs=+i;draw()},
  sfb(b){if(!st.rs)return toast(A("اختر عدد النجوم","Pick a star rating"));const c=$("fc").value.trim();run(async()=>{await addDoc(collection(db,"reviews"),{uid:st.user.uid,n:st.me.name||st.user.email||"",s:st.rs,c,ok:false,ts:Date.now()});st.rs=0;st.fc=""},A("سيظهر تقييمك بعد موافقة الإدارة","Your review appears after admin approval"),b)},
  saveA(b){run(()=>setDoc(doc(db,"site","about"),{text:$("ab").value}),null,b)},
@@ -333,9 +348,10 @@ const ACT={
  async add(c,b){
   if(!st.adm)return toast("⚠️ "+A("يجب تسجيل الدخول كإدارة أولاً","Please sign in as admin first"));
   const d=rdF(`n-${c}`,c),f=$(`n-${c}-file`)?.files[0];
-  if(!(d.t||d.title))return toast(A("العنوان مطلوب","Title is required"));
-  d.ts=Date.now();if(c=="ads")d.type="img";
-  run(async()=>{if(f)Object.assign(d,await fdata(c,f));await addDoc(collection(db,colOf(c)),d);FS(c).forEach(([k])=>{const el=$(`n-${c}-${k}`);if(el&&el.type!="hidden")el.value=""});if(f)$(`n-${c}-file`).value=""},A("تمت الإضافة","Added"),b)},
+  if(!(d.t||d.title||d.desc||f))return toast(A("أدخل محتوى الإعلان أو اختر ملفاً","Enter ad content or pick a file"));
+  d.ts=Date.now();if(c=="ads")d.type="text";
+  run(async()=>{if(f)Object.assign(d,await fdata(c,f));await addDoc(collection(db,colOf(c)),d);FS(c).forEach(([k])=>{const el=$(`n-${c}-${k}`);if(el&&el.type!="hidden")el.value=""});if(f)$(`n-${c}-file`).value=""},A("تمت الإضافة","Added"),b);
+ },
  del(p,b){if(!st.adm)return toast("⚠️ "+A("يجب تسجيل الدخول كإدارة أولاً","Please sign in as admin first"));const[c,id]=p.split("|");if(confirm(A("تأكيد الحذف؟","Confirm delete?")))run(()=>deleteDoc(doc(db,colOf(c),id)),A("تم الحذف","Deleted"),b)},
  rdel(p,b){const[u,i]=p.split("|");if(confirm(A("تأكيد الحذف؟","Confirm delete?")))run(()=>updateDoc(doc(db,"regs",u),{["list."+i]:deleteField()}),A("تم الحذف","Deleted"),b)},
  rv(p,b){const[id,v]=p.split("|");run(()=>updateDoc(doc(db,"reviews",id),{ok:v=="1"}),null,b)},
