@@ -33,6 +33,10 @@ h1,h2,h3{font-family:var(--dsp);font-weight:400;margin:0 0 8px}h1{font-size:clam
 .ig-wrap{display:inline-flex;align-items:center;gap:4px;margin-top:4px}
 .hero{background:var(--sun);border:3px solid var(--ink);border-radius:26px;box-shadow:9px 9px 0 var(--ink);color:#17140D;padding:26px 22px;margin-bottom:18px}
 .hero .sub{color:#3d3412}.stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.stats div{background:#fff;border:2.5px solid #17140D;border-radius:12px;padding:6px 16px}.stats b{display:block;font:400 30px var(--dsp);color:var(--red)}
+.prog-wrap{margin-top:12px;background:rgba(255,255,255,.72);border:2px solid #17140D;border-radius:12px;padding:8px 12px}
+.prog-bar{height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:6px;border:1px solid #17140D}
+.prog-bar>i{display:block;height:100%;background:var(--teal);transition:width .25s}
+.act-item{border:2px solid var(--ink);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:color-mix(in srgb,var(--bg) 55%,transparent)}
 label{display:block;font-size:13px;color:var(--tx2)}
 input,select,textarea{background:var(--card);border:2.5px solid var(--ink);border-radius:10px;padding:8px;min-width:0}label input{width:100%;margin:2px 0 8px}textarea{width:100%;min-height:90px}
 .fld{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:10px}.row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}.row input{flex:1}
@@ -272,6 +276,8 @@ const displayName=()=>st.adm?A("الإدارة","Host"):(st.me.name||st.user?.em
 
 const sub=(q,cb,k)=>onSnapshot(q,s=>{cb(s);rd(k)},e=>{console.error(e);toast("⚠️ "+A("تعذرت المزامنة: ","Sync error: ")+e.code)});
 function rd(k){
+  if(k=="zoom_presence"){if(!ZS.presChanged)return;ZS.presChanged=0}
+  if(k=="zoom_stage"&&!ZS.stageDraw)return;
   if(route()=="zoom-alnoor"&&k&&/zoom_chat|zoom_reactions|zoom_presence|zoom_stage/.test(k)){
     const zr=$("zr");
     if(zr){draw();return}
@@ -323,7 +329,7 @@ const ZS={
   peers:new Map(),
   remoteStreams:new Map(),
   rtcSubStarted:false,
-  seenSignals:new Set()
+  seenSignals:new Set(),joined:0,vidEl:null,presChanged:0,stageDraw:0,rtcUnsub:null,presSig:undefined,stageSig:undefined
 };
 let zoomSubStarted=false;
 let lastRemoteStageTs=0;
@@ -351,7 +357,7 @@ function canvasToFastSyncedImage(canvas,maxLen=560000,maxDim=1120,quality=0.72){
 }
 
 function captureActiveVideoFrame(){
-  const vidEl=(ZS.sharedType==="video"&&$("z-shared-vid"))||($("zsv"));
+  const vidEl=ZS.scr?$("zsv"):((ZS.sharedType==="video"&&ZS.vidEl)||$("zsv"));
   if(!vidEl||vidEl.readyState<2||!vidEl.videoWidth||!vidEl.videoHeight)return"";
   const c=document.createElement("canvas");
   c.width=vidEl.videoWidth;
@@ -511,173 +517,203 @@ async function parsePptxSlides(file){
   return slides;
 }
 
-/* ---------- WebRTC صوت/فيديو حي بين جميع الحاضرين في الغرفة ---------- */
-const RTC_CFG={iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}]};
+/* ---------- WebRTC (نسخة مُصلحة): صوت + كاميرا + مشاركة شاشة + فيديو ملف ---------- */
+const RTC_CFG={iceServers:[
+  {urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"},
+  {urls:["turn:openrelay.metered.ca:80","turn:openrelay.metered.ca:443","turn:openrelay.metered.ca:443?transport=tcp"],username:"openrelayproject",credential:"openrelayproject"}
+]};
+/* كل اتصال فيه 4 مسارات ثابتة بنفس الترتيب عند الطرفين: مايك / كاميرا / شاشة(أو فيديو) / صوت الشاشة(أو الفيديو) */
+const RTC_ROLES=[["mic","audio"],["cam","video"],["screen","video"],["sys","audio"]];
+let rtcRedrawT=0,audioWarnT=0;
+function scheduleRtcRedraw(){clearTimeout(rtcRedrawT);rtcRedrawT=setTimeout(()=>{if(route()=="zoom-alnoor"&&$("zr"))draw()},200)}
 
-function getLocalOutboundTracks(){
-  const tracks=[];
-  if(ZS.micStream&&ZS.mic){
-    ZS.micStream.getAudioTracks().forEach(t=>{if(t.enabled&&t.readyState==="live")tracks.push(t)});
+function dropVidEl(){
+  const v=ZS.vidEl;if(!v)return;
+  try{v.pause()}catch(e){}
+  try{if(v.src&&v.src.startsWith("blob:"))URL.revokeObjectURL(v.src)}catch(e){}
+  v.removeAttribute("src");try{v.load()}catch(e){}
+  v.remove();ZS.vidEl=null;
+}
+function startVidCapture(){
+  const v=ZS.vidEl;if(!v||ZS.vidShareStream)return;
+  const cap=v.captureStream||v.mozCaptureStream;if(!cap)return;
+  try{
+    const s=cap.call(v);
+    ZS.vidShareStream=s;
+    s.onaddtrack=()=>syncTracksToPeers();
+    syncTracksToPeers();
+  }catch(e){console.error(e)}
+}
+function hostScreenStream(){
+  for(const [uid,p] of ZS.remoteStreams){
+    if((p.isAdmin||ZS.presence?.[uid]?.isAdmin)&&p.streams?.screen)return p.streams.screen;
   }
-  if(ZS.scr){
-    ZS.scr.getVideoTracks().forEach(t=>{if(t.enabled&&t.readyState==="live")tracks.push(t)});
-    if(ZS.shareAudio)ZS.scr.getAudioTracks().forEach(t=>{if(t.enabled&&t.readyState==="live")tracks.push(t)});
-  }
-  if(ZS.vidShareStream&&ZS.sharedType==="video"){
-    ZS.vidShareStream.getVideoTracks().forEach(t=>{if(t.enabled&&t.readyState==="live")tracks.push(t)});
-    if(ZS.shareAudio)ZS.vidShareStream.getAudioTracks().forEach(t=>{if(t.enabled&&t.readyState==="live")tracks.push(t)});
-  }
-  if(ZS.cam&&ZS.cam1&&!ZS.audioOnly){
-    ZS.cam.getVideoTracks().forEach(t=>{if(t.enabled&&t.readyState==="live")tracks.push(t)});
-  }
-  return tracks;
+  return null;
+}
+function desiredTracks(){
+  const live=t=>t&&t.readyState==="live"?t:null;
+  const mic=live(ZS.micStream?.getAudioTracks()[0]);
+  const cam=(ZS.cam1&&!ZS.audioOnly)?live(ZS.cam?.getVideoTracks()[0]):null;
+  let screen=null,sys=null;
+  if(ZS.scr){screen=live(ZS.scr.getVideoTracks()[0]);sys=live(ZS.scr.getAudioTracks()[0])}
+  else if(ZS.vidShareStream&&ZS.sharedType==="video"){screen=live(ZS.vidShareStream.getVideoTracks()[0]);sys=live(ZS.vidShareStream.getAudioTracks()[0])}
+  if(!ZS.shareAudio)sys=null;
+  return{mic,cam,screen,sys};
+}
+function tuneSender(s,role){
+  try{
+    const p=s.getParameters();
+    if(!p.encodings||!p.encodings.length)p.encodings=[{}];
+    p.encodings[0].maxBitrate={mic:64000,sys:128000,cam:2500000,screen:5000000}[role];
+    s.setParameters(p).catch(()=>{});
+  }catch(e){}
+}
+function applyTracks(c){
+  const d=desiredTracks();
+  Object.keys(c.tr).forEach(role=>{
+    const s=c.tr[role].sender,t=d[role]||null;
+    if(s.track===t)return;
+    if(t&&role==="screen"&&t.kind==="video")t.contentHint="detail";
+    if(t&&role==="sys")t.contentHint="music";
+    s.replaceTrack(t).then(()=>tuneSender(s,role)).catch(e=>console.error(e));
+  });
+}
+async function syncTracksToPeers(){
+  ZS.peers.forEach(applyTracks);
+  if(ZS.joined)touchPresence(true);
+}
+
+/* عناصر الصوت الدائمة (خارج #app حتى لا تنحذف مع كل draw) */
+function syncAudioElements(){
+  let h=$("rtc-audio");
+  if(!h){h=document.createElement("div");h.id="rtc-audio";h.style.cssText="position:fixed;width:0;height:0;overflow:hidden;opacity:0;pointer-events:none";document.body.appendChild(h)}
+  const want=new Set();
+  ZS.remoteStreams.forEach((info,uid)=>{
+    ["mic","sys"].forEach(role=>{
+      const s=info.streams?.[role];if(!s)return;
+      const k=uid+"_"+role;want.add(k);
+      let el=[...h.children].find(x=>x.dataset.k===k);
+      if(!el){el=document.createElement("audio");el.dataset.k=k;el.autoplay=true;el.setAttribute("playsinline","");h.appendChild(el)}
+      if(el.srcObject!==s)el.srcObject=s;
+      el.muted=!ZS.speaker;el.volume=1;
+      if(el.paused)el.play().catch(()=>{
+        clearTimeout(audioWarnT);
+        audioWarnT=setTimeout(()=>toast("🔊 "+A("اضغط في أي مكان لتشغيل الصوت","Tap anywhere to enable sound")),400);
+      });
+    });
+  });
+  [...h.children].forEach(el=>{if(!want.has(el.dataset.k))el.remove()});
+}
+function unlockRemoteAudioOnGesture(){syncAudioElements()}
+
+function closePeer(uid){
+  const c=ZS.peers.get(uid);
+  if(c){try{c.pc.close()}catch(e){}ZS.peers.delete(uid)}
+  ZS.remoteStreams.delete(uid);
+  syncAudioElements();scheduleRtcRedraw();
 }
 
 async function sendRtcSignal(toUid,type,data){
-  if(!db||!st.user||!toUid||toUid===st.user.uid)return;
+  if(!db||!st.user||!toUid)return;
   try{
-    await addDoc(collection(db,"zoom_rtc"),{
-      from:st.user.uid,
-      fromName:displayName(),
-      fromAdmin:!!st.adm,
-      to:toUid,
-      type,
-      data,
-      ts:Date.now()
-    });
-  }catch(e){}
+    await addDoc(collection(db,"zoom_rtc"),{from:st.user.uid,fromName:displayName(),fromAdmin:!!st.adm,to:toUid,type,data:JSON.stringify(data),ts:Date.now()});
+  }catch(e){
+    console.error(e);
+    if(!ZS.sigErr){ZS.sigErr=1;toast("⚠️ "+A("تعذر إرسال إشارات الاتصال: افتح قواعد Firestore واسمح بـ zoom_rtc","Cannot send signaling: allow zoom_rtc in Firestore rules"))}
+  }
 }
 
-function createPeerConnection(peerUid,peerName="",peerAdmin=false){
-  if(ZS.peers.has(peerUid))return ZS.peers.get(peerUid);
+function getPeer(uid,name,isAdmin){
+  let c=ZS.peers.get(uid);if(c)return c;
   const pc=new RTCPeerConnection(RTC_CFG);
-  ZS.peers.set(peerUid,pc);
-
-  getLocalOutboundTracks().forEach(tr=>{
-    try{pc.addTrack(tr,new MediaStream([tr]))}catch(e){}
-  });
-
-  pc.onicecandidate=ev=>{
-    if(ev.candidate){
-      sendRtcSignal(peerUid,"ice",ev.candidate.toJSON());
-    }
+  c={pc,uid,name:name||"",isAdmin:!!isAdmin,polite:st.user.uid<uid,makingOffer:false,ignoreOffer:false,pending:[],q:Promise.resolve(),born:Date.now(),tr:{}};
+  ZS.peers.set(uid,c);
+  RTC_ROLES.forEach(([role,kind])=>{c.tr[role]=pc.addTransceiver(kind,{direction:"sendrecv"})});
+  applyTracks(c);
+  pc.onicecandidate=ev=>{if(ev.candidate)sendRtcSignal(uid,"ice",ev.candidate.toJSON())};
+  pc.onnegotiationneeded=async()=>{
+    try{c.makingOffer=true;await pc.setLocalDescription();await sendRtcSignal(uid,"desc",pc.localDescription.toJSON())}
+    catch(e){console.error(e)}finally{c.makingOffer=false}
   };
-
   pc.ontrack=ev=>{
-    const prev=ZS.remoteStreams.get(peerUid)||{stream:new MediaStream(),name:peerName,isAdmin:peerAdmin};
-    const stream=prev.stream||new MediaStream();
-    if(ev.track&&!stream.getTracks().some(t=>t.id===ev.track.id)){
-      stream.addTrack(ev.track);
-    }
-    if(ev.streams?.[0]){
-      ev.streams[0].getTracks().forEach(t=>{
-        if(!stream.getTracks().some(x=>x.id===t.id))stream.addTrack(t);
-      });
-    }
-    ZS.remoteStreams.set(peerUid,{
-      ...prev,
-      stream,
-      name:peerName||prev.name||A("مشارك","Participant"),
-      isAdmin:peerAdmin||prev.isAdmin
-    });
-    attachMediaElements();
-    if(route()=="zoom-alnoor"&&$("zr"))draw();
+    const role=Object.keys(c.tr).find(r=>c.tr[r]===ev.transceiver);
+    if(!role)return;
+    const info=ZS.remoteStreams.get(uid)||{streams:{}};
+    info.name=c.name;info.isAdmin=c.isAdmin;
+    info.streams[role]=new MediaStream([ev.track]);
+    ZS.remoteStreams.set(uid,info);
+    syncAudioElements();scheduleRtcRedraw();
   };
-
+  pc.oniceconnectionstatechange=()=>{if(pc.iceConnectionState==="failed"){try{pc.restartIce()}catch(e){}}};
   pc.onconnectionstatechange=()=>{
-    if(pc.connectionState==="failed"||pc.connectionState==="closed"){
-      try{pc.close()}catch(e){}
-      ZS.peers.delete(peerUid);
-      ZS.remoteStreams.delete(peerUid);
-    }
+    const s=pc.connectionState;
+    if(s==="connected")Object.keys(c.tr).forEach(r=>tuneSender(c.tr[r].sender,r));
+    if(s==="failed"||s==="closed"){closePeer(uid);setTimeout(connectToPresentPeers,3000)}
   };
-  return pc;
+  return c;
 }
 
-async function syncTracksToPeers(){
-  if(!st.user||!db)return;
-  const desired=getLocalOutboundTracks();
-  const peers=Object.values(ZS.presence||{}).filter(p=>p.uid&&p.uid!==st.user.uid&&p.active);
-  for(const p of peers){
-    let pc=ZS.peers.get(p.uid);
-    if(!pc&&desired.length){
-      pc=createPeerConnection(p.uid,p.name,p.isAdmin);
-    }
-    if(!pc)continue;
-    try{
-      const senders=pc.getSenders();
-      senders.forEach(s=>{
-        if(s.track&&!desired.includes(s.track)){
-          try{pc.removeTrack(s)}catch(e){}
-        }
-      });
-      const currentTracks=senders.map(s=>s.track).filter(Boolean);
-      let changed=false;
-      desired.forEach(tr=>{
-        if(!currentTracks.includes(tr)){
-          try{pc.addTrack(tr,new MediaStream([tr]));changed=true}catch(e){}
-        }
-      });
-      if(changed||pc.signalingState==="stable"){
-        const offer=await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        await sendRtcSignal(p.uid,"offer",pc.localDescription);
+async function handleSignal(c,d){
+  const pc=c.pc;let data;
+  try{data=typeof d.data==="string"?JSON.parse(d.data):d.data}catch(e){return}
+  if(!data)return;
+  if(d.fromName)c.name=d.fromName;
+  if(d.fromAdmin)c.isAdmin=true;
+  try{
+    if(d.type==="desc"){
+      const collision=data.type==="offer"&&(c.makingOffer||pc.signalingState!=="stable");
+      c.ignoreOffer=!c.polite&&collision;
+      if(c.ignoreOffer)return;
+      await pc.setRemoteDescription(data);
+      for(const cand of c.pending.splice(0))await pc.addIceCandidate(cand).catch(()=>{});
+      if(data.type==="offer"){
+        await pc.setLocalDescription();
+        await sendRtcSignal(c.uid,"desc",pc.localDescription.toJSON());
       }
-    }catch(e){}
-  }
+    }else if(d.type==="ice"){
+      if(pc.remoteDescription)await pc.addIceCandidate(data).catch(e=>{if(!c.ignoreOffer)console.warn(e)});
+      else if(!c.ignoreOffer)c.pending.push(data);
+    }
+  }catch(e){console.error(e)}
 }
 
-async function connectToPresentPeers(){
-  if(!st.user||!db)return;
-  const peers=Object.values(ZS.presence||{});
-  for(const p of peers){
-    if(!p.uid||p.uid===st.user.uid||!p.active)continue;
-    if(!ZS.peers.has(p.uid)){
-      const pc=createPeerConnection(p.uid,p.name,p.isAdmin);
-      try{
-        const offer=await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        await sendRtcSignal(p.uid,"offer",pc.localDescription);
-      }catch(e){}
-    }
-  }
+function connectToPresentPeers(){
+  if(!ZS.joined||!st.user||!db)return;
+  Object.values(ZS.presence||{}).forEach(p=>{
+    if(!p.uid||p.uid===st.user.uid)return;
+    const c=getPeer(p.uid,p.name,p.isAdmin);
+    if(p.name)c.name=p.name;
+    if(p.isAdmin)c.isAdmin=true;
+  });
+  [...ZS.peers.entries()].forEach(([uid,c])=>{
+    if(!ZS.presence[uid]&&Date.now()-c.born>15000)closePeer(uid);
+  });
 }
 
-function startRtcSignalingSub(){
-  if(!db||!st.user||ZS.rtcSubStarted)return;
-  ZS.rtcSubStarted=true;
-  un.push(sub(query(collection(db,"zoom_rtc"),where("to","==",st.user.uid)),async s=>{
-    for(const chg of s.docChanges()){
-      if(chg.type!=="added")continue;
-      if(ZS.seenSignals.has(chg.doc.id))continue;
-      ZS.seenSignals.add(chg.doc.id);
-      const d=chg.doc.data();
-      if(!d||!d.from||d.from===st.user.uid)continue;
-      if(d.ts&&(Date.now()-d.ts>240000))continue;
-      const pc=createPeerConnection(d.from,d.fromName,d.fromAdmin);
-      try{
-        if(d.type==="offer"&&d.data){
-          await pc.setRemoteDescription(new RTCSessionDescription(d.data));
-          getLocalOutboundTracks().forEach(tr=>{
-            if(!pc.getSenders().some(x=>x.track===tr)){
-              try{pc.addTrack(tr,new MediaStream([tr]))}catch(e){}
-            }
-          });
-          const ans=await pc.createAnswer();
-          await pc.setLocalDescription(ans);
-          await sendRtcSignal(d.from,"answer",pc.localDescription);
-        }else if(d.type==="answer"&&d.data){
-          if(pc.signalingState==="have-local-offer"){
-            await pc.setRemoteDescription(new RTCSessionDescription(d.data));
-          }
-        }else if(d.type==="ice"&&d.data){
-          if(pc.remoteDescription){
-            await pc.addIceCandidate(new RTCIceCandidate(d.data)).catch(()=>{});
-          }
-        }
-      }catch(e){}
+function startRtcSignalingSub(onReady){
+  if(!db||!st.user)return;
+  try{ZS.rtcUnsub?.()}catch(e){}
+  let first=true,tm=0;
+  const ready=()=>{if(!first)return;first=false;clearTimeout(tm);onReady&&onReady()};
+  tm=setTimeout(ready,3500);
+  ZS.rtcUnsub=onSnapshot(query(collection(db,"zoom_rtc"),where("to","==",st.user.uid)),snap=>{
+    if(first){
+      /* أول لقطة من السيرفر = إشارات قديمة، نحذفها ونتجاهلها */
+      if(snap.metadata.fromCache)return;
+      snap.docs.forEach(x=>{ZS.seenSignals.add(x.id);deleteDoc(x.ref).catch(()=>{})});
+      ready();return;
     }
-  },"zoom_rtc"));
+    const adds=snap.docChanges().filter(x=>x.type==="added").map(x=>({id:x.doc.id,ref:x.doc.ref,d:x.doc.data()})).sort((a,b)=>(a.d.ts||0)-(b.d.ts||0));
+    adds.forEach(({id,ref,d})=>{
+      if(ZS.seenSignals.has(id))return;
+      ZS.seenSignals.add(id);
+      deleteDoc(ref).catch(()=>{});
+      if(!d||!d.from||d.from===st.user.uid)return;
+      if(d.ts&&Date.now()-d.ts>120000)return;
+      const c=getPeer(d.from,d.fromName,d.fromAdmin);
+      c.q=c.q.then(()=>handleSignal(c,d)).catch(()=>{});
+    });
+  },err=>{console.error(err);toast("⚠️ "+A("تعذرت قراءة إشارات الاتصال: ","Signaling read failed: ")+(err.code||""))});
 }
 
 function applyRemoteStageData(d){
@@ -721,17 +757,24 @@ function touchPresence(active=true){
     name:displayName(),
     isAdmin:!!st.adm,
     active:!!active,
+    cam:!!(ZS.cam&&ZS.cam1&&!ZS.audioOnly),
     lastSeen:Date.now()
   },{merge:true}).then(()=>{if(active)connectToPresentPeers()}).catch(()=>{});
+}
+function inRoom(){return !!st.user&&(st.adm||(!!st.zoom&&st.zok==st.zoom.ts))}
+function joinRoom(){
+  if(ZS.joined||!db||!st.user)return;
+  ZS.joined=1;
+  startRtcSignalingSub(()=>{
+    touchPresence(true);
+    clearInterval(ZS.presenceTimer);
+    ZS.presenceTimer=setInterval(()=>{if(route()=="zoom-alnoor"&&st.user&&ZS.joined){touchPresence(true);connectToPresentPeers()}},25000);
+  });
 }
 
 function startZoomRealtimeSubs(){
   if(!db||zoomSubStarted)return;
   zoomSubStarted=true;
-  touchPresence(true);
-  startRtcSignalingSub();
-  clearInterval(ZS.presenceTimer);
-  ZS.presenceTimer=setInterval(()=>{if(route()=="zoom-alnoor"&&st.user){touchPresence(true);connectToPresentPeers()}},25000);
 
   un.push(sub(collection(db,"zoom_chat"),s=>{
     const all=L(s).sort((a,b)=>(a.ts||0)-(b.ts||0));
@@ -748,7 +791,10 @@ function startZoomRealtimeSubs(){
 
   un.push(sub(collection(db,"zoom_presence"),s=>{
     const now=Date.now(),map={};
-    s.docs.forEach(d=>{const x=d.data();if(x.active&&(!x.lastSeen||now-x.lastSeen<180000))map[d.id]={uid:d.id,...x}});
+    s.docs.forEach(d=>{const x=d.data();if(x.active&&(!x.lastSeen||now-x.lastSeen<75000))map[d.id]={uid:d.id,...x}});
+    const sig=Object.values(map).map(p=>p.uid+":"+(p.cam?1:0)+":"+(p.name||"")).sort().join("|");
+    ZS.presChanged=sig!==ZS.presSig?1:0;
+    ZS.presSig=sig;
     ZS.presence=map;
     connectToPresentPeers();
   },"zoom_presence"));
@@ -770,14 +816,24 @@ function startZoomRealtimeSubs(){
   },"zoom_ctrl"));
 
   un.push(sub(doc(db,"site","zoom_stage"),s=>{
+    const sg=x=>x?x.length+":"+x.slice(100,140)+x.slice(-40):"";
     if(!s.exists()){
       if(!st.adm){
         ZS.sharedType="";ZS.sharedImg="";ZS.pageDataUrl="";ZS.liveFrameUrl="";ZS.sharedVid="";ZS.sharedUrl="";
         ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";ZS.screenActive=0;
       }
+      ZS.stageSig="";ZS.stageDraw=1;
       return;
     }
-    applyRemoteStageData(s.data());
+    const d=s.data();
+    const sig=[d.sharedType,sg(d.sharedImg),sg(d.pageDataUrl),d.pdfPage,d.pdfNumPages,d.slideIdx,(d.slides||[]).length,(d.textContent||"").length,!!d.screenActive,!!d.liveFrameUrl,!!d.sharedVid].join("~");
+    const firstTime=ZS.stageSig===undefined;
+    const changed=sig!==ZS.stageSig;
+    ZS.stageSig=sig;
+    applyRemoteStageData(d);
+    /* تحديث صورة البث الاحتياطي بدون إعادة رسم الغرفة */
+    if(!st.adm&&!changed&&d.liveFrameUrl){const img=$("z-live-frame-img");if(img)img.src=d.liveFrameUrl}
+    ZS.stageDraw=(changed&&(!st.adm||firstTime))?1:0;
   },"zoom_stage"));
 
   un.push(sub(collection(db,"zoom_reactions"),s=>{
@@ -795,7 +851,7 @@ if(ok){
   sub(collection(db,"ads"),s=>st.ads=L(s).sort((a,b)=>a.ts-b.ts),"ads");
   sub(collection(db,"team"),s=>{st.team=L(s);if(st.team.length)st.seeded=true},"team");
   sub(collection(db,"lecs"),s=>st.lecs=L(s).sort((a,b)=>a.ts-b.ts),"lecs");
-  onAuthStateChanged(auth,u=>{un.forEach(f=>f());un=[];zoomSubStarted=false;ZS.rtcSubStarted=false;clearInterval(ZS.presenceTimer);stopLiveFrameSync();st.user=u;st.adm=!!u&&(u.email||"").toLowerCase()==ADMIN_EMAIL.toLowerCase();st.me={};st.regs={};st.all=[];st.studs=[];st.revs=[];ZS.hands={};ZS.presence={};ZS.remoteStreams.clear();st.ready=true;
+  onAuthStateChanged(auth,u=>{un.forEach(f=>f());un=[];zoomSubStarted=false;ZS.rtcSubStarted=false;ZS.joined=0;try{ZS.rtcUnsub?.()}catch(e){}clearInterval(ZS.presenceTimer);stopLiveFrameSync();st.user=u;st.adm=!!u&&(u.email||"").toLowerCase()==ADMIN_EMAIL.toLowerCase();st.me={};st.regs={};st.all=[];st.studs=[];st.revs=[];ZS.hands={};ZS.presence={};ZS.remoteStreams.clear();st.ready=true;
     if(u){un.push(sub(doc(db,"students",u.uid),s=>st.me=s.exists()?s.data():{},"me"),sub(doc(db,"regs",u.uid),s=>st.regs=s.exists()?s.data().list||{}:{},"me"));
       if(!st.adm)setDoc(doc(db,"students",u.uid),{email:u.email||"",last:Date.now()},{merge:true}).catch(()=>{});
       un.push(sub(st.adm?collection(db,"reviews"):query(collection(db,"reviews"),where("ok","==",true)),s=>st.revs=L(s).sort((a,b)=>b.ts-a.ts),"revs"));
@@ -816,10 +872,72 @@ const ef=(c,o,acc)=>`<div class="fld">${FS(c).map(f=>inp(`e-${c}-${o.id}`,f,o[f[
 const af=(c,acc,fixedKind)=>`<div class="card"><div class="fld">${FS(c).map(f=>inp(`n-${c}`,f,"",fixedKind&&f[0]=="kind"?fixedKind:null)).join("")}${acc?`<input id="n-${c}-file" type="file" accept="${acc}">`:""}</div><button type="button" class="btn t" data-a="add" data-p="${c}">${A("إضافة","Add")}</button></div>`;
 const rdF=(id,c)=>{const d={};FS(c).forEach(([k,,ty])=>{let v=$(`${id}-${k}`)?.value?.trim()||"";if(k=="ig")v=igC(v);d[k]=ty=="number"?+v||0:v});if(c=="courses")d.kind="c";if(c=="vols"){d.kind="v";d.price=0}return d};
 
-function vDash(){const u=st.user,m=st.me,r=Object.entries(st.regs),nv=r.filter(x=>x[1].kind=="v").length,f=(k,l)=>`<label>${l}<input id="p_${k}" value="${esc(m[k]??"")}"></label>`;
- return`<div class="hero"><h1>${A("مرحباً","Hello")} ${esc(m.name||u.email||"")}</h1><p class="sub" style="margin:0">${A("تطوع، تدرّب، وتابع محاضراتك من مكان واحد.","Volunteer, train, and follow your lectures in one place.")}</p><div class="stats"><div><b>${nv}</b>${A("التطوعات","Volunteering")}</div><div><b>${r.length-nv}</b>${A("الدورات الوجاهية","Courses")}</div></div></div>
-<div class="grid"><div class="card"><h3>${A("ملفي الشخصي","My profile")}</h3>${f("name",A("الاسم","Name"))}${f("phone",A("الهاتف","Phone"))}${f("major",A("التخصص","Major"))}${f("uni",A("الجامعة","University"))}<button type="button" class="btn t" data-a="saveP">${A("حفظ البيانات","Save profile")}</button></div>
-<div class="card"><h3>${A("سجل نشاطاتي","My activity log")}</h3>${r.map(([k,x])=>`<div class="meta" style="margin:0 0 6px"><b>${esc(x.title)}</b> ${x.kind=="v"?tag(x.status||"pending"):`<span class="tag">${A("مقعد مؤكد","Seat")}</span>`}</div>`).join("")||none()}</div></div>`}
+function vDash(){
+ const u=st.user,m=st.me,r=Object.entries(st.regs);
+ const nv=r.filter(x=>x[1].kind=="v").length;
+ const nc=r.length-nv;
+ const nOk=r.filter(x=>x[1].kind!="v"||x[1].status=="ok"||x[1].status=="done").length;
+ const fields=["name","phone","major","uni"];
+ const doneCount=fields.filter(k=>String(m[k]||"").trim()).length+(m.photo?1:0);
+ const pct=Math.round((doneCount/(fields.length+1))*100);
+ const f=(k,l)=>`<label>${l}<input id="p_${k}" value="${esc(m[k]??"")}"></label>`;
+ return`<div class="hero">
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    ${m.photo?`<img class="av" style="margin:0;width:86px;height:86px" alt="${esc(m.name||"")}" src="${esc(m.photo)}">`:`<div class="av" style="margin:0;width:86px;height:86px">🎓</div>`}
+    <div style="flex:1;min-width:220px">
+      <h1 style="margin-bottom:4px">${A("مرحباً","Hello")} ${esc(m.name||u.email||"")}</h1>
+      <p class="sub" style="margin:0">${A("تطوع، تدرّب، وتابع محاضراتك من مكان واحد.","Volunteer, train, and follow your lectures in one place.")}</p>
+      <div class="prog-wrap">
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700"><span>${A("اكتمال الملف الشخصي","Profile completion")}</span><span>${pct}%</span></div>
+        <div class="prog-bar"><i style="width:${pct}%"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="stats">
+    <div><b>${nv}</b>${A("التطوعات","Volunteering")}</div>
+    <div><b>${nc}</b>${A("الدورات الوجاهية","Courses")}</div>
+    <div><b>${nOk}</b>${A("مؤكد / مقبول","Confirmed")}</div>
+  </div>
+  <div class="row" style="margin-top:14px">
+    <button type="button" class="btn" data-a="goRoute" data-p="volunteering">${A("تصفح التطوعات","Browse volunteering")}</button>
+    <button type="button" class="btn t" data-a="goRoute" data-p="courses">${A("تصفح الدورات","Browse courses")}</button>
+    <button type="button" class="btn g" data-a="goRoute" data-p="zoom-alnoor">🎥 ZOOM</button>
+  </div>
+ </div>
+<div class="grid">
+ <div class="card">
+  <h3>${A("ملفي الشخصي وصورتي","My profile & photo")}</h3>
+  <div style="text-align:center;margin:8px 0 12px">
+    ${m.photo?`<img class="av" alt="${esc(m.name||"")}" src="${esc(m.photo)}">`:`<div class="av">${A("صورتي","My photo")}</div>`}
+    <div class="row" style="justify-content:center;margin-top:10px">
+      <label class="btn g" style="padding:6px 12px;font-size:13px;cursor:pointer;margin:0">
+        📷 ${A("اختر صورة","Choose photo")}
+        <input id="p-photo-file" type="file" accept="image/*" style="display:none">
+      </label>
+      ${m.photo?`<button type="button" class="btn g" style="padding:6px 12px;font-size:13px" data-a="delStudPhoto">${A("إزالة الصورة","Remove photo")}</button>`:""}
+    </div>
+  </div>
+  ${founderCropBox("me")}
+  ${f("name",A("الاسم الكامل","Full name"))}
+  ${f("phone",A("رقم الهاتف","Phone"))}
+  ${f("major",A("التخصص","Major"))}
+  ${f("uni",A("الجامعة","University"))}
+  <label>${A("ملاحظاتي الدراسية / التطوعية","My personal notes")}<textarea id="p_note" placeholder="${A("اكتب تذكيراً لمواعيدك أو ملاحظاتك...","Write a reminder or note...")}">${esc(m.note??"")}</textarea></label>
+  <div style="height:6px"></div>
+  <button type="button" class="btn t" data-a="saveP">${A("حفظ البيانات","Save profile")}</button>
+ </div>
+ <div class="card">
+  <h3>${A("سجل نشاطاتي","My activity log")}</h3>
+  ${r.map(([k,x])=>`<div class="act-item">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+      <b>${esc(x.title)}</b>
+      ${x.kind=="v"?tag(x.status||"pending"):`<span class="tag">${A("مقعد مؤكد","Seat")}</span>`}
+    </div>
+    <div class="meta" style="margin:4px 0 0"><span>${x.kind=="v"?A("تطوع","Volunteering"):A("دورة وجاهية","Course")}</span>${x.ts?`<span>• ${new Date(x.ts).toLocaleDateString()}</span>`:""}</div>
+    ${x.kind!="v"?`<div style="margin-top:6px">${qr(k+st.user.uid)}</div>`:""}
+  </div>`).join("")||none()}
+ </div>
+</div>`}
 const vItems=k=>`<h1>${k=="v"?A("التطوعات","Volunteering"):A("الدورات الوجاهية","On-site courses")}</h1><div class="grid">${st.items.filter(i=>i.kind==k).map(i=>{const g=st.regs[i.id];return`<div class="card"><h3>${esc(i.t)}</h3><div class="meta"><span>📍 ${esc(i.p)}</span><span>📅 ${esc(i.d)}</span></div><div style="margin-bottom:10px">${price(+i.price)}</div>${g?(k=="v"?tag(g.status||"pending"):`<span class="tag">${A("مقعدك مؤكد","Seat confirmed")}</span><div class="meta" style="margin:8px 0 0">${A("تذكرة الدخول (QR)","Entry ticket (QR)")}</div>${qr(i.id+st.user.uid)}`):`<button type="button" class="btn" data-a="reg" data-p="${i.id}">${k=="v"?A("تقدم الآن","Apply now"):A("احجز مقعداً","Book a seat")}</button>`}</div>`}).join("")||none()}</div>`;
 function vAds(){const a=ads();return`<h1>${A("الإعلانات","Announcements")}</h1>`+(a.length?`<div class="at"><div class="atb">${a.map((x,k)=>`<button type="button" id="atb${k}" data-a="ad" data-p="${k}">${esc(x.title||A("إعلان ","Ad ")+(k+1))}</button>`).join("")}</div><div class="atc" id="atc"></div></div>`:none())}
 function adShow(i){clearTimeout(AT);const a=ads(),c=$("atc");if(!c||!a.length)return;AI=(i%a.length+a.length)%a.length;const x=a[AI],nx=()=>adShow(AI+1);a.forEach((_,k)=>{const e=$("atb"+k);if(e)e.className=k==AI?"on":""});
@@ -877,55 +995,32 @@ function attachMediaElements(){
   }
   const zsv=$("zsv");
   if(zsv){
-    const stream=ZS.scr||(ZS.cam&&!ZS.cam1&&ZS.cam.getVideoTracks().length?ZS.cam:null);
-    zsv.srcObject=stream||null;
+    zsv.srcObject=ZS.scr||null;
     zsv.muted=true;
-    if(stream)zsv.play?.().catch(()=>{});
+    if(ZS.scr)zsv.play?.().catch(()=>{});
   }
-  const zvv=$("z-shared-vid");
-  if(zvv&&ZS.sharedVid){
-    zvv.muted=false;
-    zvv.volume=ZS.speaker?1:0;
-    zvv.play?.().catch(()=>{});
-    if(!ZS.vidShareStream&&typeof zvv.captureStream==="function"){
-      try{
-        ZS.vidShareStream=zvv.captureStream();
-        syncTracksToPeers();
-      }catch(e){}
-    }
+  /* فيديو الملف عند الإدارة: عنصر دائم يُنقل فقط (لا يُعاد إنشاؤه) فلا يعيد التشغيل */
+  const slot=$("z-vid-slot");
+  if(slot&&ZS.vidEl&&ZS.vidEl.parentNode!==slot)slot.appendChild(ZS.vidEl);
+  if(!st.adm){
+    const zvv=$("z-shared-vid");
+    if(zvv){zvv.muted=!ZS.speaker;zvv.play?.().catch(()=>{})}
   }
-  const remoteScreenEl=$("z-remote-screen-vid");
-  if(remoteScreenEl){
-    const hostPeer=[...ZS.remoteStreams.entries()].find(([uid,p])=>p?.stream?.getVideoTracks().some(t=>t.readyState==="live"));
-    if(hostPeer){
-      remoteScreenEl.srcObject=hostPeer[1].stream;
-      remoteScreenEl.muted=!ZS.speaker;
-      remoteScreenEl.volume=ZS.speaker?1:0;
-      remoteScreenEl.play?.().catch(()=>{});
-    }
+  /* شاشة/فيديو الإدارة عند الطالب (الصوت يأتي من عناصر الصوت الدائمة، لذلك الفيديو muted) */
+  const rs=$("z-remote-screen-vid"),hs=hostScreenStream();
+  if(rs&&hs){
+    if(rs.srcObject!==hs)rs.srcObject=hs;
+    rs.muted=true;
+    rs.play?.().catch(()=>{});
   }
-  document.querySelectorAll("[data-peer-media]").forEach(el=>{
-    const uid=el.dataset.peerMedia;
-    const info=ZS.remoteStreams.get(uid);
-    if(info?.stream){
-      el.srcObject=info.stream;
-      el.muted=!ZS.speaker;
-      el.volume=ZS.speaker?1:0;
-      el.play?.().catch(()=>{});
-    }
+  document.querySelectorAll("[data-peer-cam]").forEach(el=>{
+    const s=ZS.remoteStreams.get(el.dataset.peerCam)?.streams?.cam;
+    if(s){el.srcObject=s;el.muted=true;el.play?.().catch(()=>{})}
   });
+  syncAudioElements();
   if(ZS.sharedType==="pdf"&&ZS.pdfDoc){
     renderPdfPageToCanvas(ZS.pdfPage,false);
   }
-}
-
-function unlockRemoteAudioOnGesture(){
-  if(!ZS.speaker)return;
-  document.querySelectorAll("[data-peer-media],#z-remote-screen-vid,#z-shared-vid").forEach(el=>{
-    el.muted=false;
-    el.volume=1;
-    el.play?.().catch(()=>{});
-  });
 }
 
 function zroom(){
@@ -937,7 +1032,7 @@ function zroom(){
   const raisedList=Object.values(ZS.hands||{}).filter(h=>h.raised);
   const presList=Object.values(ZS.presence||{});
   const totalCount=Math.max(1,presList.length);
-  const peerEntries=[...ZS.remoteStreams.entries()].filter(([uid,p])=>uid!==st.user?.uid&&p?.stream&&(p.stream.getAudioTracks().length||p.stream.getVideoTracks().length));
+  const peerEntries=[...ZS.remoteStreams.entries()].filter(([uid,p])=>uid!==st.user?.uid&&p&&Object.values(p.streams||{}).some(Boolean));
 
   let hostBar="";
   if(st.adm){
@@ -1020,15 +1115,13 @@ function zroom(){
 
   const peersHtml=peerEntries.length&&!ZS.expanded
     ?`<div class="z-peers-strip">${peerEntries.map(([uid,p])=>{
-      const hasVid=p.stream.getVideoTracks().some(t=>t.enabled&&t.readyState==="live");
+      const pr=ZS.presence?.[uid]||{};
+      const hasVid=!!pr.cam&&!!p.streams.cam;
       return`<div class="z-peer-card">
-        ${hasVid
-          ?`<video data-peer-media="${esc(uid)}" autoplay playsinline></video>`
-          :`<audio data-peer-media="${esc(uid)}" autoplay playsinline></audio><span class="z-pill">🎙</span>`}
+        ${hasVid?`<video data-peer-cam="${esc(uid)}" autoplay playsinline muted></video>`:`<span class="z-pill">🎙</span>`}
         <div><div style="font-size:12px;font-weight:700">${esc(p.name||A("مشارك","Participant"))}</div><div style="font-size:11px;color:#93c5fd">${p.isAdmin?A("الإدارة","Host"):A("مشارك","Participant")}</div></div>
-      </div>`;
-    }).join("")}</div>`
-    :peerEntries.map(([uid])=>`<audio data-peer-media="${esc(uid)}" autoplay playsinline style="display:none"></audio>`).join("");
+      </div>`}).join("")}</div>`
+    :"";
 
   let stageContent="";
   if(ZS.audioOnly){
@@ -1051,9 +1144,9 @@ function zroom(){
     if(ZS.scr){
       tiles.push(`<div class="z-tile main-share"><video id="zsv" autoplay playsinline muted></video></div>`);
     }else if((ZS.screenActive||ZS.sharedType==="video")&&!st.adm){
-      const hasLiveVidStream=peerEntries.some(([uid,p])=>p.isAdmin&&p.stream.getVideoTracks().some(t=>t.readyState==="live"));
+      const hasLiveVidStream=!!hostScreenStream();
       if(hasLiveVidStream){
-        tiles.push(`<div class="z-tile main-share"><video id="z-remote-screen-vid" autoplay playsinline></video></div>`);
+        tiles.push(`<div class="z-tile main-share"><video id="z-remote-screen-vid" autoplay playsinline muted></video></div>`);
       }else if(ZS.sharedVid){
         tiles.push(`<div class="z-tile main-share"><div class="z-doc-box"><video id="z-shared-vid" src="${esc(ZS.sharedVid)}" controls autoplay playsinline></video></div></div>`);
       }else if(ZS.liveFrameUrl){
@@ -1063,9 +1156,7 @@ function zroom(){
       }
     }
     if(ZS.sharedVid&&st.adm){
-      tiles.push(`<div class="z-tile main-share"><div class="z-doc-box">
-        <video id="z-shared-vid" src="${esc(ZS.sharedVid)}" controls autoplay playsinline></video>
-      </div></div>`);
+      tiles.push(`<div class="z-tile main-share"><div class="z-doc-box" id="z-vid-slot"></div></div>`);
     }
     if(ZS.sharedImg){
       tiles.push(`<div class="z-tile main-share"><div class="z-doc-box">
@@ -1167,6 +1258,7 @@ function vZm(){const z=st.zoom;
 const zs=m=>{const e=$("zst");if(e)e.textContent=m};
 
 function zStop(){
+  dropVidEl();ZS.joined=0;try{ZS.rtcUnsub?.()}catch(e){}ZS.rtcUnsub=null;
   stopAudioMeter();
   stopLiveFrameSync();
   clearInterval(ZS.presenceTimer);
@@ -1174,9 +1266,8 @@ function zStop(){
   [ZS.cam,ZS.micStream,ZS.scr,ZS.vidShareStream].forEach(s=>s&&s.getTracks().forEach(t=>t.stop()));
   ZS.cam=ZS.micStream=ZS.scr=ZS.vidShareStream=ZS.rec=null;
   ZS.mic=0;ZS.cam1=0;ZS.menu=null;ZS.expanded=0;
-  ZS.peers.forEach(pc=>{try{pc.close()}catch(e){}});
-  ZS.peers.clear();
-  ZS.remoteStreams.clear();
+  ZS.peers.forEach(c=>{try{c.pc.close()}catch(e){}});
+  ZS.peers.clear();ZS.remoteStreams.clear();syncAudioElements();
   if(db&&st.user){
     touchPresence(false);
     if(st.adm)setDoc(doc(db,"site","zoom_stage"),{screenActive:false,liveFrameUrl:"",ts:Date.now()},{merge:true}).catch(()=>{});
@@ -1206,10 +1297,11 @@ function draw(){const r=route(),d=document.documentElement;
  if(st.adm)tb.push(["admin-secret-portal",A("لوحة الإدارة","Admin")]);if(!st.user)tb=[tb[1]];
  if($("nav"))$("nav").innerHTML=tb.map(x=>`<a href="#${x[0]}" class="${r==x[0]?"on":""}">${x[1]}</a>`).join("");
  let v;if(!st.ready)v=`<p class="sub">…</p>`;else if(r=="ads")v=vAds();else if(!st.user)v=vLogin();else v=({dashboard:vDash,volunteering:()=>vItems("v"),courses:()=>vItems("c"),"zoom-alnoor":vZm,lectures:vLec,feedback:vFb,about:vAbout,"admin-secret-portal":vAdm}[r]||vDash)();
- if($("app"))$("app").innerHTML=(ok?"":`<div class="warn">⚠️ ${A("لم يتم ضبط مفاتيح firebaseConfig بعد: المنصة تعمل بالبيانات الأولية فقط.","firebaseConfig is not set yet: running with starter data only.")}</div>`)+v;
+ if(ZS.vidEl&&ZS.vidEl.parentNode)ZS.vidEl.remove();if($("app"))$("app").innerHTML=(ok?"":`<div class="warn">⚠️ ${A("لم يتم ضبط مفاتيح firebaseConfig بعد: المنصة تعمل بالبيانات الأولية فقط.","firebaseConfig is not set yet: running with starter data only.")}</div>`)+v;
  Object.keys(st.crops).forEach(syncCropPreview);
  if(r=="zoom-alnoor"&&st.user){
    startZoomRealtimeSubs();
+   if(inRoom())joinRoom();
    attachMediaElements();
    if(ZS.micStream&&ZS.micStream.active)startAudioMeter(ZS.micStream);
  }
@@ -1245,11 +1337,18 @@ async function ensureCam(){
 }
 
 const ACT={
- home(){go("dashboard")},lang(){st.lang=st.lang=="ar"?"en":"ar";ls("lang",st.lang);draw()},
+ home(){go("dashboard")},
+ goRoute(r){if(r)go(r)},
+ lang(){st.lang=st.lang=="ar"?"en":"ar";ls("lang",st.lang);draw()},
  theme(){const isDark=document.documentElement.getAttribute("data-theme")==="dark";applyTheme(isDark?"light":"dark");toast(isDark?A("تم التفعيل: وضع النهار","Light mode enabled"):A("تم التفعيل: وضع الليل","Dark mode enabled"))},
  out(){zStop();if(ok)signOut(auth).then(()=>{go("dashboard");toast(A("تم تسجيل الخروج","Signed out"))})},
  togglemode(v){st.regMode=v=="1";draw()},
  cropReset(id){if(st.crops[id]){st.crops[id].x=0;st.crops[id].y=0;st.crops[id].zoom=1;draw()}},
+ delStudPhoto(b){
+  if(!st.user)return;
+  delete st.crops.me;
+  run(()=>setDoc(doc(db,"students",st.user.uid),{photo:""},{merge:true}),A("تمت إزالة الصورة","Photo removed"),b);
+ },
  async studin(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));const e=$("se")?.value.trim()||"",p=$("sp")?.value.trim()||"";
   if(!e||!pin6(p))return toast(A("أدخل البريد الإلكتروني ورمزاً من 6 أرقام","Enter email and a 6-digit PIN"));
   try{await pers;await signInWithEmailAndPassword(auth,e,p);go("dashboard")}catch(err){toast("⚠️ "+A("تعذر الدخول: ","Sign-in failed: ")+(err.code||err.message))}},
@@ -1258,7 +1357,17 @@ const ACT={
   if(p!==p2)return toast(A("تأكيد الرمز غير مطابق للرمز الأول","PIN confirmation does not match"));
   try{await pers;await createUserWithEmailAndPassword(auth,e,p);st.regMode=false;go("dashboard");toast("✅ "+A("تم إنشاء الحساب وتسجيل الدخول","Account created and signed in"))}catch(err){toast("⚠️ "+A("تعذر إنشاء الحساب: ","Sign-up failed: ")+(err.code||err.message))}},
  async adminin(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));try{await pers;await signInWithEmailAndPassword(auth,$("ae")?.value.trim()||"",$("ac2")?.value||"");go("admin-secret-portal")}catch(e){toast("⚠️ "+A("البريد أو الرمز غير صحيح","Wrong email or password"))}},
- saveP(b){const d={email:st.user?.email||"",last:Date.now()};["name","phone","major","uni"].forEach(k=>d[k]=$(`p_${k}`)?.value.trim()||"");run(()=>setDoc(doc(db,"students",st.user.uid),d,{merge:true}),A("تم حفظ بياناتك","Profile saved"),b)},
+ saveP(b){
+  const d={email:st.user?.email||"",last:Date.now(),note:$("p_note")?.value?.trim()||""};
+  ["name","phone","major","uni"].forEach(k=>d[k]=$(`p_${k}`)?.value.trim()||"");
+  run(async()=>{
+    if(st.crops.me){
+      d.photo=await renderCroppedAvatar(st.crops.me);
+      delete st.crops.me;
+    }
+    await setDoc(doc(db,"students",st.user.uid),d,{merge:true});
+  },A("تم حفظ بياناتك","Profile saved"),b);
+ },
  reg(id,b){const it=st.items.find(x=>x.id==id),m=st.me;if(!it)return;if(!m.name||!m.phone){toast(A("أكمل اسمك ورقم هاتفك في لوحتي أولاً","Add your name and phone in My space first"));return go("dashboard")}
   run(()=>setDoc(doc(db,"regs",st.user.uid),{name:m.name,phone:m.phone,email:st.user.email||"",list:{[id]:{title:it.t,kind:it.kind,price:+it.price||0,ts:Date.now(),status:"pending"}}},{merge:true}),it.kind=="v"?A("تم إرسال طلبك","Application sent"):A("مقعدك مؤكد","Seat confirmed"),b)},
  ad(i){adShow(+i)},mute(b){const v=b.parentNode?.querySelector("video");if(!v)return;v.muted=!v.muted;b.textContent=v.muted?"🔇":"🔊"},
@@ -1304,12 +1413,7 @@ const ACT={
  ztoggleopt(k){
   ZS[k]=ZS[k]?0:1;
   if(k==="speaker"){
-    [$("zsv"),$("z-shared-vid"),$("z-remote-screen-vid")].forEach(el=>{if(el){el.muted=!ZS.speaker;el.volume=ZS.speaker?1:0}});
-    document.querySelectorAll("[data-peer-media]").forEach(el=>{
-      el.muted=!ZS.speaker;
-      el.volume=ZS.speaker?1:0;
-      if(ZS.speaker)el.play?.().catch(()=>{});
-    });
+    syncAudioElements();
   }else if(k==="shareAudio"){
     syncTracksToPeers();
   }
@@ -1385,7 +1489,7 @@ const ACT={
   if(!st.adm)return;
   const fi=$("z-media-input");if(!fi)return;
   fi.accept=accept||"*/*";
-  fi.onchange=async()=>{
+  fi.onchange=async()=>{dropVidEl();
     const file=fi.files?.[0];if(!file)return;
     const realName=String(file.name||"").split(/[/\\]/).pop()||"";
     ZS.menu=null;ZS.audioOnly=0;
@@ -1402,18 +1506,19 @@ const ACT={
         draw();
         syncStageToCloud();
       }else if(/^video\//.test(file.type)){
-        ZS.sharedVid=URL.createObjectURL(file);
-        ZS.sharedUrl=ZS.sharedVid;
+        const v=document.createElement("video");
+        v.id="z-shared-vid";v.controls=true;v.playsInline=true;v.preload="auto";
+        v.src=URL.createObjectURL(file);
+        ZS.vidEl=v;
+        ZS.sharedVid=v.src;
+        ZS.sharedUrl=v.src;
         ZS.sharedType="video";
+        v.addEventListener("loadedmetadata",startVidCapture);
+        v.addEventListener("playing",startVidCapture);
         draw();
+        v.play().catch(()=>{});
         startLiveFrameSync();
         syncStageToCloud();
-        setTimeout(()=>{
-          const vEl=$("z-shared-vid");
-          if(vEl&&typeof vEl.captureStream==="function"&&!ZS.vidShareStream){
-            try{ZS.vidShareStream=vEl.captureStream();syncTracksToPeers()}catch(e){}
-          }
-        },250);
       }else if(/pdf/i.test(file.type)||/\.pdf$/i.test(realName)){
         ZS.sharedType="pdf";
         ZS.sharedUrl=URL.createObjectURL(file);
@@ -1480,7 +1585,7 @@ const ACT={
   syncStageToCloud({slideIdx:ZS.slideIdx});
  },
  zclearshare(){
-  if(!st.adm)return;
+  if(!st.adm)return;dropVidEl();
   stopLiveFrameSync();
   if(ZS.scr){ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null}
   if(ZS.vidShareStream){ZS.vidShareStream.getTracks().forEach(t=>t.stop());ZS.vidShareStream=null}
@@ -1650,6 +1755,14 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("change",async e=>{
   const b=e.target.closest("[data-c]");if(b&&CHG[b.dataset.c])CHG[b.dataset.c](b.value,b);
+  if(e.target.id==="p-photo-file"&&e.target.files?.[0]){
+    try{
+      const src=await compressToDataUrl(e.target.files[0],900,900,450000);
+      st.crops.me={src,x:0,y:0,zoom:1};
+      draw();
+    }catch(err){toast("⚠️ "+(err.message||A("تعذر تحميل الصورة","Failed to load image")))}
+    return;
+  }
   const m=e.target.id?.match(/^e-team-(f\d+)-file$/);
   if(m&&e.target.files?.[0]){
     const id=m[1];
