@@ -7,6 +7,8 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="منصة النور">
 <title>منصة النور</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
 <style>
@@ -201,6 +203,7 @@ header{background:var(--card);border-bottom:1px solid #a6cecc;color:var(--tx);--
 .inbox-list{display:grid;gap:14px}.inbox-message{overflow-wrap:anywhere}.inbox-message.unread{border-inline-start:4px solid var(--teal)}
 .inbox-message h3{margin:0}.inbox-message time{font-size:12px}.message-text{white-space:pre-wrap;line-height:1.9}
 .inbox-settings{margin-bottom:16px}.inbox-settings small{display:block;color:var(--tx2);line-height:1.9}
+.inbox-tip{margin-top:10px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--tealS) 65%,var(--card));border:1px solid color-mix(in srgb,var(--teal) 25%,transparent);font-size:13px;line-height:1.8}
 .inbox-empty{text-align:center;padding:36px 20px}.inbox-empty>span{font-size:42px;color:var(--teal)}
 .accept-template{margin:14px 0;border:1px solid #9cc9c6;border-radius:12px;padding:12px;background:var(--tealS)}
 .accept-template legend{font-weight:700;padding-inline:6px}.accept-template small{display:block;color:var(--tx2)}
@@ -346,13 +349,48 @@ async function acceptFilteredRegistrations(){
   finally{st.bulkBusy=false;draw()}
   toast(failed?A(`تم قبول ${done}، وتعذّر ${failed}. أعد المحاولة للطلبات المتبقية.`,`Accepted ${done}; ${failed} failed. Retry remaining requests.`):A(`تم قبول ${done} وإيداع رسائلهم في الصندوق.`,`Accepted ${done}; messages delivered to the inbox.`));
 }
+async function syncPushStatusFromDevice(){
+  if(!st.user)return;
+  const localFlag=ls("alnoor_push_local")==="1"&&ls("alnoor_push_owner")===st.user.uid;
+  if(!("Notification"in window)||Notification.permission!=="granted"){
+    st.pushReady=false;
+    return;
+  }
+  if(!("serviceWorker"in navigator)||!("PushManager"in window)){
+    st.pushReady=localFlag;
+    return;
+  }
+  try{
+    const reg=await navigator.serviceWorker.getRegistration(new URL("./sw.js",location.href));
+    const sub=await reg?.pushManager.getSubscription();
+    st.pushReady=!!(sub||localFlag);
+  }catch(e){
+    st.pushReady=localFlag;
+  }
+}
 function notificationSettingsHtml(){
-  const supported=isSecureContext&&"Notification"in window&&"serviceWorker"in navigator&&"PushManager"in window;
+  const iosNeedsHome=isIosDevice()&&!isStandaloneApp();
+  const hasPushApi=isSecureContext&&"Notification"in window&&"serviceWorker"in navigator&&"PushManager"in window;
   const permission="Notification"in window?Notification.permission:"unsupported";
-  const status=!supported?A("إشعارات الجهاز غير مدعومة هنا؛ رسائلك محفوظة بالصندوق.","Device notifications are unsupported here; inbox messages are still available."):permission==="denied"?A("الإشعارات محظورة. اسمح بها من إعدادات الموقع في المتصفح.","Notifications blocked. Allow them in browser site settings."):st.pushReady?A("هذا الجهاز مسجّل لاستقبال الإشعارات.","This device is registered for push notifications."):permission==="granted"?A("الإذن مسموح؛ ربط الإشعارات بالخلفية غير مكتمل على هذا الجهاز.","Permission granted; background push registration is not complete on this device."):A("فعّل التنبيهات لتنتبه للقبول والإعلانات الجديدة.","Enable notifications for acceptance messages and announcements.");
+  let status="";
+  if(iosNeedsHome){
+    status=A("على iPhone وiPad يلزم إضافة الموقع للشاشة الرئيسية وفتحه منها أولًا لتفعيل إشعارات الجهاز؛ رسائلك محفوظة بالصندوق دائمًا.","On iPhone & iPad, add the site to your Home Screen and open it from there first to enable device notifications; inbox messages stay available.");
+  }else if(!hasPushApi){
+    status=A("إشعارات الجهاز غير مدعومة في هذا المتصفح حاليًا؛ جميع رسائلك محفوظة داخل الصندوق.","Device notifications are unsupported in this browser; your messages remain saved in your inbox.");
+  }else if(permission==="denied"){
+    status=A("تم رفض إذن الإشعارات سابقًا. فعّله من إعدادات الموقع في المتصفح ثم أعد المحاولة؛ رسائلك تبقى بالصندوق.","Notification permission was denied. Enable it in browser site settings and retry; messages stay in your inbox.");
+  }else if(st.pushReady&&permission==="granted"){
+    status=A("هذا الجهاز مفعّل لاستقبال الإشعارات، وجميع رسائلك محفوظة بالصندوق.","This device is enabled for notifications, and your messages remain in your inbox.");
+  }else if(permission==="granted"){
+    status=A("إذن الإشعارات مسموح؛ اضغط «تفعيل الإشعارات على هذا الجهاز» لإتمام ربط هذا الجهاز.","Notification permission is granted; press Enable notifications on this device to complete setup.");
+  }else{
+    status=A("فعّل التنبيهات لتصلك إشعارات القبول والإعلانات؛ رسائلك تبقى بالصندوق حتى لو رفضت الإذن.","Enable alerts for acceptance messages and announcements; messages stay in your inbox even if permission is denied.");
+  }
+  const canEnable=!iosNeedsHome&&hasPushApi&&permission!=="denied";
   return `<section class="card inbox-settings"><h3>🔔 ${A("إشعارات الهاتف والتابلت","Phone & tablet notifications")}</h3><p class="sub">${status}</p>
-    <div class="row"><button type="button" class="btn t" data-a="enableNotifications" ${!supported||permission==="denied"?"disabled":""}>${A("تفعيل الإشعارات على هذا الجهاز","Enable notifications on this device")}</button><button type="button" class="btn g" data-a="disableNotifications">${A("إيقافها على هذا الجهاز","Disable on this device")}</button></div>
-    <small>${A("على iPhone وiPad قد تحتاج إضافة الموقع للشاشة الرئيسية وفتحه منها. الإشعار مع إغلاق الموقع يتطلب إعداد خدمة الدفع؛ الرسالة تبقى بالصندوق حتى لو رفضت الإذن.","On iPhone/iPad you may need to add the site to your Home Screen and open it there. Closed-site notifications require a configured push service. Inbox messages remain available without permission.")}</small></section>`;
+    ${iosNeedsHome?`<div class="inbox-tip">📲 <b>${A("خطوات iPhone وiPad:","iPhone & iPad steps:")}</b> ${A("افتح قائمة المشاركة (Share) في المتصفح ← «إضافة إلى الشاشة الرئيسية» (Add to Home Screen) ← افتح «منصة النور» من الشاشة الرئيسية ← اضغط «تفعيل الإشعارات على هذا الجهاز».","Tap Share in your browser → Add to Home Screen → open Al-Noor from the Home Screen → tap Enable notifications on this device.")}</div>`:""}
+    <div class="row"><button type="button" class="btn t" data-a="enableNotifications" ${canEnable?"":"disabled"}>${A("تفعيل الإشعارات على هذا الجهاز","Enable notifications on this device")}</button><button type="button" class="btn g" data-a="disableNotifications">${A("إيقافها على هذا الجهاز","Disable on this device")}</button></div>
+    <small>${A("على iPhone وiPad قد تحتاج إضافة الموقع للشاشة الرئيسية وفتحه منها. الإشعار مع إغلاق الموقع يتطلب إعداد خدمة الدفع؛ الرسالة تبقى بالصندوق حتى لو رفضت الإذن.","On iPhone and iPad you may need to add the site to your Home Screen and open it from there. Notifications when the site is closed require a configured push service; the message stays in your inbox even if you deny permission.")}</small></section>`;
 }
 function vInbox(){
   const unread=unreadMessages();
@@ -364,7 +402,7 @@ function vInbox(){
       <p class="message-text">${esc(n.text||"")}</p>
       <div class="row">${safeHttpLink(n.url)?`<a class="btn t" href="${esc(safeHttpLink(n.url))}" target="_blank" rel="noopener noreferrer">${A("فتح الرابط المرفق ↗","Open attached link ↗")}</a>`:""}
       ${!st.readMessages.has(n.id)?`<button type="button" class="btn g" data-a="readMessage" data-p="${esc(n.id)}">${A("تمت القراءة","Mark read")}</button>`:`<small>${A("مقروءة","Read")}</small>`}
-      ${st.adm?`<button type="button" class="btn g" style="color:var(--red);border-color:var(--red)" data-a="delMessageAll" data-p="${esc(n.id)}">🗑 ${A("حذف عند الجميع","Delete for everyone")}</button>`:""}</div></article>`).join("")||`<div class="card inbox-empty"><span aria-hidden="true">✉</span><h3>${A("رسائلك رح تظهر هون","Your messages will appear here")}</h3><p class="sub">${A("قبولك بالدورات والتطوعات والمهارات والمحاضرات، وروابط المجموعات والإعلانات.","Course, volunteering, skills and lecture decisions, group links and announcements.")}</p></div>`}</div>`;
+      ${st.adm?`<button type="button" class="btn g" style="color:var(--red);border-color:var(--red)" data-a="delMessageAll" data-p="${esc(n.id)}">🗑 ${A("حذف عند الجميع","Delete for everyone")}</button>`:""}</div></article>`).join("")||`<div class="card inbox-empty"><span aria-hidden="true">✉</span><h3>${A("رسائلك رح تظهر هون","Your messages will appear here")}</h3><p class="sub">${A("قبولك بالدورات والتطوعات والمهارات والمحاضرات، ورسالة الإدارة ورابط المجموعة والإعلانات.","Course, volunteering, skills and lecture decisions, host messages, group links and announcements.")}</p></div>`}</div>`;
 }
 function vLectureRegistration(){
   return `<h1>${A("المحاضرات","Lectures")}</h1><div class="grid">${st.lecs.map(l=>{
@@ -402,6 +440,7 @@ function listenCommunications(user){
   st.noticeSession++;const session=st.noticeSession;
   st.inbox=[];st.readMessages=new Set();st.inboxError="";st.templates={};st.presenter=null;st.presenters=[];st.pushReady=false;
   knownInboxIds=new Set();inboxPrimed=false;
+  syncPushStatusFromDevice().then(()=>{if(session===st.noticeSession&&route()==="inbox")draw()});
   const notifRef=collection(db,"notifications");
   const buckets=new Map();
   let usedFallback=false;
@@ -489,12 +528,13 @@ async function registerNoticeWorker(){
 async function enableDeviceNotifications(){
   if(!st.user)return toast(A("سجّل دخولك أولًا.","Sign in first."));
   if(isIosDevice()&&!isStandaloneApp()){
-    return toast("📲 "+A("على iPhone وiPad: اضغط زر المشاركة (Share) ثم «إضافة إلى الشاشة الرئيسية»، وافتح المنصة من الأيقونة لتفعيل الإشعارات.","On iPhone & iPad: tap Share > Add to Home Screen, then open the app from there to enable notifications."));
+    return toast("📲 "+A("على iPhone وiPad: أضف الموقع للشاشة الرئيسية ثم افتحه من الأيقونة لتفعيل الإشعارات.","On iPhone & iPad: add the site to your Home Screen, then open it from there to enable notifications."));
   }
-  if(!("Notification"in window)||!("PushManager"in window))return toast(A("هذا المتصفح لا يدعم إشعارات الجهاز؛ استخدم الصندوق داخل المنصة.","This browser does not support device notifications; use the inbox."));
+  if(!("Notification"in window)||!("PushManager"in window))return toast(A("هذا المتصفح لا يدعم إشعارات الجهاز؛ رسائلك تبقى محفوظة بالصندوق.","This browser does not support device notifications; your messages stay in your inbox."));
+  if(Notification.permission==="denied")return toast(A("الإشعارات محظورة من المتصفح. اسمح بها من إعدادات الموقع؛ رسائلك تبقى بالصندوق.","Notifications are blocked in browser settings. Allow them in site settings; messages stay in your inbox."));
   const uid=st.user.uid;
   const permission=Notification.permission==="granted"?"granted":await Notification.requestPermission();
-  if(permission!=="granted")return toast(A("لم تُفعّل إشعارات الجهاز. رسائلك تبقى محفوظة بالصندوق.","Device notifications were not enabled. Your messages stay in your inbox."));
+  if(permission!=="granted")return toast(A("لم تُفعّل إشعارات الجهاز؛ رسائلك تبقى محفوظة بالصندوق.","Device notifications were not enabled; your messages stay in your inbox."));
   try{
     const registration=await registerNoticeWorker();
     if(st.user?.uid!==uid)return;
@@ -504,11 +544,11 @@ async function enableDeviceNotifications(){
     if(!st.pushConfig?.publicKey){
       st.pushReady=true;
       await registration.showNotification(A("تم تفعيل إشعارات النور على هذا الجهاز","Al-Noor notifications enabled"),{
-        body:A("ستصلك تنبيهات القبول والإعلانات الفورية على هذا الجهاز.","Acceptance alerts and announcements are now active on this device."),
+        body:A("ستصلك تنبيهات القبول والإعلانات؛ رسائلك محفوظة بالصندوق.","Acceptance alerts and announcements will appear here; messages stay in your inbox."),
         tag:"alnoor-enabled",
         data:{url:new URL("./index.html#inbox",location.href).href}
-      });
-      toast("✅ "+A("تم ربط الإشعارات بنجاح على هذا الجهاز","Notifications linked on this device"));
+      }).catch(()=>{});
+      toast("✅ "+A("تم تفعيل الإشعارات على هذا الجهاز؛ رسائلك محفوظة بالصندوق.","Notifications enabled on this device; messages stay in your inbox."));
       draw();
       return;
     }
@@ -526,16 +566,16 @@ async function enableDeviceNotifications(){
     ls("alnoor_push_device",id);
     st.pushReady=true;
     await registration.showNotification(A("إشعارات النور جاهزة على هذا الجهاز","Al-Noor notifications enabled"),{
-      body:A("القبول والإعلانات ستظهر هنا عند وصولها.","Acceptance messages and announcements will appear here."),
+      body:A("القبول والإعلانات ستظهر هنا؛ رسائلك محفوظة بالصندوق.","Acceptance messages and announcements will appear here; messages stay in your inbox."),
       tag:"alnoor-enabled",
       data:{url:new URL("./index.html#inbox",location.href).href}
-    });
-    toast("✅ "+A("تم تسجيل الجهاز لاستقبال الإشعارات بالخلفية","Device registered for background notifications"));
+    }).catch(()=>{});
+    toast("✅ "+A("تم تسجيل الجهاز لاستقبال الإشعارات؛ رسائلك محفوظة بالصندوق.","Device registered for notifications; messages stay in your inbox."));
     draw();
   }catch(error){
     console.error("Push registration error:",error);
     st.pushReady=false;
-    toast("⚠️ "+A("تعذر ربط الإشعارات: ","Push error: ")+(error?.message||A("تأكد من وجود ملف sw.js","Check sw.js file")));
+    toast("⚠️ "+A("تعذر تفعيل الإشعارات، ورسائلك تبقى محفوظة بالصندوق: ","Could not enable notifications; messages stay in your inbox: ")+(error?.message||A("تحقق من ملف sw.js أو إعداد خدمة الدفع","Check sw.js or push service")));
     draw();
   }
 }
@@ -1118,7 +1158,7 @@ async function openDeviceTest(){
       deviceTest.streams.push(stream);
       await deviceTest.ctx?.close();deviceTest.ctx=new AudioContext();await deviceTest.ctx.resume();
       const analyser=deviceTest.ctx.createAnalyser();analyser.fftSize=256;deviceTest.ctx.createMediaStreamSource(stream).connect(analyser);
-      const samples=new Uint8Array(analyser.fftSize);let peak=0;
+      const samples=new Uint8Array(analyser.frequencyBinCount);let peak=0;
       const meter=()=>{if(epoch!==deviceTest.epoch)return;analyser.getByteTimeDomainData(samples);let sum=0;for(const x of samples)sum+=(x-128)**2;const level=Math.min(100,Math.sqrt(sum/samples.length)*4);peak=Math.max(peak,level);if($("device-level"))$("device-level").value=level;deviceTest.raf=requestAnimationFrame(meter)};meter();
       status(A("احكِ الآن لمدة 3 ثوانٍ…","Speak now for 3 seconds…"));
       if(!window.MediaRecorder)throw new Error("Recorder unavailable");
@@ -2013,7 +2053,7 @@ function onboardingSteps(){
       note:A(role==="admin"?"لمشاركة فيديو بصوته، اختر تبويبًا وفعّل «مشاركة صوت التبويب» إذا كان متصفحك يدعمها.":"الميكروفون والكاميرا لا يعملان تلقائيًا. الإدارة قد توقف مايكات الطلاب مؤقتًا.",role==="admin"?"To share video with audio, choose a browser tab and enable Share tab audio where supported.":"Your microphone and camera never start automatically. The host may temporarily disable student microphones.")},
     {icon:"✉",title:A("صندوق رسائلك وإشعاراتك","Your inbox & notifications"),
       body:A("قبولك بالمهارات والدورات والتطوعات والمحاضرات، ورسالة الإدارة ورابط المجموعة، بيوصلوا إلى «صندوق الرسائل» (في الشريط العلوي أو داخل قائمة ☰). افتح الصندوق واضغط «تفعيل الإشعارات» ثم اسمح للمتصفح. الشات داخل المحاضرة مختلف: مؤقت وينمسح من جهازك عند المغادرة.","Acceptance decisions, your host's message and group links arrive in Inbox (in the top bar or inside the ☰ menu). Choose Enable notifications there, then allow browser permission. Lecture chat is separate: temporary and cleared on your device when leaving."),
-      note:A("التفعيل لهذا الجهاز فقط. على iPhone/iPad قد تحتاج إضافة الموقع للشاشة الرئيسية. إشعارات الموقع المغلق تحتاج إعداد خادم الدفع؛ لا تشارك بيانات المرضى.","Enable on each device. On iPhone/iPad you may need a Home Screen installation. Closed-site push requires a configured server. Never share patient details.")}
+      note:A("على iPhone وiPad قد تحتاج إضافة الموقع للشاشة الرئيسية وفتحه منها. الإشعار مع إغلاق الموقع يتطلب إعداد خدمة الدفع؛ الرسالة تبقى بالصندوق حتى لو رفضت الإذن.","On iPhone and iPad you may need to add the site to your Home Screen and open it from there. Notifications when the site is closed require a configured push service; the message stays in your inbox even if you deny permission.")}
   ];
 }
 function closeOnboarding(result=""){
@@ -2064,7 +2104,7 @@ function openOnboarding(){
     const action=e.target.closest("[data-ob]")?.dataset.ob;
     if(action==="skip")closeOnboarding("skipped");
     else if(action==="openMenu"){closeOnboarding("done");setMenuOpen(true)}
-    else if(action==="notifications"){closeOnboarding("done");go("inbox");enableDeviceNotifications().catch(()=>toast(A("تعذر تفعيل الإشعارات الآن.","Could not enable notifications now.")))}
+    else if(action==="notifications"){closeOnboarding("done");go("inbox");enableDeviceNotifications().catch(()=>toast(A("تعذر تفعيل الإشعارات الآن؛ رسائلك تبقى بالصندوق.","Could not enable notifications now; messages stay in your inbox.")))}
     else if(action==="finish")closeOnboarding("done");
     else if(action==="next"){onboarding.step=Math.min(onboardingSteps().length-1,onboarding.step+1);paintOnboarding()}
     else if(action==="back"){onboarding.step=Math.max(0,onboarding.step-1);paintOnboarding()}
@@ -2201,7 +2241,7 @@ const ACT={
   }catch(e){toast(A("الخدمة غير منشورة أو صلاحيات الإدارة غير مضبوطة. راجع ملف إعداد الإشعارات.","Service not deployed or server admin permissions not configured. See push setup instructions."))}
  },
  async enableNotifications(){await enableDeviceNotifications()},
- async disableNotifications(){try{await detachDeviceNotifications();draw();toast(A("أوقفت الإشعارات على هذا الجهاز فقط.","Notifications disabled on this device only."))}catch(e){toast(A("تعذر إيقاف التسجيل؛ حاول قبل تسجيل الخروج.","Could not unregister this device; retry before signing out."))}},
+ async disableNotifications(){try{await detachDeviceNotifications();draw();toast(A("أوقفت الإشعارات على هذا الجهاز فقط؛ رسائلك تبقى محفوظة بالصندوق.","Notifications disabled on this device only; messages stay in your inbox."))}catch(e){toast(A("تعذر إيقاف التسجيل؛ حاول قبل تسجيل الخروج.","Could not unregister this device; retry before signing out."))}},
  async readMessage(id){if(st.user&&st.inbox.some(n=>n.id===id)){await setDoc(doc(db,"notificationReads",st.user.uid,"messages",id),{readAt:Date.now()});st.readMessages.add(id);draw()}},
  async readAllMessages(){if(!st.user)return;const batch=writeBatch(db);st.inbox.forEach(n=>batch.set(doc(db,"notificationReads",st.user.uid,"messages",n.id),{readAt:Date.now()}));await batch.commit();st.inbox.forEach(n=>st.readMessages.add(n.id));draw()},
  async acceptAll(){await acceptFilteredRegistrations()},
@@ -2511,175 +2551,180 @@ const ACT={
   if(ZS.scr){ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null}
   if(ZS.vidShareStream){ZS.vidShareStream.getTracks().forEach(t=>t.stop());ZS.vidShareStream=null}
   if(ZS.sharedUrl&&ZS.sharedUrl.startsWith("blob:")){try{URL.revokeObjectURL(ZS.sharedUrl)}catch(e){}}
-  if(ZS.sharedVid&&ZS.sharedVid.startsWith("blob:")){try{URL.revokeObjectURL(ZS.sharedVid)}catch(e){}}
-  ZS.sharedImg="";ZS.pageDataUrl="";ZS.liveFrameUrl="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedType="";
-  ZS.pdfDoc=null;ZS.pdfNumPages=1;ZS.pdfPage=1;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";
-  ZS.screenActive=0;
-  ZS.menu=null;
+  ZS.sharedImg="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedType="";
+  ZS.pageDataUrl="";ZS.liveFrameUrl="";ZS.pdfDoc=null;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";ZS.screenActive=0;
   pdfPageCache.clear();pdfPrefetching.clear();
+  ZS.menu=null;
   syncTracksToPeers();
   draw();
-  syncStageToCloud();
+  syncStageToCloud({sharedType:"",sharedImg:"",pageDataUrl:"",liveFrameUrl:"",sharedVid:"",sharedUrl:"",screenActive:false});
  },
- zleave(){zStop();go("dashboard")},
 
- async zquickcam(){
-  ZS.audioOnly=0;
-  try{
-    await ensureCam();
-    ZS.cam1=1;
-    await syncTracksToPeers();
-    draw();
-    const s=ZS.cam.getVideoTracks()[0]?.getSettings();
-    if(s?.width)zs((s.width||1280)+"×"+(s.height||720));
-  }catch(e){toast("⚠️ "+mediaErrorMsg(e,"cam"))}
+ async zt(k){
+  if(!ZS.joined)joinRoom();
+  if(!ZS.joined)return;
+  if(k=="mic"){
+    if(!canPresent()&&!ZS.roomCtrl.allowMic&&!ZS.mic){
+      return toast("🔇");
+    }
+    try{
+      if(!ZS.mic){
+        const s=await ensureMic();
+        s.getAudioTracks().forEach(t=>t.enabled=true);
+        ZS.mic=1;
+        zs(A("المايك شغال","Mic on"));
+      }else{
+        ZS.mic=0;
+        if(ZS.micStream)ZS.micStream.getAudioTracks().forEach(t=>t.enabled=false);
+        zs(A("المايك مطفي","Mic off"));
+      }
+      await syncTracksToPeers();
+      draw();
+    }catch(e){toast("⚠️ "+mediaErrorMsg(e,"mic"))}
+  }else{
+    try{
+      if(!ZS.cam1){
+        await ensureCam();
+        ZS.cam1=1;
+        ZS.audioOnly=0;
+        await syncTracksToPeers();
+        draw();
+      }else{
+        ZS.cam1=0;
+        if(ZS.cam){ZS.cam.getTracks().forEach(t=>t.stop());ZS.cam=null}
+        await syncTracksToPeers();
+        draw();
+      }
+    }catch(e){toast("⚠️ "+mediaErrorMsg(e,"cam"))}
+  }
  },
  async zquickmic(){
-  if(!canPresent()&&!ZS.roomCtrl.allowMic)return toast("🔇 "+A("الإدارة أوقفت المايكروفون مؤقتاً للطلاب","Host temporarily muted student microphones"));
+  if(!ZS.joined)joinRoom();
+  if(!ZS.joined)return;
+  if(!canPresent()&&!ZS.roomCtrl.allowMic&&!ZS.mic)return toast("🔇");
   try{
-    const ms=await ensureMic();
-    const tr=ms.getAudioTracks()[0];
-    if(tr)tr.enabled=true;
+    const s=await ensureMic();
+    s.getAudioTracks().forEach(t=>t.enabled=true);
     ZS.mic=1;
+    zs(A("المايك شغال","Mic on"));
     await syncTracksToPeers();
     draw();
   }catch(e){toast("⚠️ "+mediaErrorMsg(e,"mic"))}
  },
- async zt(k){
-  if(k==="mic"){
-    if(!canPresent()&&!ZS.roomCtrl.allowMic&&!ZS.mic)return toast("🔇 "+A("الإدارة أوقفت المايكروفون مؤقتاً للطلاب","Host temporarily muted student microphones"));
-    try{
-      const next=ZS.mic?0:1;
-      const ms=await ensureMic();
-      ms.getAudioTracks().forEach(t=>{t.enabled=!!next});
-      ZS.mic=next;
-      await syncTracksToPeers();
-      draw();
-    }catch(e){toast("⚠️ "+mediaErrorMsg(e,"mic"))}
-    return;
-  }
-  if(k==="cam1"){
-    if(!ZS.cam1){
-      ZS.audioOnly=0;
-      try{
-        await ensureCam();
-        ZS.cam.getVideoTracks().forEach(t=>{t.enabled=true});
-        ZS.cam1=1;
-        await syncTracksToPeers();
-        draw();
-        const s=ZS.cam.getVideoTracks()[0]?.getSettings();
-        if(s?.width)zs(s.width+"×"+s.height);
-      }catch(e){toast("⚠️ "+mediaErrorMsg(e,"cam"))}
-    }else{
-      ZS.cam1=0;
-      if(ZS.cam)ZS.cam.getVideoTracks().forEach(t=>{t.enabled=false});
-      await syncTracksToPeers();
-      draw();
-    }
-  }
+ async zquickcam(){
+  if(!ZS.joined)joinRoom();
+  if(!ZS.joined)return;
+  try{
+    await ensureCam();
+    ZS.cam1=1;ZS.audioOnly=0;
+    await syncTracksToPeers();
+    draw();
+  }catch(e){toast("⚠️ "+mediaErrorMsg(e,"cam"))}
  },
- zhand(){ZS.hand=ZS.hand?0:1;draw()},
  async zscr(){
-  if(!canPresent()||!ZS.joined)return;
+  if(!canPresent())return;
   ZS.menu=null;
   if(ZS.scr){
+    ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null;ZS.screenActive=0;
     stopLiveFrameSync();
-    ZS.scr.getTracks().forEach(t=>t.stop());
-    ZS.scr=null;
-    ZS.screenActive=0;
     await syncTracksToPeers();
     draw();
     syncStageToCloud({screenActive:false,liveFrameUrl:""});
     return;
   }
   if(!navigator.mediaDevices?.getDisplayMedia){
-    toast("⚠️ "+A("مشاركة الشاشة غير مدعومة في هذا المتصفح أو الجهاز","Screen sharing is not supported in this browser or device"));
-    return;
+    return toast("⚠️ "+A("مشاركة الشاشة غير مدعومة في هذا المتصفح","Screen sharing is not supported in this browser"));
   }
   try{
     const epoch=ZS.sfuEpoch;
-    ZS.audioOnly=0;
-    const capture=await navigator.mediaDevices.getDisplayMedia({
-      video:{width:{ideal:1280,max:1920},height:{ideal:720,max:1080},frameRate:{ideal:15,max:30}},
-      audio:ZS.shareAudio?{echoCancellation:false,noiseSuppression:false,autoGainControl:false}:false
+    const s=await navigator.mediaDevices.getDisplayMedia({
+      video:{width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:24}},
+      audio:!!ZS.shareAudio
     });
-    if(!ZS.joined||epoch!==ZS.sfuEpoch){capture.getTracks().forEach(t=>t.stop());return}
-    ZS.scr=capture;
-    ZS.screenActive=1;
-    capture.getVideoTracks()[0].onended=()=>{
-      stopLiveFrameSync();
-      ZS.scr=null;
-      ZS.screenActive=0;
-      syncTracksToPeers();
-      draw();
-      syncStageToCloud({screenActive:false,liveFrameUrl:""});
+    if(!ZS.joined||epoch!==ZS.sfuEpoch){s.getTracks().forEach(t=>t.stop());return}
+    ZS.scr=s;ZS.screenActive=1;ZS.audioOnly=0;
+    s.getVideoTracks()[0].onended=()=>{
+      if(ZS.scr===s){
+        ZS.scr=null;ZS.screenActive=0;
+        stopLiveFrameSync();
+        syncTracksToPeers();
+        draw();
+        syncStageToCloud({screenActive:false,liveFrameUrl:""});
+      }
     };
     await syncTracksToPeers();
     draw();
+    startLiveFrameSync();
     syncStageToCloud({screenActive:true});
-  }catch(err){
-    console.error(err);
-    toast("⚠️ "+A("تعذر بدء مشاركة الشاشة أو تم إلغاؤها","Screen share cancelled or unavailable"));
+  }catch(e){
+    if(e?.name==="NotAllowedError")return toast("⚠️ "+A("تم إلغاء مشاركة الشاشة أو لم يُمنح الإذن","Screen share cancelled or permission denied"));
+    toast("⚠️ "+A("تعذر مشاركة الشاشة","Cannot share screen"));
   }
  },
- zrec(){if(!st.adm)return;if(ZS.rec){ZS.rec.stop();return}const s=ZS.scr||ZS.cam||ZS.micStream;if(!s)return toast(A("فعّل المايك أو الكاميرا أو الشاشة أولاً","Turn on mic, camera, or screen first"));
-  try{ZS.ch=[];ZS.rec=new MediaRecorder(s);ZS.rec.ondataavailable=e=>{if(e.data.size)ZS.ch.push(e.data)};ZS.rec.onstop=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(ZS.ch,{type:ZS.rec.mimeType}));a.download="alnoor-lecture.webm";a.click();ZS.rec=null;if($("zrb"))$("zrb").textContent="⏺";toast("✅ "+A("تم حفظ التسجيل","Recording saved"))};ZS.rec.start();if($("zrb"))$("zrb").textContent="⏹";toast("⏺ "+A("جاري التسجيل...","Recording..."))}catch(e){toast("⚠️ "+A("التسجيل غير مدعوم هنا","Recording not supported here"))}}
+ zrec(){
+  if(!st.adm)return;
+  if(ZS.rec&&ZS.rec.state!=="inactive"){ZS.rec.stop();ZS.rec=null;const b=$("zrb");if(b){b.classList.remove("off");b.textContent="⏺"}return}
+  const tracks=[];
+  if(ZS.scr)tracks.push(...ZS.scr.getVideoTracks());
+  else if(ZS.cam&&ZS.cam1)tracks.push(...ZS.cam.getVideoTracks());
+  if(ZS.micStream)tracks.push(...ZS.micStream.getAudioTracks());
+  if(ZS.scr)tracks.push(...ZS.scr.getAudioTracks());
+  if(!tracks.length)return toast(A("فعّل المايك أو الكاميرا أو مشاركة الشاشة أولاً للتسجيل","Enable mic, camera, or screen share first to record"));
+  const stream=new MediaStream(tracks);
+  const mr=new MediaRecorder(stream);ZS.rec=mr;const b=$("zrb");if(b){b.classList.add("off");b.textContent="⏹"}
+  mr.ondataavailable=e=>{if(e.data.size)ZS.ch.push(e.data)};
+  mr.onstop=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(ZS.ch,{type:"video/webm"}));ZS.ch=[];a.download="alnoor-lecture.webm";document.body.appendChild(a);a.click();a.remove()};
+  mr.start();
+ },
+ zleave(){zStop();if(!st.adm)st.zok=0;go("dashboard")}
 };
 
-document.addEventListener("change",async e=>{
-  const f=e.target.files?.[0];
-  if(e.target.id==="p-photo-file"&&f){
-    try{
-      const src=await compressToDataUrl(f,900,900,600000);
-      st.crops.me={src,x:0,y:0,zoom:1};
-      draw();
-    }catch(err){toast("⚠️ "+err.message)}
-    e.target.value="";
-    return;
-  }
-  const m=e.target.id?.match(/^e-(team|ads)-(f\d+|.+)-file$/);
-  if(m&&f){
-    const[,c,id]=m;
-    if(c==="team"){
-      try{const src=await compressToDataUrl(f,900,900,600000);st.crops[id]={src,x:0,y:0,zoom:1};draw()}
-      catch(err){toast("⚠️ "+err.message)}
-      e.target.value="";
-      return;
-    }
-    if(c==="ads"&&/^video\//.test(f.type)&&f.size>650000){
-      toast("⚠️ "+A("الفيديو أكبر من الحد المباشر؛ يُفضل اختيار صورة 4K أو فيديو قصير جداً","Video exceeds direct limit; prefer a 4K image or very short clip"));
-      e.target.value="";
-      return;
-    }
-  }
-  const s=e.target.closest("[data-c]");if(!s)return;const k=s.dataset.c,p=s.dataset.p;
-  if(k=="filt"){st.filt=s.value;draw()}
-  if(k=="rst"&&st.adm){const[u,i]=p.split("|");run(()=>changeRegistrationStatus(u,i,s.value))}
-  if(k=="zq"){const[w,h]=ZQ[s.value]||ZQ["720"];const tr=ZS.cam?.getVideoTracks()[0];if(tr)tr.applyConstraints({width:{ideal:w},height:{ideal:h}}).then(()=>zs(w+"×"+h)).catch(()=>zs(s.value+"p"))}
-});
-document.addEventListener("input",e=>{
-  const sl=e.target.dataset.cropSlider;
-  if(sl){const[id,prop]=sl.split("|");if(st.crops[id]){st.crops[id][prop]=+e.target.value;syncCropPreview(id)}}
-});
 document.addEventListener("click",e=>{
-  unlockRemoteAudioOnGesture();
-  if(ZS.menu&&!e.target.closest(".z-popover")&&!e.target.closest('[data-a="zmenu"]')){ZS.menu=null;draw()}
-  const b=e.target.closest("[data-a]");if(!b)return;const f=ACT[b.dataset.a];if(f)f(b.dataset.p,b)
+ unlockRemoteAudioOnGesture();
+ if(ZS.menu&&!e.target.closest("[data-zpop]")&&!e.target.closest('[data-a="zmenu"]')){ZS.menu=null;draw()}
+ const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a;if(ACT[a])ACT[a](b.dataset.p,b)
 });
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){
-    if($("alnoor-onboarding")){e.preventDefault();return closeOnboarding("skipped")}
-    if(ZS.menu){ZS.menu=null;return draw()}
-    if(ZS.expanded){ZS.expanded=0;return draw()}
-    if(st.menuOpen)setMenuOpen(false)
-  }
-  if(e.key=="Enter"&&e.target.dataset.e){e.preventDefault();ACT[e.target.dataset.e]?.()}
+ if(e.key==="Escape"&&st.menuOpen){setMenuOpen(false);return}
+ if(e.key=="Enter"&&e.target.dataset.e){e.preventDefault();ACT[e.target.dataset.e]?.()}
 });
-matchMedia("(prefers-color-scheme:dark)").addEventListener("change",()=>{
-  if(!ls("theme")&&ls("dark")===null)applyTheme(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");
+document.addEventListener("change",e=>{const t=e.target;
+ if(t.id==="p-photo-file"){
+  const file=t.files?.[0];
+  if(!file)return;
+  compressToDataUrl(file,900,900,520000).then(src=>{
+    st.crops.me={src,x:0,y:0,zoom:1};
+    draw();
+  }).catch(err=>toast("⚠️ "+err.message));
+  t.value="";return;
+ }
+ if(t.id.endsWith("-file")&&t.id.startsWith("e-team-")){
+  const id=t.id.slice("e-team-".length,-"-file".length);
+  const file=t.files?.[0];
+  if(!file)return;
+  compressToDataUrl(file,900,900,520000).then(src=>{
+    st.crops[id]={src,x:0,y:0,zoom:1};
+    draw();
+  }).catch(err=>toast("⚠️ "+err.message));
+  return;
+ }
+ const c=t.dataset.c;if(!c)return;
+ if(c=="filt"){st.filt=t.value;draw()}
+ if(c=="rst"){const[u,i]=t.dataset.p.split("|");changeRegistrationStatus(u,i,t.value).then(()=>toast("✅ "+A("تم تحديث الحالة وحفظ الرسالة بالصندوق","Status updated and message saved to inbox"))).catch(err=>toast("⚠️ "+err.message))}
+ if(c=="zq"){const[w,h]=ZQ[t.value]||ZQ["720"];if(ZS.cam)ZS.cam.getVideoTracks().forEach(tr=>tr.applyConstraints({width:{ideal:w},height:{ideal:h}}).catch(()=>{}));if(ZS.scr)ZS.scr.getVideoTracks().forEach(tr=>tr.applyConstraints({width:{ideal:w},height:{ideal:h}}).catch(()=>{}))}
 });
-setInterval(()=>{const e=$("z-duration");if(e&&ZS.joined&&ZS.enteredAt){const s=Math.max(0,Math.floor((Date.now()-ZS.enteredAt)/1000));e.textContent=[Math.floor(s/3600),Math.floor((s%3600)/60),s%60].map(n=>String(n).padStart(2,"0")).join(":")}},1000);
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")requestWakeLock();else releaseWakeLock()});
+document.addEventListener("input",e=>{
+ const sl=e.target.dataset.cropSlider;
+ if(!sl)return;
+ const[id,prop]=sl.split("|");
+ const cr=st.crops[id];
+ if(!cr)return;
+ cr[prop]=parseFloat(e.target.value)||0;
+ syncCropPreview(id);
+});
+setInterval(()=>{const e=$("z-duration");if(e)e.textContent=ZS.joined?new Date(Math.max(0,Date.now()-ZS.enteredAt)).toISOString().slice(11,19):"00:00:00"},1000);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){requestWakeLock();if(ZS.joined)touchPresence(true);syncAudioElements()}else releaseWakeLock()});
+
 initTheme();
 draw();
 </script>
