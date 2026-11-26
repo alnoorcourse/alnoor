@@ -12,17 +12,17 @@
 <title>منصة النور</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#E6F5FF;--card:#FBFEFF;--tx:#0E1620;--tx2:#46586B;--ink:#0E1620;--teal:#1E6FD9;--tealS:#D3E9FF;--red:#F0432E;--redS:#FFD6CC;--sun:#56C8FF;--dsp:"Lalezar","IBM Plex Sans Arabic",system-ui,sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-:root[data-theme="dark"]{--bg:#0C131B;--card:#16212C;--tx:#E4F3FF;--tx2:#9DB4C8;--ink:#E4F3FF;--tealS:#123556;--redS:#4A1F18}
+:root{--bg:#eef7f7;--card:#fff;--tx:#0E1620;--tx2:#46586B;--ink:#0E1620;--teal:#087f8c;--tealS:#d9f2ef;--red:#d44949;--redS:#ffe5e5;--sun:#bdebe4;--dsp:"Lalezar","IBM Plex Sans Arabic",system-ui,sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme="dark"]{--bg:#0b1b24;--card:#132c35;--tx:#E4F3FF;--tx2:#9DB4C8;--ink:#E4F3FF;--teal:#39b9b1;--tealS:#164449;--redS:#4A1F18;--sun:#86ddd0}
 *{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);background-image:radial-gradient(color-mix(in srgb,var(--ink) 16%,transparent) 1.4px,transparent 1.6px);background-size:24px 24px;color:var(--tx);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;line-height:1.6;transition:background-color .15s,color .15s}
+body{margin:0;background:var(--bg);background-image:radial-gradient(color-mix(in srgb,var(--teal) 9%,transparent) 1px,transparent 1px);background-size:26px 26px;color:var(--tx);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;line-height:1.6;transition:background-color .15s,color .15s}
 button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 :focus-visible{outline:3px solid var(--teal);outline-offset:2px}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--sun);border-bottom:3px solid #17140D;color:#17140D;--ink:#17140D;--card:#FFFDF6;--tx:#17140D}
-.bar{display:flex;align-items:center;gap:8px;padding:10px 14px;max-width:1100px;margin:auto}
-.brand{display:flex;align-items:center;gap:8px;font:400 24px var(--dsp);margin-inline-end:auto;cursor:pointer}
-.logo{width:34px;height:34px;border:3px solid #17140D;background:#fff;border-radius:10px;transform:rotate(-8deg);display:grid;place-items:center;color:var(--red);font-size:20px}
-.ib{border:2px solid var(--ink);background:var(--card);color:var(--tx);border-radius:10px;box-shadow:3px 3px 0 var(--ink);padding:6px 12px;font-size:14px;text-decoration:none}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--card);border-bottom:1px solid #a6cecc;color:var(--tx);--ink:var(--tx)}
+.bar{display:flex;align-items:center;gap:8px;padding:10px 14px;max-width:1100px;margin:auto;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;font:400 24px var(--dsp);margin-inline-end:auto;cursor:pointer;color:var(--teal)}
+.logo{width:34px;height:34px;background:var(--tealS);border-radius:12px;display:grid;place-items:center;color:var(--teal);font-size:20px}
+.ib{border:1px solid var(--ink);background:var(--card);color:var(--tx);border-radius:10px;padding:6px 12px;font-size:14px;text-decoration:none}
 
 /* ---------- زر الثلاث شحطات والقائمة الجانبية الاحترافية ---------- */
 .menu-trigger{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--teal);background:var(--tealS);color:var(--teal);border-radius:12px;padding:7px 13px;font-size:14px;font-weight:700;transition:transform .12s,background-color .15s}
@@ -54,22 +54,22 @@ main{padding:18px max(14px,calc((100% - 1100px)/2)) 40px;min-height:80svh}
 h1,h2,h3{font-family:var(--dsp);font-weight:400;margin:0 0 8px}h1{font-size:clamp(34px,7vw,58px);line-height:1.1}h2{font-size:26px;margin-top:26px}h3{font-size:22px}
 .sub{color:var(--tx2)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
-.card{background:var(--card);border:2.5px solid var(--ink);border-radius:18px;padding:16px;box-shadow:6px 6px 0 var(--ink)}
+.card{background:var(--card);border:1px solid color-mix(in srgb,var(--teal) 22%,transparent);border-radius:18px;padding:16px;box-shadow:0 6px 28px #095b6310}
 .meta{color:var(--tx2);font-size:14px;display:flex;flex-wrap:wrap;gap:4px 12px;margin-bottom:10px}
-.btn{border:2.5px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 var(--ink);padding:8px 16px;background:var(--red);color:#fff;font-weight:700}
-.btn.t{background:var(--teal)}.btn.g{background:var(--card);color:var(--tx)}.btn:disabled{opacity:.55}
-.btn:active{transform:translate(2px,2px);box-shadow:none}
-.tag{display:inline-block;border:2px solid var(--ink);border-radius:999px;padding:1px 10px;font-size:12px;font-weight:700;background:var(--sun);color:#17140D}.tag.r{background:var(--red);color:#fff}
+.btn{border:1px solid var(--ink);border-radius:12px;padding:8px 16px;background:var(--red);color:#fff;font-weight:700;min-height:42px}.btn.t{background:var(--teal)}.btn.g{background:var(--card);color:var(--tx)}.btn:disabled{opacity:.55}
+.btn:active{transform:translate(2px,2px)}
+.tag{display:inline-block;border:1px solid var(--ink);border-radius:999px;padding:1px 10px;font-size:12px;font-weight:700;background:var(--sun);color:#17140D}.tag.r{background:var(--red);color:#fff}
 .price{font-weight:700;color:var(--red)}.ig{color:var(--red);font-weight:700;text-decoration:none;unicode-bidi:isolate}
 .ig-wrap{display:inline-flex;align-items:center;gap:4px;margin-top:4px}
-.hero{background:var(--sun);border:3px solid var(--ink);border-radius:26px;box-shadow:9px 9px 0 var(--ink);color:#17140D;padding:26px 22px;margin-bottom:18px}
+.hero{background:var(--sun);border:3px solid var(--ink);border-radius:26px;box-shadow:9px 9px 0 var(--ink);color:#17140D;padding:26px 22px;margin-bottom:18px;min-width:0;overflow-wrap:anywhere}
+.hero>*{min-width:0}
 .hero .sub{color:#3d3412}.stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.stats div{background:#fff;border:2.5px solid #17140D;border-radius:12px;padding:6px 16px}.stats b{display:block;font:400 30px var(--dsp);color:var(--red)}
 .prog-wrap{margin-top:12px;background:rgba(255,255,255,.72);border:2px solid #17140D;border-radius:12px;padding:8px 12px}
 .prog-bar{height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:6px;border:1px solid #17140D}
 .prog-bar>i{display:block;height:100%;background:var(--teal);transition:width .25s}
 .act-item{border:2px solid var(--ink);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:color-mix(in srgb,var(--bg) 55%,transparent)}
 label{display:block;font-size:13px;color:var(--tx2)}
-input,select,textarea{background:var(--card);border:2.5px solid var(--ink);border-radius:10px;padding:8px;min-width:0}label input{width:100%;margin:2px 0 8px}textarea{width:100%;min-height:90px}
+input,select,textarea{background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:8px;min-width:0}label input{width:100%;margin:2px 0 8px}textarea{width:100%;min-height:90px}
 .fld{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:10px}.row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}.row input{flex:1}
 table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-align:start;border-bottom:2px solid var(--ink)}th{background:var(--sun);color:#17140D;font:400 16px var(--dsp)}.scroll{overflow-x:auto}
 .av{width:104px;height:104px;object-fit:cover;background:var(--sun);color:#17140D;display:grid;place-items:center;font-size:14px;border:3px solid var(--ink);border-radius:38% 62% 55% 45%/48% 42% 58% 52%;box-shadow:4px 4px 0 var(--ink);margin:auto;overflow:hidden}
@@ -89,18 +89,19 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-tile.main-share.stage-override{border-color:#38bdf8;box-shadow:0 0 0 2px rgba(56,189,248,.25),0 10px 28px rgba(0,0,0,.45)}
 .z-stage-tag{position:absolute;top:10px;inset-inline-start:10px;z-index:5;background:rgba(13,27,42,.88);border:1px solid #38bdf8;color:#e0f2fe;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700}
 .z-co-card{background:color-mix(in srgb,var(--tealS) 45%,var(--card));border:1px solid color-mix(in srgb,var(--teal) 30%,transparent);border-radius:12px;padding:10px 12px;margin-top:8px}
-.z-wrap{background:#121316;border:3px solid #2a2c33;border-radius:24px;box-shadow:0 14px 36px rgba(0,0,0,.35);color:#f3f4f6;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.z-wrap{background:#0d202b;border:1px solid #2c5962;border-radius:20px;box-shadow:0 16px 44px #052c3920;color:#f3f4f6;overflow:hidden;position:relative;display:flex;flex-direction:column}
 .z-wrap.expanded{position:fixed;inset:0;z-index:60;border-radius:0;border:0;width:100vw;height:100svh;max-height:100svh;background:#090a0d}
 .z-wrap.expanded .z-top,
 .z-wrap.expanded .z-host-bar,
+.z-wrap.expanded .z-health-strip,
 .z-wrap.expanded .z-hands-alert,
 .z-wrap.expanded .z-side{display:none!important}
 .z-wrap.expanded .z-body{flex:1;min-height:0;grid-template-columns:1fr!important}
 .z-wrap.expanded .z-stage{min-height:0;height:100%;padding:8px;gap:6px}
 .z-focus-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;background:#161922;border-bottom:1px solid #2b3040;border-radius:10px;width:100%}
 
-.z-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;background:#1b1d22;border-bottom:1px solid #2b2e36;flex-wrap:wrap}
-.z-top-badge{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+.z-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;background:#102c37;border-bottom:1px solid #2b2e36;flex-wrap:wrap}
+.z-top-badge{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px;flex-wrap:wrap}
 .z-dot{width:9px;height:9px;border-radius:50%;background:#ef4444;box-shadow:0 0 8px #ef4444}
 .z-pill{background:#262932;border:1px solid #383c47;border-radius:999px;padding:4px 10px;font-size:12px;color:#cbd5e1}
 .z-host-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 16px;background:#17202e;border-bottom:1px solid #26364d;font-size:12px;color:#bae6fd}
@@ -109,13 +110,13 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-body{display:grid;grid-template-columns:1fr;min-height:420px;position:relative}
 .z-body.with-side{grid-template-columns:minmax(0,1fr) 320px}
 @media (max-width:820px){.z-body.with-side{grid-template-columns:1fr}}
-.z-stage{position:relative;background:#0d0e11;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;min-height:380px;gap:10px;overflow:hidden}
+.z-stage{position:relative;background:radial-gradient(ellipse at top,#163b46,#0b1c27);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;min-height:380px;gap:10px;overflow:hidden}
 .z-stage.audio-only{background:radial-gradient(circle at center,#1f2330 0%,#0d0e11 75%)}
 .z-empty{text-align:center;max-width:340px;margin:auto}
 .z-empty h3{color:#fff;font-size:20px;margin-bottom:12px}
 .z-empty-btn{display:block;width:100%;padding:10px 14px;margin-bottom:8px;border-radius:10px;border:1px solid #3b3f4c;background:#232630;color:#e5e7eb;font-weight:600}
 .z-empty-btn:hover{background:#2d313e}
-.z-media-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;width:100%;height:100%}
+.z-media-grid{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:minmax(0,1fr);gap:10px;width:100%;height:100%}
 .z-tile{position:relative;background:#161820;border:2px solid #343848;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%}
 .z-tile.main-share{min-height:290px;flex:1}
 .z-wrap.expanded .z-tile.main-share{min-height:0;height:100%;border-radius:12px}
@@ -124,7 +125,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-tile.cam-tile video{object-fit:cover}
 .z-doc-box{width:100%;height:100%;display:flex;flex-direction:column;gap:8px;padding:8px;overflow:hidden}
 .z-doc-toolbar{display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;background:#171a22;padding:6px 10px;border-radius:10px;border:1px solid #2d3240}
-.z-pdf-wrap{width:100%;flex:1;min-height:0;overflow:auto;background:#111318;border:1px solid #383c49;border-radius:12px;padding:8px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.z-pdf-wrap{width:100%;flex:1;min-height:0;overflow:auto;background:#111318;border:1px solid #383c49;border-radius:12px;padding:8px;display:flex;flex-direction:column;align-items:center}
 #z-pdf-canvas,.z-shared-page-img{max-width:100%;max-height:100%;width:auto;height:auto;border-radius:6px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.45);object-fit:contain}
 .z-slide-card{width:100%;height:100%;min-height:240px;background:linear-gradient(145deg,#1b1f2b,#12151e);border:1px solid #363c4d;border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;overflow:hidden}
 .z-slide-lines{max-width:820px;width:100%;text-align:start;background:rgba(10,12,18,.65);border:1px solid #2d3344;border-radius:12px;padding:12px 14px;white-space:pre-wrap;font-size:14px;line-height:1.7;color:#f1f5f9;max-height:38svh;overflow-y:auto}
@@ -145,13 +146,15 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-pop-item:hover{background:#2a2d38}
 .z-pop-item small{display:block;color:#9ca3af;font-size:11px}
 .z-switch{width:38px;height:20px;border-radius:999px;background:#3f4454;position:relative;flex:none}
-.z-switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
-.z-switch.on{background:#6366f1}.z-switch.on::after{transform:translateX(18px)}
+.z-switch::after{content:"";position:absolute;top:2px;inset-inline-start:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+.z-switch.on{background:#6366f1}
+:root[dir="ltr"] .z-switch.on::after{transform:translateX(18px)}
+:root[dir="rtl"] .z-switch.on::after{transform:translateX(-18px)}
 .z-react-row{display:flex;align-items:center;justify-content:space-around;gap:6px;padding:4px 2px}
 .z-react-btn{background:transparent;border:0;font-size:26px;padding:4px;border-radius:10px;transition:transform .12s}
 .z-react-btn:hover{transform:scale(1.2);background:rgba(255,255,255,.08)}
 
-.z-side{background:#181a20;border-inline-start:1px solid #2b2e36;display:flex;flex-direction:column;height:480px;max-height:70svh;min-height:320px;overflow:hidden;position:relative}
+.z-side{background:#112b35;border-inline-start:1px solid #2b2e36;display:flex;flex-direction:column;height:480px;max-height:70svh;min-height:320px;overflow:hidden;position:relative}
 .z-side-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #2b2e36;font-weight:700;font-size:14px;flex:none;background:#151820;z-index:2}
 .z-msgs{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-behavior:smooth;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
 .z-jump-bottom{position:sticky;bottom:6px;align-self:center;z-index:4;background:#1e6fd9;color:#fff;border:1px solid #60a5fa;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.4)}
@@ -163,10 +166,11 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-msg{background:#232630;border-radius:12px;padding:8px 10px;font-size:13px}
 .z-msg.admin-msg{border-inline-start:3px solid #38bdf8}
 .z-msg b{display:block;color:#93c5fd;font-size:12px;margin-bottom:2px}
+.z-msg span{white-space:pre-wrap;overflow-wrap:anywhere}
 .z-chat-form{display:flex;gap:6px;padding:10px;border-top:1px solid #2b2e36;background:#15171c}
 .z-chat-form input{flex:1;background:#242731;border:1px solid #3a3e4b;color:#fff;border-radius:10px;padding:7px 10px;font-size:13px}
 
-.z-dock{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#191b20;border-top:1px solid #2a2d36;flex-wrap:wrap;max-width:100%}
+.z-dock{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;background:#102c37;border-top:1px solid #2a2d36;flex-wrap:wrap;max-width:100%}
 .z-divider{width:1px;height:28px;background:#323642;margin:0 4px}
 .z-btn{min-width:42px;height:40px;padding:0 10px;border-radius:11px;border:1px solid transparent;background:#252832;color:#f3f4f6;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:600;transition:background .12s,transform .1s}
 .z-btn:hover{background:#323644}
@@ -175,6 +179,9 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-btn.hang{background:#be123c;border-color:#f43f5e;color:#fff;padding:0 14px;border-radius:12px}
 .z-btn.hang:hover{background:#9f1239}
 .z-caption-bar{padding:8px 14px;background:#1e212b;border-top:1px solid #2e3240;font-size:13px;color:#e5e7eb;text-align:center}
+.z-health-strip{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 16px;background:#143b43;color:#d1f5ef;font-size:12px}
+.z-health-strip .z-btn{height:auto;min-height:32px;font-size:12px;padding:5px 9px}
+#z-duration{font-variant-numeric:tabular-nums;direction:ltr;margin-inline-start:auto}
 
 .nl{min-height:70svh;display:grid;place-items:center}.nlc{width:100%;max-width:400px;background:#121212;border:3px solid var(--sun);border-radius:18px;box-shadow:8px 8px 0 var(--red);padding:2rem;color:#fff;text-align:center}
 .nlc p{color:#9a9a9a;font-size:.9rem;margin:0 0 14px}.nlc input{width:100%;background:#000;color:#fff;border:1px solid #333;margin-bottom:10px}
@@ -182,7 +189,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 details{margin-top:16px;color:#9a9a9a}summary{cursor:pointer;margin-bottom:10px}
 .at{max-width:760px;display:grid;gap:12px}.atb{display:flex;gap:6px;flex-wrap:wrap;padding:5px;background:var(--card);border:2.5px solid var(--ink);border-radius:16px;box-shadow:5px 5px 0 var(--ink)}
 .atb button{border:0;background:none;padding:8px 14px;border-radius:11px;font-weight:700;font-size:14px}.atb button.on{background:var(--ink);color:var(--sun)}
-.atc{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;align-items:center;padding:16px 16px 22px;background:var(--card);border:2.5px solid var(--ink);border-radius:18px;box-shadow:6px 6px 0 var(--ink);overflow:hidden;min-height:200px}
+.atc{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;align-items:center;padding:16px 16px 22px;background:var(--card);border:1px solid color-mix(in srgb,var(--teal) 22%,transparent);border-radius:18px;box-shadow:0 6px 28px #095b6310;overflow:hidden;min-height:200px}
 .atm{position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:16/9;border:2px solid var(--ink)}.atm img,.atm video{width:100%;height:100%;object-fit:cover;display:block}.atm2{position:absolute;bottom:8px;inset-inline-end:8px;border:0;border-radius:999px;background:rgba(0,0,0,.65);color:#fff;padding:4px 10px}
 .atx h2{margin:0 0 8px;font-size:30px}.atx p{margin:0;color:var(--tx2);white-space:pre-wrap;font-size:16px;line-height:1.7}
 .atg{position:absolute;left:0;right:0;bottom:0;height:6px;background:color-mix(in srgb,var(--ink) 12%,transparent)}.atg b{display:block;height:100%;width:0;background:var(--red)}
@@ -190,30 +197,14 @@ details{margin-top:16px;color:#9a9a9a}summary{cursor:pointer;margin-bottom:10px}
 footer{background:var(--ink);color:var(--bg);text-align:center;padding:18px 14px;font-size:14px}footer a{color:var(--sun);font-weight:700;text-decoration:none}
 #toast{position:fixed;inset-inline:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:440px;margin:auto;background:#17140D;color:var(--sun);border:2px solid var(--sun);border-radius:12px;padding:10px 16px;text-align:center;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:80}#toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-/* Medical learning: quiet teal, readable surfaces, clear device states. */
-:root{--bg:#eef7f7;--card:#fff;--teal:#087f8c;--tealS:#d9f2ef;--red:#d44949;--redS:#ffe5e5;--sun:#bdebe4}
-:root[data-theme="dark"]{--bg:#0b1b24;--card:#132c35;--teal:#39b9b1;--tealS:#164449;--sun:#86ddd0}
-body{background-image:radial-gradient(color-mix(in srgb,var(--teal) 9%,transparent) 1px,transparent 1px);background-size:26px 26px}
-header{background:var(--card);border-bottom:1px solid #a6cecc;color:var(--tx);--ink:var(--tx)}
-.brand{color:var(--teal)}.logo{transform:none;border:0;background:var(--tealS);color:var(--teal);border-radius:12px}
-.card,.atc{border:1px solid color-mix(in srgb,var(--teal) 22%,transparent);box-shadow:0 6px 28px #095b6310}
-.ib,.btn{border-width:1px;box-shadow:none}.btn{min-height:42px}.btn.t{background:var(--teal)}
-.z-wrap{border:1px solid #2c5962;border-radius:20px;background:#0d202b;box-shadow:0 16px 44px #052c3920}
-.z-top,.z-dock{background:#102c37}.z-stage{background:radial-gradient(ellipse at top,#163b46,#0b1c27)}
-.z-side{background:#112b35}.z-top-badge{flex-wrap:wrap}.z-top{flex-wrap:wrap}
-.z-health-strip{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 16px;background:#143b43;color:#d1f5ef;font-size:12px}
-.z-health-strip .z-btn{height:auto;min-height:32px;font-size:12px;padding:5px 9px}
-#z-duration{font-variant-numeric:tabular-nums;direction:ltr;margin-inline-start:auto}
-.z-msg span{white-space:pre-wrap;overflow-wrap:anywhere}.z-dock{flex-wrap:wrap}
+
 .device-dialog{width:min(620px,94vw);max-height:90dvh;overflow:auto;border:1px solid #6bafaa;border-radius:22px;padding:24px;background:var(--card);color:var(--tx);box-shadow:0 20px 90px #0005}
 .device-dialog::backdrop{background:#061c27b8}.device-dialog video{width:100%;max-height:230px;background:#102a34;border-radius:12px;object-fit:contain}
 .device-dialog .device-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.device-dialog select{width:100%;margin-bottom:10px}
 .device-dialog progress{width:100%;accent-color:var(--teal)}.device-dialog p{font-size:13px}
-.bar{flex-wrap:wrap}
-.hero{min-width:0;overflow-wrap:anywhere}.hero>*{min-width:0}
 .inbox-list{display:grid;gap:14px}.inbox-message{overflow-wrap:anywhere}.inbox-message.unread{border-inline-start:4px solid var(--teal)}
 .inbox-message h3{margin:0}.inbox-message time{font-size:12px}.message-text{white-space:pre-wrap;line-height:1.9}
-.inbox-settings{margin-bottom:16px}.inbox-settings small{display:block;color:var(--tx2);line-height:1.9}
+.inbox-settings{margin-bottom:16px}.inbox-settings small{display:block;color:var(--tx2);line-height:1.9;margin-top:8px}
 .inbox-tip{margin-top:10px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--tealS) 65%,var(--card));border:1px solid color-mix(in srgb,var(--teal) 25%,transparent);font-size:13px;line-height:1.8}
 .inbox-empty{text-align:center;padding:36px 20px}.inbox-empty>span{font-size:42px;color:var(--teal)}
 .accept-template{margin:14px 0;border:1px solid #9cc9c6;border-radius:12px;padding:12px;background:var(--tealS)}
@@ -320,7 +311,7 @@ function hasPresenterRole(){
 const L=s=>s.docs.map(d=>({id:d.id,...d.data()}));
 let un=[];
 const A=(a,e)=>st.lang=="ar"?a:e;
-let AT,AI=0;
+let AT,AI=0,DUR_TIMER=0;
 const MY_SID=ls("alnoor_sid")||(ls("alnoor_sid",crypto.randomUUID?.()||Math.random().toString(36).slice(2,14)),ls("alnoor_sid"));
 const isIosDevice=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
 const isStandaloneApp=()=>window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
@@ -679,7 +670,7 @@ function initTheme(){
 const DEF_ABOUT="منصة النور منصة تطوعية وتعليمية تجمع الطلاب في مكان واحد: تطوّع في الحملات، تدرّب في الدورات الوجاهية والمهارات، وتابع المحاضرات والبث المباشر.";
 const DEF_ADS=[{id:"welcome",type:"text",title:"أهلاً بك في منصة النور 🌟",desc:"أنشئ حسابك بالبريد ورمز من 6 أرقام ثم سجل دخولك لتصل إلى ملفك الشخصي والدورات والتطوعات والمهارات.",ts:1},
 {id:"alert",type:"text",title:"تنبيه مهم",desc:"تابع الإعلانات باستمرار، وأكمل اسمك ورقم هاتفك في «لوحتي» قبل التسجيل في أي تطوع أو دورة.",ts:2}];
-const DEF_TEAM=["الأول","الثاني","الثالث","ال الرابع"].map((n,i)=>({id:"f"+(i+1),name:"المؤسس "+n,ig:"alnoor_course",photo:""}));
+const DEF_TEAM=["الأول","الثاني","الثالث","الرابع"].map((n,i)=>({id:"f"+(i+1),name:"المؤسس "+n,ig:"alnoor_course",photo:""}));
 const ads=()=>st.seeded?st.ads:DEF_ADS;
 const about=()=>st.seeded?st.about:(st.about||DEF_ABOUT);
 function team(){const map=new Map(st.team.map(x=>[x.id,x]));return DEF_TEAM.map(d=>({...d,...(map.get(d.id)||{})}))}
@@ -770,7 +761,13 @@ function rd(k){
     const zr=$("zr");
     if(zr){draw();return}
   }
-  const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&$("app")?.contains(a))return;if(route()=="ads"&&k&&k!="ads")return;draw()
+  const a=document.activeElement;
+  if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&$("app")?.contains(a)){
+    if(a.dataset.c==="filt"&&k==="regs"){}
+    else return;
+  }
+  if(route()=="ads"&&k&&k!="ads")return;
+  draw()
 }
 function chkSeed(){if(st.adm&&st.seeded===false&&st.metaSrv&&!st.seeding){st.seeding=1;run(async()=>{const b=writeBatch(db);DEF_ADS.forEach(({id,...d})=>b.set(doc(db,"ads",id),d));DEF_TEAM.forEach(({id,...d})=>b.set(doc(db,"team",id),d));b.set(doc(db,"site","about"),{text:DEF_ABOUT});b.set(doc(db,"site","meta"),{seeded:true});await b.commit()},A("تم تحميل البيانات الأولية","Starter data loaded"))}}
 
@@ -819,10 +816,32 @@ const ZS={
   peers:new Map(),
   remoteStreams:new Map(),
   rtcSubStarted:false,
-  seenSignals:new Set(),joined:0,vidEl:null,presChanged:0,stageDraw:0,rtcUnsub:null,presSig:undefined,stageSig:undefined
+  seenSignals:new Set(),joined:0,vidEl:null,presChanged:0,stageDraw:0,rtcUnsub:null,presSig:undefined,stageSig:undefined,stageSender:""
 };
 let zoomSubStarted=false;
 let lastRemoteStageTs=0;
+
+function formatDuration(ms){
+  const totalSec=Math.max(0,Math.floor(ms/1000));
+  const h=String(Math.floor(totalSec/3600)).padStart(2,"0");
+  const m=String(Math.floor((totalSec%3600)/60)).padStart(2,"0");
+  const s=String(totalSec%60).padStart(2,"0");
+  return `${h}:${m}:${s}`;
+}
+function startDurationTicker(){
+  clearInterval(DUR_TIMER);
+  const paint=()=>{
+    const el=$("z-duration");
+    if(!el)return;
+    el.textContent=formatDuration(ZS.enteredAt?(Date.now()-ZS.enteredAt):0);
+  };
+  paint();
+  DUR_TIMER=setInterval(paint,1000);
+}
+function stopDurationTicker(){
+  clearInterval(DUR_TIMER);
+  DUR_TIMER=0;
+}
 
 function canvasToFastSyncedImage(canvas,maxLen=420000,maxDim=1024,quality=0.68){
   if(!canvas||!canvas.width||!canvas.height)return"";
@@ -1701,6 +1720,7 @@ function joinRoom(){
   if(ZS.joined||!db||!st.user||!inRoom())return;
   ZS.roomId=String(st.zoom.ts);ZS.enteredAt=Date.now();ZS.msgs=[];ZS.chatSeen.clear();
   ZS.joined=1;ZS.tick=0;
+  startDurationTicker();
   if(!useSFU())startRtcSignalingSub();
   else connectSfu().catch(e=>toast("⚠️ "+e.message));
   ZS.sigReady=1;
@@ -1913,8 +1933,8 @@ const vItems=k=>`<h1>${k=="v"?A("التطوعات","Volunteering"):k=="s"?A("Ski
 function vAds(){const a=ads();return`<h1>${A("الإعلانات","Announcements")}</h1>`+(a.length?`<div class="at"><div class="atb">${a.map((x,k)=>`<button type="button" id="atb${k}" data-a="ad" data-p="${k}">${esc(x.title||A("إعلان ","Ad ")+(k+1))}</button>`).join("")}</div><div class="atc" id="atc"></div></div>`:none())}
 function adShow(i){clearTimeout(AT);const a=ads(),c=$("atc");if(!c||!a.length)return;AI=(i%a.length+a.length)%a.length;const x=a[AI],nx=()=>adShow(AI+1);a.forEach((_,k)=>{const e=$("atb"+k);if(e)e.className=k==AI?"on":""});
  c.innerHTML=(x.src?`<div class="atm">${x.type=="video"?`<video src="${esc(x.src)}" autoplay muted playsinline></video><button type="button" class="atm2" data-a="mute">🔇</button>`:`<img src="${esc(x.src)}" alt="">`}</div>`:"")+`<div class="atx"><h2>${esc(x.title||"")}</h2><p>${esc(x.desc||"")}</p></div><div class="atg"><b id="atg"></b></div>`;
- const g=$("atg"),v=c.querySelector("video");if(v){v.onended=nx;v.onerror=()=>AT=setTimeout(nx,4000);v.ontimeupdate=()=>{if(g&&v.duration)g.style.width=(v.currentTime/v.duration)*100+"%"}}else if(g){void g.offsetWidth;g.style.transition="width 4s linear";g.style.width="100%";AT=setTimeout(nx,4000)}}
-function vLec(){return`<h1>${A("المحاضرات","Lectures")}</h1><p class="sub">🔒 ${A("محمي ضد التنزيل","Download-protected")}</p>`+(st.lecs.length?`<div class="grid">${st.lecs.map(l=>`<div class="card"><h3>${esc(l.title)}</h3>${l.desc?`<p class="sub" style="white-space:pre-wrap">${esc(l.desc)}</p>`:""}${l.url&&/^https:\/\//.test(l.url)?`<a class="btn t" style="display:inline-block;text-decoration:none" href="${esc(l.url)}" target="_blank" rel="noopener">▶ ${A("تشغيل","Play")}</a>`:""}</div>`).join("")}</div>`:`<p class="sub">${A("لا توجد محاضرات بعد","No lectures yet")}</p>`)}
+ const g=$("atg"),v=c.querySelector("video");if(v){v.onended=nx;v.onerror=()=>{clearTimeout(AT);AT=setTimeout(nx,4000)};v.ontimeupdate=()=>{if(g&&v.duration)g.style.width=(v.currentTime/v.duration)*100+"%"}}else if(g){void g.offsetWidth;g.style.transition="width 4s linear";g.style.width="100%";clearTimeout(AT);AT=setTimeout(nx,4000)}}
+function vLec(){return`<h1>${A("المحاضرات","Lectures")}</h1><p class="sub">🔒 ${A("محمي ضد التنزيل","Download-protected")}</p>`+(st.lecs.length?`<div class="grid">${st.lecs.map(l=>`<div class="card"><h3>${esc(l.title)}</h3>${l.desc?`<p class="sub" style="white-space:pre-wrap">${esc(l.desc)}</p>`:""}${safeHttpLink(l.url)?`<a class="btn t" style="display:inline-block;text-decoration:none" href="${esc(safeHttpLink(l.url))}" target="_blank" rel="noopener">▶ ${A("تشغيل","Play")}</a>`:""}</div>`).join("")}</div>`:`<p class="sub">${A("لا توجد محاضرات بعد","No lectures yet")}</p>`)}
 function vFb(){return`<h1>${A("الفيدباك","Feedback")}</h1><div class="card" style="max-width:520px"><b>${A("قيّم تجربتك","Rate your experience")}</b><div>${[1,2,3,4,5].map(i=>`<button type="button" class="star${i<=st.rs?" on":""}" data-a="star" data-p="${i}" aria-label="${i}">★</button>`).join("")}</div><textarea id="fc" placeholder="${A("تعليقك","Your comment")}">${esc(st.fc)}</textarea><div style="height:8px"></div><button type="button" class="btn" data-a="sfb">${A("أرسل للمراجعة","Submit for review")}</button><p class="sub" style="font-size:13px;margin:8px 0 0">${A("سيظهر تقييمك بعد موافقة الإدارة","Your review appears after admin approval")}</p></div><h2>★</h2><div class="grid">${st.revs.filter(r=>r.ok).map(r=>`<div class="card"><div style="color:#F5A623">${stars(r.s)}</div><p>${esc(r.c)}</p><span class="sub">${esc(r.n)}</span></div>`).join("")||none()}</div>`}
 const slot=(m,i)=>`<div class="card" style="text-align:center">${m.photo?`<img class="av" alt="${esc(m.name||"")}" src="${esc(m.photo)}">`:`<div class="av">${A("صورة","Photo")}</div>`}<h3 style="margin:8px 0 2px;min-height:26px">${esc(m.name||"")}</h3>${ig(m.ig)}</div>`;
 const aboutBlock=()=>`<div class="card"><h2 style="margin-top:0">${A("عن النور","About")}</h2><p style="white-space:pre-wrap;margin:0">${esc(about())}</p></div><h2>${A("مؤسسو منصة النور","Al-Noor Founders")}</h2><div class="grid">${[1,2,3,4].map(i=>slot(team().find(x=>x.id=="f"+i)||{},i)).join("")}</div>`;
@@ -1922,9 +1942,9 @@ const vAbout=()=>`<h1>${A("عن النور","About")}</h1>`+aboutBlock();
 
 function vLogin(){
  const regFields=st.regMode
-  ?`<input id="sp2" type="password" inputmode="numeric" maxlength="6" pattern="\\d{6}" dir="ltr" placeholder="${A("تأكيد الرمز (6 أرقام)","Confirm 6-digit PIN")}" data-e="studreg"><button type="button" class="nlb main" data-a="studreg">${A("تأكيد وإنشاء الحساب","Create account")}</button><button type="button" class="nlb" data-a="togglemode" data-p="0">${A("لدي حساب بالفعل · دخول","Already have an account · Sign in")}</button>`
+  ?`<input id="sp2" type="password" inputmode="numeric" maxlength="6" pattern="\d{6}" dir="ltr" placeholder="${A("تأكيد الرمز (6 أرقام)","Confirm 6-digit PIN")}" data-e="studreg"><button type="button" class="nlb main" data-a="studreg">${A("تأكيد وإنشاء الحساب","Create account")}</button><button type="button" class="nlb" data-a="togglemode" data-p="0">${A("لدي حساب بالفعل · دخول","Already have an account · Sign in")}</button>`
   :`<button type="button" class="nlb main" data-a="studin">${A("دخول الطالب","Student sign in")}</button><button type="button" class="nlb" data-a="togglemode" data-p="1">${A("إنشاء حساب طالب جديد","Create student account")}</button>`;
- return`<div class="nl"><div class="nlc"><div style="font-size:32px;color:var(--red)">✚</div><h1 style="color:#fff">${st.regMode?A("إنشاء حساب طالب جديد","Create student account"):A("تسجيل دخول الطالب","Student sign in")}</h1><p>${st.regMode?A("أدخل بريدك الإلكتروني ورمزاً من 6 أرقام ثم أكده","Enter your email and a 6-digit PIN, then confirm it"):A("أدخل بريدك الإلكتروني ورمزك المكون من 6 أرقام","Enter your email and 6-digit PIN")}</p><input id="se" type="email" dir="ltr" placeholder="${A("البريد الإلكتروني","Email")}"><input id="sp" type="password" inputmode="numeric" maxlength="6" pattern="\\d{6}" dir="ltr" placeholder="${A("الرمز (6 أرقام)","6-digit PIN")}" data-e="${st.regMode?"studreg":"studin"}">${regFields}<details${route()=="admin-secret-portal"?" open":""}><summary>${A("دخول الإدارة","Admin sign in")}</summary><input id="ae" type="email" dir="ltr" placeholder="${A("بريد الإدارة","Admin email")}"><input id="ac2" type="password" dir="ltr" placeholder="${A("الرمز","Password")}" data-e="adminin"><button type="button" class="nlb" data-a="adminin">${A("دخول الإدارة","Admin sign in")}</button></details></div></div>${aboutBlock()}`}
+ return`<div class="nl"><div class="nlc"><div style="font-size:32px;color:var(--red)">✚</div><h1 style="color:#fff">${st.regMode?A("إنشاء حساب طالب جديد","Create student account"):A("تسجيل دخول الطالب","Student sign in")}</h1><p>${st.regMode?A("أدخل بريدك الإلكتروني ورمزاً من 6 أرقام ثم أكده","Enter your email and a 6-digit PIN, then confirm it"):A("أدخل بريدك الإلكتروني ورمزك المكون من 6 أرقام","Enter your email and 6-digit PIN")}</p><input id="se" type="email" dir="ltr" placeholder="${A("البريد الإلكتروني","Email")}"><input id="sp" type="password" inputmode="numeric" maxlength="6" pattern="\d{6}" dir="ltr" placeholder="${A("الرمز (6 أرقام)","6-digit PIN")}" data-e="${st.regMode?"studreg":"studin"}">${regFields}<details${route()=="admin-secret-portal"?" open":""}><summary>${A("دخول الإدارة","Admin sign in")}</summary><input id="ae" type="email" dir="ltr" placeholder="${A("بريد الإدارة","Admin email")}"><input id="ac2" type="password" dir="ltr" placeholder="${A("الرمز","Password")}" data-e="adminin"><button type="button" class="nlb" data-a="adminin">${A("دخول الإدارة","Admin sign in")}</button></details></div></div>${aboutBlock()}`}
 
 function stopAudioMeter(){
   if(ZS.meterRaf){cancelAnimationFrame(ZS.meterRaf);ZS.meterRaf=0}
@@ -2178,7 +2198,6 @@ function zroom(){
     ?`<div class="z-reactions-stack">${ZS.reactions.map(r=>`<div class="z-reaction-pop"><span>${esc(r.emoji)}</span><b>${esc(r.who||A("طالب","Student"))}</b></div>`).join("")}</div>`
     :"";
 
-
   const presenterPill=canPresent()&&!st.adm
     ?`<span class="z-pill" style="border-color:#38bdf8;color:#7dd3fc">⭐ ${esc(displayName())}</span>`
     :"";
@@ -2207,7 +2226,7 @@ function zroom(){
     </div>
     <div class="z-health-strip">
       <span>${useSFU()?A("المحاضرة · بث جماعي","Lecture · conference"):A("المحاضرة المباشرة","Live classroom")}</span>
-      <span id="z-duration">00:00:00</span>
+      <span id="z-duration">${formatDuration(ZS.enteredAt?(Date.now()-ZS.enteredAt):0)}</span>
       <button type="button" class="z-btn" data-a="zdevices">${A("فحص الصوت والكاميرا","Test audio & camera")}</button>
       <button type="button" class="z-btn" data-a="zreconnect">${A("إعادة الاتصال","Reconnect")}</button>
     </div>
@@ -2249,6 +2268,7 @@ function vZm(){const z=st.zoom;
 const zs=m=>{const e=$("zst");if(e)e.textContent=m};
 
 function zStop(){
+  stopDurationTicker();
   ZS.sfuEpoch++;ZS.sfuConnecting=false;
   const oldRoom=ZS.sfu;ZS.sfu=null;
   if(oldRoom){oldRoom.removeAllListeners();oldRoom.disconnect().catch(()=>{})}
@@ -2615,12 +2635,22 @@ const ACT={
   if(!title||!text)return toast(A("اكتب عنوانًا ونصًا للرسالة.","Enter a title and message."));
   if(raw&&!safeHttpLink(raw))return toast(A("الرابط غير صالح.","Invalid link."));
   if(!confirm(A("إرسال هذه الرسالة لجميع الطلاب؟","Send this message to every student?")))return;
-  await run(()=>addDoc(collection(db,"notifications"),{...notificationBody(title,text,raw),type:"broadcast",route:"inbox"}),A("أُرسلت الرسالة للصناديق.","Message sent to inboxes."));
+  await run(async()=>{
+    await addDoc(collection(db,"notifications"),{...notificationBody(title,text,raw),type:"broadcast",route:"inbox"});
+    if($("broadcast-title"))$("broadcast-title").value="";
+    if($("broadcast-text"))$("broadcast-text").value="";
+    if($("broadcast-url"))$("broadcast-url").value="";
+  },A("أُرسلت الرسالة للصناديق.","Message sent to inboxes."));
  },
  async assignPresenter(){
   if(!st.adm||!st.zoom)return;
   const uid=$("lecture-presenter")?.value,student=st.studs.find(s=>s.id===uid);if(!student)return;
-  await run(()=>setDoc(doc(db,"lecturePresenters",uid),{uid,name:student.name||student.email||"",roomId:String(st.zoom.ts),enabled:true,assignedBy:st.user.uid,ts:Date.now()}),A("تم تعيين مسؤول شرح للمحاضرة فقط.","Presenter assigned to this lecture only."));
+  const rec={uid,name:student.name||student.email||"",roomId:String(st.zoom.ts),enabled:true,assignedBy:st.user.uid,ts:Date.now()};
+  await run(async()=>{
+    await setDoc(doc(db,"lecturePresenters",uid),rec);
+    st.presenters=[...st.presenters.filter(p=>p.id!==uid&&p.uid!==uid),{id:uid,...rec}];
+  },A("تم تعيين مسؤول شرح للمحاضرة فقط.","Presenter assigned to this lecture only."));
+  draw();
  },
  async saveCoPresenters(){
   if(!st.adm||!st.zoom)return;
@@ -2634,463 +2664,456 @@ const ACT={
     for(const s of st.studs){
       const match=[s.name,s.email?.split("@")[0]].filter(Boolean).some(isNameInCoPresenters);
       if(match){
-        batch.set(doc(db,"lecturePresenters",s.id),{uid:s.id,name:s.name||s.email||"",roomId,enabled:true,assignedBy:st.user.uid,ts:Date.now()},{merge:true});
+        batch.set(doc(db,"lecturePresenters",s.id),{uid:s.id,name:s.name||s.email||"",roomId,enabled:true,coPresenter:true,assignedBy:st.user.uid,ts:Date.now()});
       }
     }
     await batch.commit();
-  },A("تم اعتماد مسؤولي مشاركة الشاشة والتحكم للمحاضرة.","Designated screen-share & control presenters saved."));
+  },A("تم اعتماد مسؤولي مشاركة الشاشة والتحكم بنجاح.","Designated screen-share & control presenters saved."));
   draw();
  },
  async clearCoPresenters(){
   if(!st.adm)return;
   st.coPresenters=[];
-  releaseStageOverrideIfOwner();
-  await run(()=>setDoc(doc(db,"site","zoom_co_presenters"),{roomId:String(st.zoom?.ts||""),names:[],updatedBy:st.user.uid,ts:Date.now()}),A("تم مسح قائمة المسؤولين الإضافيين.","Co-presenters list cleared."));
+  await run(()=>setDoc(doc(db,"site","zoom_co_presenters"),{roomId:String(st.zoom?.ts||""),names:[],updatedBy:st.user.uid,ts:Date.now()}),A("تم مسح قائمة مسؤولي الشاشة.","Co-presenters list cleared."));
   draw();
  },
- async removePresenter(uid){if(!st.adm||!uid)return;await run(()=>deleteDoc(doc(db,"lecturePresenters",uid)),A("تم إلغاء صلاحية الشرح.","Presenter role revoked."));if(uid===st.user?.uid){st.presenter=null;draw()}},
+ async removePresenter(uid){if(!st.adm||!uid)return;await run(async()=>{await deleteDoc(doc(db,"lecturePresenters",uid));st.presenters=st.presenters.filter(p=>p.id!==uid&&p.uid!==uid)},A("تم إلغاء صلاحية الشرح.","Presenter role revoked."));if(uid===st.user?.uid){st.presenter=null}draw()},
  async regLecture(id){
-  if(!st.user)return;const lec=st.lecs.find(l=>l.id===id);if(!lec)return;
-  await run(()=>setDoc(doc(db,"regs",st.user.uid),{name:st.me.name||"",phone:st.me.phone||"",email:st.user.email||"",list:{["lec_"+id]:{title:lec.title,kind:"l",status:"pending",ts:Date.now()}}},{merge:true}),A("تم تسجيل طلب المحاضرة. ستصلك النتيجة في صندوق الرسائل.","Lecture application submitted. Result will appear in your inbox."));
+  if(!st.user)return;
+  const lecture=st.lecs.find(l=>l.id===id);if(!lecture)return;
+  const key="lec_"+id;if(st.regs[key])return;
+  await run(()=>setDoc(doc(db,"regs",st.user.uid),{name:st.me.name||"",phone:st.me.phone||"",email:st.user.email||"",list:{[key]:{kind:"l",title:lecture.title,status:"pending",ts:Date.now()}}},{merge:true}),A("تم إرسال طلب التسجيل بالمحاضرة.","Lecture application sent."));
  },
- goRoute(p){go(p||"dashboard")},
- onboard(){openOnboarding()},
+ async zpurgechat(){
+  if(!st.adm||!db)return;
+  if(!confirm(A("حذف أرشيف الشات القديم من قاعدة البيانات نهائيًا؟","Permanently delete legacy chat archive from the database?")))return;
+  const snap=await getDocs(query(collection(db,"zoom_chat"),limit(500)));
+  if(!snap.empty){const batch=writeBatch(db);snap.docs.forEach(d=>batch.delete(d.ref));await batch.commit()}
+  toast(A("تم حذف الأرشيف القديم","Legacy archive deleted"));
+ },
  zdevices(){openDeviceTest()},
- zscrollchat(){scrollChatToBottom(true)},
+ async zreconnect(){
+  if(!ZS.joined)return;
+  toast(A("جارٍ إعادة الاتصال…","Reconnecting…"));
+  if(useSFU()){
+    ZS.sfuEpoch++;ZS.sfuConnecting=false;
+    const oldRoom=ZS.sfu;ZS.sfu=null;
+    if(oldRoom){oldRoom.removeAllListeners();await oldRoom.disconnect().catch(()=>{})}
+    ZS.sfuTracks.clear();ZS.remoteStreams.clear();syncAudioElements();
+    await connectSfu().catch(e=>toast("⚠️ "+e.message));
+  }else{
+    ZS.peers.forEach((_,uid)=>closePeer(uid));
+    touchPresence(true);
+    connectToPresentPeers();
+  }
+  draw();
+ },
+ onboard(){openOnboarding()},
+ goRoute(p){go(p||"dashboard")},
  home(){go("dashboard")},
- lang(){st.lang=st.lang=="ar"?"en":"ar";ls("lang",st.lang);if($("alnoor-onboarding")?.open)paintOnboarding();draw()},
- theme(){const isDark=document.documentElement.getAttribute("data-theme")==="dark";applyTheme(isDark?"light":"dark")},
- async out(){
-  setMenuOpen(false);
-  zStop();
-  try{await detachDeviceNotifications()}catch(e){}
-  if(st.user&&auth){
-    try{await signOut(auth)}catch(e){console.error("signOut failed:",e)}
-  }
-  st.user=null;st.adm=false;st.zok=0;st.me={};st.regs={};
-  location.hash="dashboard";
-  draw();
- },
+ lang(){st.lang=st.lang=="ar"?"en":"ar";ls("lang",st.lang);if($("alnoor-onboarding"))paintOnboarding();draw()},
+ theme(){const cur=document.documentElement.getAttribute("data-theme")==="dark"?"dark":"light";applyTheme(cur==="dark"?"light":"dark")},
  togglemode(p){st.regMode=p=="1";draw()},
- async studin(){const e=$("se")?.value.trim(),p=$("sp")?.value.trim();if(!e||!pin6(p))return toast("⚠️ "+A("أدخل بريداً صحيحاً ورمزاً من 6 أرقام","Enter a valid email and 6-digit PIN"));await run(()=>signInWithEmailAndPassword(auth,e,"ALNOOR_"+p),A("تم تسجيل الدخول","Signed in"))},
- async studreg(){const e=$("se")?.value.trim(),p=$("sp")?.value.trim(),p2=$("sp2")?.value.trim();if(!e||!pin6(p))return toast("⚠️ "+A("أدخل بريداً صحيحاً ورمزاً من 6 أرقام","Enter a valid email and 6-digit PIN"));if(p!==p2)return toast("⚠️ "+A("الرمزان غير متطابقين","PINs do not match"));await run(async()=>{const c=await createUserWithEmailAndPassword(auth,e,"ALNOOR_"+p);await setDoc(doc(db,"students",c.user.uid),{email:e,created:Date.now(),last:Date.now()},{merge:true})},A("تم إنشاء الحساب بنجاح","Account created"))},
- async adminin(){const e=$("ae")?.value.trim(),p=$("ac2")?.value.trim();if(!e||!p)return toast("⚠️ "+A("أدخل بريد الإدارة والرمز","Enter admin email and password"));await run(()=>signInWithEmailAndPassword(auth,e,p),A("تم دخول الإدارة","Admin signed in"))},
- async saveP(p,b){
-  if(st.crops["me"]){
-    try{st.me.photo=await renderCroppedAvatar(st.crops["me"]);delete st.crops["me"]}catch(e){}
-  }
-  const d={name:$("p_name").value.trim(),phone:$("p_phone").value.trim(),major:$("p_major").value.trim(),uni:$("p_uni").value.trim(),note:($("p_note")?.value||"").trim(),email:st.user.email||"",photo:st.me.photo||"",last:Date.now()};
-  await run(async()=>{
-    await setDoc(doc(db,"students",st.user.uid),d,{merge:true});
-    await setDoc(doc(db,"regs",st.user.uid),{name:d.name,phone:d.phone,email:d.email},{merge:true});
-    st.me={...st.me,...d};
-  },A("تم حفظ بياناتك","Profile saved"),b);
-  draw();
- },
- async delStudPhoto(_,b){
-  delete st.crops["me"];
-  st.me.photo="";
-  await run(()=>setDoc(doc(db,"students",st.user.uid),{photo:""},{merge:true}),A("تمت إزالة الصورة","Photo removed"),b);
-  draw();
- },
- async reg(id,b){const i=st.items.find(x=>x.id==id);if(!i)return;await run(()=>setDoc(doc(db,"regs",st.user.uid),{name:st.me.name||"",phone:st.me.phone||"",email:st.user.email||"",list:{[id]:{title:i.t,kind:i.kind||"c",status:"pending",ts:Date.now()}}},{merge:true}),A("تم إرسال طلبك","Application sent"),b)},
+ async studreg(_,b){const e=$("se")?.value.trim(),p=$("sp")?.value.trim(),p2=$("sp2")?.value.trim();if(!e||!pin6(p))return toast("⚠️ "+A("أدخل بريدك ورمزاً من 6 أرقام","Enter email and a 6-digit PIN"));if(p!==p2)return toast("⚠️ "+A("الرمزان غير متطابقين","PINs do not match"));if(e.toLowerCase()==ADMIN_EMAIL.toLowerCase())return toast("⚠️ "+A("هذا البريد مخصص للإدارة","This email is for admin"));if(!db)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));if(b)b.disabled=true;try{await createUserWithEmailAndPassword(auth,e,"ALNOOR_"+p);st.regMode=false;toast("✅ "+A("تم إنشاء الحساب","Account created"))}catch(x){toast("⚠️ "+A("تعذر الإنشاء: ","Signup failed: ")+(x.code||x.message))}finally{if(b)b.disabled=false}},
+ async studin(_,b){const e=$("se")?.value.trim(),p=$("sp")?.value.trim();if(!e||!pin6(p))return toast("⚠️ "+A("أدخل بريدك ورمزك المكون من 6 أرقام","Enter your email and 6-digit PIN"));if(!db)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));if(b)b.disabled=true;try{await signInWithEmailAndPassword(auth,e,"ALNOOR_"+p)}catch(x){toast("⚠️ "+A("تعذر الدخول: ","Login failed: ")+(x.code||x.message))}finally{if(b)b.disabled=false}},
+ async adminin(_,b){const e=$("ae")?.value.trim(),p=$("ac2")?.value;if(!e||!p)return toast("⚠️ "+A("أدخل البريد والرمز","Enter email and password"));if(!db)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));if(b)b.disabled=true;try{await signInWithEmailAndPassword(auth,e,p)}catch(x){toast("⚠️ "+A("تعذر الدخول: ","Login failed: ")+(x.code||x.message))}finally{if(b)b.disabled=false}},
+ out(){closeOnboarding();detachDeviceNotifications().catch(()=>{});zStop();if(auth)signOut(auth)},
+ async saveP(_,b){const d={name:$("p_name")?.value.trim()||"",phone:$("p_phone")?.value.trim()||"",major:$("p_major")?.value.trim()||"",uni:$("p_uni")?.value.trim()||"",note:$("p_note")?.value.trim()||""};if(st.crops["me"]){d.photo=await renderCroppedAvatar(st.crops["me"]);delete st.crops["me"]}await run(()=>setDoc(doc(db,"students",st.user.uid),d,{merge:true}),A("تم حفظ بياناتك","Profile saved"),b);draw()},
+ async delStudPhoto(_,b){if(!confirm(A("إزالة صورتك الشخصية؟","Remove your profile photo?")))return;delete st.crops["me"];await run(()=>updateDoc(doc(db,"students",st.user.uid),{photo:deleteField()}),A("تمت إزالة الصورة","Photo removed"),b);draw()},
+ async reg(id,b){const it=st.items.find(x=>x.id==id);if(!it)return;if(st.regs[id])return;await run(()=>setDoc(doc(db,"regs",st.user.uid),{name:st.me.name||"",phone:st.me.phone||"",email:st.user.email||"",list:{[id]:{kind:it.kind||"c",title:it.t,status:"pending",ts:Date.now()}}},{merge:true}),A("تم إرسال طلب التسجيل","Application sent"),b)},
+ ad(p){adShow(+p)},mute(){const v=document.querySelector("#atc video");if(!v)return;v.muted=!v.muted;const m=document.querySelector("#atc .atm2");if(m)m.textContent=v.muted?"🔇":"🔊"},
  star(p){st.rs=+p;draw()},
- async sfb(_,b){const c=$("fc").value.trim();if(!st.rs||!c)return toast("⚠️ "+A("اختر التقييم واكتب تعليقاً","Pick rating and comment"));await run(()=>addDoc(collection(db,"reviews"),{s:st.rs,c,n:st.me.name||st.user.email||A("طالب","Student"),ok:false,ts:Date.now()}),A("تم الإرسال للمراجعة","Sent for review"),b);st.rs=0;st.fc="";draw()},
- async saveA(_,b){const t=$("ab").value.trim();await run(()=>setDoc(doc(db,"site","about"),{text:t}),A("تم حفظ النبذة","About saved"),b)},
- async add(c,b){const d=rdF("n-"+c,c),f=$("n-"+c+"-file")?.files[0];if(Object.values(d).every(v=>v===""||v===0)&&!f)return toast("⚠️ "+A("أدخل بيانات أولاً","Enter data first"));if(f)Object.assign(d,await fdata(c,f));
-  let tpl=null;if(["courses","vols","skills","lecs"].includes(c))tpl=readTemplate("n-"+c);
-  await run(async()=>{const ref=await addDoc(collection(db,colOf(c)),{...d,ts:Date.now()});
-    if(["courses","vols","skills","lecs"].includes(c)&&tpl)await setDoc(doc(db,"messageTemplates",c==="lecs"?"lec_"+ref.id:ref.id),tpl);
-    if(c=="ads"){const batch=writeBatch(db);addAnnouncementToBatch(batch,"ad_"+ref.id,d.title||A("إعلان جديد","New announcement"),d.desc||"","ads");await batch.commit()}},A("تمت الإضافة","Added"),b)},
- async save(p,b){const[c,id]=p.split("|"),d=rdF(`e-${c}-${id}`,c),f=$(`e-${c}-${id}-file`)?.files[0];if(f)Object.assign(d,await fdata(c,f));
-  let tpl=null;if(["courses","vols","skills","lecs"].includes(c))tpl=readTemplate(`e-${c}-${id}`);
-  if(c=="team"&&st.crops[id]){Object.assign(d,{photo:await renderCroppedAvatar(st.crops[id])});delete st.crops[id]}
-  await run(async()=>{await setDoc(doc(db,colOf(c),id),d,{merge:true});
-    if(["courses","vols","skills","lecs"].includes(c)&&tpl)await setDoc(doc(db,"messageTemplates",c==="lecs"?"lec_"+id:id),tpl);
-    if(c=="ads"){const batch=writeBatch(db);addAnnouncementToBatch(batch,"ad_"+id,d.title||A("إعلان جديد","New announcement"),d.desc||"","ads");await batch.commit()}},A("تم التحديث","Updated"),b);draw()},
- cropReset(p){if(!st.crops[p])return;st.crops[p]={...st.crops[p],zoom:1,x:0,y:0};draw()},
- async del(p,b){const[c,id]=p.split("|");if(!confirm(A("تأكيد الحذف؟","Confirm delete?")))return;await run(async()=>{await deleteDoc(doc(db,colOf(c),id));if(c=="ads")await deleteDoc(doc(db,"notifications","ad_"+id)).catch(()=>{})},A("تم الحذف","Deleted"),b)},
- async rv(p,b){const[id,v]=p.split("|");await run(()=>updateDoc(doc(db,"reviews",id),{ok:v=="1"}),A("تم التحديث","Updated"),b)},
- async rdel(p,b){const[u,k]=p.split("|");if(!confirm(A("حذف التسجيل؟","Delete registration?")))return;await run(()=>updateDoc(doc(db,"regs",u),{["list."+k]:deleteField()}),A("تم الحذف","Deleted"),b)},
- csv(){const rows=st.all.filter(r=>!st.filt||r.item==st.filt);const h=["Name","Phone","Email","Title","Status","Date"];const escC=v=>`"${String(v??"").replace(/"/g,'""')}"`;const b=new Blob(["\uFEFF"+[h,...rows.map(r=>[r.name,r.phone,r.email,r.title,r.status||"pending",r.ts?new Date(r.ts).toISOString().slice(0,10):""])].map(x=>x.map(escC).join(",")).join("\n")],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="alnoor-registrations.csv";a.click()},
- async zcreate(_,b){const raw=$("zc")?.value.trim();const code=raw||String(Math.floor(100000+Math.random()*900000));const h=await sha(code);const ts=Date.now();
-  await run(()=>setDoc(doc(db,"site","zoom"),{h,ts,allowMic:true}),A("تم تفعيل المحاضرة","Lecture live"),b);ls("zc",code);toast("🔑 "+A("كود المحاضرة: ","Lecture code: ")+code);draw()},
- async zclose(_,b){if(!confirm(A("إغلاق المحاضرة؟","Close lecture?")))return;zStop();st.zok=0;ls("zc","");await run(()=>deleteDoc(doc(db,"site","zoom")),A("تم الإغلاق","Closed"),b);draw()},
- async zenter(_,b){const c=$("zin")?.value.trim();if(!c||!st.zoom)return;const h=await sha(c);if(h!=st.zoom.h)return toast("⚠️ "+A("الكود غير صحيح","Wrong code"));st.zok=st.zoom.ts;toast("✅ "+A("تم الدخول","Entered"));draw()},
- zleave(){zStop();if(!st.adm)st.zok=0;go("dashboard")},
+ async sfb(_,b){const c=$("fc")?.value.trim();if(!st.rs||!c)return toast("⚠️ "+A("اختر التقييم واكتب تعليقك","Choose rating and comment"));await run(()=>addDoc(collection(db,"reviews"),{s:st.rs,c,n:st.me.name||st.user.email||"",ok:false,ts:Date.now()}),A("تم الإرسال للمراجعة","Submitted for review"),b);st.rs=0;st.fc="";draw()},
+ async saveA(_,b){
+  const text=$("ab")?.value.trim()||"";
+  await run(async()=>{
+    const batch=writeBatch(db);
+    batch.set(doc(db,"site","about"),{text});
+    addAnnouncementToBatch(batch,"about_"+Date.now(),A("تحديث «عن النور»","About Al-Noor updated"),text,"about");
+    await batch.commit();
+  },A("تم الحفظ","Saved"),b);
+ },
+ async save(p,b){
+  const[c,id]=p.split("|"),col=colOf(c),d=rdF(`e-${c}-${id}`,c);const f=$(`e-${c}-${id}-file`)?.files[0];if(f)Object.assign(d,await fdata(c,f));
+  let templateData=null;
+  if(["courses","vols","skills","lecs"].includes(c))templateData=readTemplate(`e-${c}-${id}`);
+  await run(async()=>{
+    const batch=writeBatch(db);
+    batch.set(doc(db,col,id),d,{merge:true});
+    if(templateData){const key=c==="lecs"?"lec_"+id:id;batch.set(doc(db,"messageTemplates",key),templateData,{merge:true})}
+    if(c==="ads")addAnnouncementToBatch(batch,"ad_"+id+"_"+Date.now(),d.title||A("إعلان جديد","New announcement"),d.desc||"","ads");
+    if(["courses","vols","skills"].includes(c))addAnnouncementToBatch(batch,"item_"+id+"_"+Date.now(),d.t||A("فرصة جديدة","New opportunity"),[d.p,d.d,d.price>0?d.price+" "+A("د.أ","JD"):""].filter(Boolean).join(" • "),c==="vols"?"volunteering":c);
+    if(c==="lecs")addAnnouncementToBatch(batch,"lec_"+id+"_"+Date.now(),d.title||A("محاضرة جديدة","New lecture"),d.desc||"","lectures");
+    await batch.commit();
+    if(c=="team")delete st.crops[id];
+  },A("تم الحفظ","Saved"),b);
+  draw();
+ },
+ async add(c,b){
+  const col=colOf(c),d=rdF(`n-${c}`,c);if(c=="ads"){d.ts=Date.now();d.type="text"}if(c=="lecs")d.ts=Date.now();const f=$(`n-${c}-file`)?.files[0];if(f)Object.assign(d,await fdata(c,f));
+  let templateData=null;
+  if(["courses","vols","skills","lecs"].includes(c))templateData=readTemplate(`n-${c}`);
+  await run(async()=>{
+    const newRef=doc(collection(db,col)),batch=writeBatch(db);
+    batch.set(newRef,d);
+    if(templateData){const key=c==="lecs"?"lec_"+newRef.id:newRef.id;batch.set(doc(db,"messageTemplates",key),templateData,{merge:true})}
+    if(c==="ads")addAnnouncementToBatch(batch,"ad_"+newRef.id,d.title||A("إعلان جديد","New announcement"),d.desc||"","ads");
+    if(["courses","vols","skills"].includes(c))addAnnouncementToBatch(batch,"item_"+newRef.id,d.t||A("فرصة جديدة","New opportunity"),[d.p,d.d,d.price>0?d.price+" "+A("د.أ","JD"):""].filter(Boolean).join(" • "),c==="vols"?"volunteering":c);
+    if(c==="lecs")addAnnouncementToBatch(batch,"lec_"+newRef.id,d.title||A("محاضرة جديدة","New lecture"),d.desc||"","lectures");
+    await batch.commit();
+  },A("تمت الإضافة","Added"),b);
+ },
+ async del(p,b){const[c,id]=p.split("|");if(!confirm(A("تأكيد الحذف؟","Confirm delete?")))return;await run(()=>deleteDoc(doc(db,colOf(c),id)),A("تم الحذف","Deleted"),b)},
+ async rst(p,v){const[u,k]=p.split("|");await run(()=>changeRegistrationStatus(u,k,v),A("تم التحديث","Updated"))},
+ async rdel(p,b){const[u,k]=p.split("|");if(!confirm(A("حذف طلب التسجيل؟","Delete registration?")))return;await run(()=>updateDoc(doc(db,"regs",u),{["list."+k]:deleteField()}),A("تم الحذف","Deleted"),b)},
+ async rv(p,b){const[id,o]=p.split("|");await run(()=>updateDoc(doc(db,"reviews",id),{ok:o=="1"}),A("تم التحديث","Updated"),b)},
+ csv(){const rows=st.all.filter(r=>!st.filt||r.item==st.filt);const h=["Name","Phone","Email","Title","Status","Date"];const escC=v=>`"${String(v??"").replace(/"/g,'""')}"`;const b=new Blob(["﻿"+[h,...rows.map(r=>[r.name,r.phone,r.email,r.title,r.status||"pending",r.ts?new Date(r.ts).toISOString().slice(0,10):""])].map(x=>x.map(escC).join(",")).join("
+")],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(b);const a=document.createElement("a");a.href=url;a.download="alnoor-registrations.csv";a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)},
+ cropReset(id){delete st.crops[id];draw()},
+
+ async zcreate(_,b){
+  if(!st.adm)return;
+  const raw=$("zc")?.value.trim();
+  const code=raw||(100000+Math.floor(Math.random()*900000)).toString();
+  const h=await sha(code);
+  const ts=Date.now();
+  zStop();
+  st.zoom={h,ts,createdBy:st.user.uid};
+  ls("zc",code);
+  await run(async()=>{
+    await setDoc(doc(db,"site","zoom"),{h,ts,createdBy:st.user.uid});
+    await setDoc(doc(db,"site","zoom_stage"),{roomId:String(ts),senderUid:st.user.uid,sharedType:"",sharedImg:"",pageDataUrl:"",screenActive:false,liveFrameUrl:"",ts:Date.now()});
+    await setDoc(doc(db,"site","zoom_stage_owner"),{roomId:String(ts),name:"",uid:"",isAdmin:false,active:false,ts:Date.now()});
+  },A("تم تفعيل المحاضرة","Lecture active"),b);
+  draw();
+ },
+ async zenter(_,b){
+  const v=$("zin")?.value.trim();
+  if(!v)return toast("⚠️ "+A("أدخل الكود","Enter the code"));
+  if(!st.zoom)return toast("⚠️ "+A("لا توجد محاضرة مفتوحة","No active lecture"));
+  if(b)b.disabled=true;
+  try{
+    if(await sha(v)!=st.zoom.h)return toast("⚠️ "+A("الكود غير صحيح","Wrong code"));
+    st.zok=st.zoom.ts;
+    joinRoom();
+    draw();
+  }finally{if(b)b.disabled=false}
+ },
+ zleave(){zStop();if(!st.adm){st.zok=0;go("dashboard")}else draw()},
  zmenu(p){ZS.menu=ZS.menu===p?null:p;draw()},
- zside(p){ZS.side=ZS.side===p?null:p;draw()},
+ zside(p){ZS.side=ZS.side===p?null:p;ZS.menu=null;draw()},
+ zscrollchat(){scrollChatToBottom(true)},
  zviewmode(p){
-  if(p==="audio"){ZS.audioOnly=1;ZS.cam1=0;if(ZS.cam)ZS.cam.getVideoTracks().forEach(t=>t.enabled=false);syncTracksToPeers();touchPresence(true)}
-  else{ZS.audioOnly=0}
-  ZS.menu=null;draw();
+  if(p==="audio"){
+    ZS.audioOnly=1;
+    ZS.cam1=0;
+    if(ZS.cam){ZS.cam.getTracks().forEach(t=>t.stop());ZS.cam=null}
+    syncTracksToPeers();
+  }else{
+    ZS.audioOnly=0;
+  }
+  ZS.menu=null;
+  draw();
  },
  async ztoggleopt(p){
-  if(p==="speaker"){ZS.speaker=ZS.speaker?0:1;syncAudioElements()}
-  else if(p==="shareAudio"){ZS.shareAudio=ZS.shareAudio?0:1;await syncTracksToPeers()}
-  else if(p==="batterySaver"){
+  if(p==="speaker"){
+    ZS.speaker=ZS.speaker?0:1;
+    syncAudioElements();
+  }else if(p==="shareAudio"){
+    ZS.shareAudio=ZS.shareAudio?0:1;
+    await syncTracksToPeers();
+  }else if(p==="batterySaver"){
     ZS.batterySaver=ZS.batterySaver?0:1;
     if(ZS.cam){ZS.cam.getTracks().forEach(t=>t.stop());ZS.cam=null}
-    if(ZS.cam1&&!ZS.audioOnly){try{ZS.cam=await ensureCam();await syncTracksToPeers()}catch(e){ZS.cam1=0}}
-  }else if(p==="captions"){ZS.captions=ZS.captions?0:1}
-  ZS.menu=null;draw();
+    if(ZS.cam1&&!ZS.audioOnly){await ensureCam();await syncTracksToPeers()}
+  }else if(p==="captions"){
+    ZS.captions=ZS.captions?0:1;
+  }
+  ZS.menu=null;
+  draw();
+ },
+ zexpand(){ZS.expanded=ZS.expanded?0:1;ZS.menu=null;draw()},
+ zinvite(){
+  const txt=A("انضم إلى محاضرة النور المباشرة: ","Join the live Al-Noor lecture: ")+location.href+(ls("zc")?` (${A("الكود: ","Code: ")}${ls("zc")})`:"");
+  navigator.clipboard?.writeText(txt).then(()=>toast("✅ "+A("تم نسخ رابط الدعوة","Invite link copied"))).catch(()=>toast(txt));
+  ZS.menu=null;
+ },
+ zreport(){ZS.menu=null;toast("⚠ "+A("تم تسجيل الملاحظة للإدارة","Note logged for host"))},
+ async zsendreact(emoji){
+  ZS.menu=null;
+  if(!emoji||!ZS.joined||!db)return;
+  if(emoji==="✋"){
+    ZS.hand=ZS.hand?0:1;
+    await setDoc(doc(db,"zoom_hands",st.user.uid),{roomId:ZS.roomId,uid:st.user.uid,name:displayName(),raised:!!ZS.hand,ts:Date.now()},{merge:true}).catch(()=>{});
+  }
+  const rec={roomId:ZS.roomId,uid:st.user.uid,who:displayName(),emoji,ts:Date.now()};
+  ZS.reactions=[...ZS.reactions.slice(-7),rec];
+  addDoc(collection(db,"zoom_reactions"),rec).catch(()=>{});
+  draw();
+ },
+ async zlowerhand(uid){
+  if(!st.adm||!uid||!db)return;
+  await setDoc(doc(db,"zoom_hands",uid),{raised:false,ts:Date.now()},{merge:true}).catch(()=>{});
+  if(uid===st.user.uid)ZS.hand=0;
+  delete ZS.hands[uid];
+  draw();
+ },
+ async zmuteall(){
+  if(!st.adm||!db)return;
+  ZS.roomCtrl.allowMic=0;
+  await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:false,updatedAt:Date.now()},{merge:true}).catch(()=>{});
+  toast("🔇");
+  draw();
+ },
+ async zunmuteall(){
+  if(!st.adm||!db)return;
+  ZS.roomCtrl.allowMic=1;
+  await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:true,updatedAt:Date.now()},{merge:true}).catch(()=>{});
+  toast("🎙");
+  draw();
+ },
+ async zt(p,b){
+  if(!ZS.joined)return toast("⚠️ "+A("ادخل المحاضرة أولًا","Join the lecture first"));
+  if(p=="mic"){
+    if(ZS.mic){
+      ZS.mic=0;
+      ZS.micStream?.getAudioTracks().forEach(t=>{t.enabled=false});
+      zs(A("المايك مطفي","Mic off"));
+      syncTracksToPeers();
+      syncSfuPermissions();
+      draw();
+      return;
+    }
+    if(b)b.disabled=true;
+    try{
+      const okMic=await openMicFast();
+      if(okMic)draw();
+    }finally{if(b)b.disabled=false}
+  }
+  if(p=="cam1"){
+    if(b)b.disabled=true;
+    try{
+      if(!ZS.cam1){
+        ZS.audioOnly=0;
+        await ensureCam();
+        ZS.cam1=1;
+      }else{
+        ZS.cam1=0;
+        if(ZS.cam){ZS.cam.getTracks().forEach(t=>t.stop());ZS.cam=null}
+      }
+      await syncTracksToPeers();
+      draw();
+    }catch(e){
+      ZS.cam1=0;
+      toast("⚠️ "+mediaErrorMsg(e,"cam"));
+    }finally{if(b)b.disabled=false}
+  }
  },
  async zquickmic(){
-  ZS.menu=null;
-  if(!ZS.mic){await openMicFast();draw()}
-  else{
+  if(!ZS.joined)return toast("⚠️ "+A("ادخل المحاضرة أولًا","Join the lecture first"));
+  if(ZS.mic){
     ZS.mic=0;
-    if(ZS.micStream)ZS.micStream.getAudioTracks().forEach(t=>t.enabled=false);
+    ZS.micStream?.getAudioTracks().forEach(t=>{t.enabled=false});
     zs(A("المايك مطفي","Mic off"));
-    const b=$("z-mic-bar");if(b)b.style.width="0%";
     syncTracksToPeers();
-    draw();
-  }
- },
- async zquickcam(){
-  ZS.menu=null;
-  if(!ZS.cam1){
-    ZS.audioOnly=0;
-    try{
-      ZS.cam=await ensureCam();
-      ZS.cam.getVideoTracks().forEach(t=>t.enabled=true);
-      ZS.cam1=1;
-      await syncTracksToPeers();
-      touchPresence(true);
-    }catch(e){ZS.cam1=0;toast("⚠️ "+mediaErrorMsg(e,"cam"))}
-  }else{
-    ZS.cam1=0;
-    if(ZS.cam)ZS.cam.getVideoTracks().forEach(t=>t.enabled=false);
-    await syncTracksToPeers();
-    touchPresence(true);
-  }
-  draw();
- },
- async zt(k){
-  if(k=="mic"){
-    if(!ZS.mic){await openMicFast()}
-    else{
-      ZS.mic=0;
-      if(ZS.micStream)ZS.micStream.getAudioTracks().forEach(t=>t.enabled=false);
-      zs(A("المايك مطفي","Mic off"));
-      const b=$("z-mic-bar");if(b)b.style.width="0%";
-      syncTracksToPeers();
-    }
-  }else if(k=="cam1"){
-    if(!ZS.cam1){
-      ZS.audioOnly=0;
-      try{
-        ZS.cam=await ensureCam();
-        ZS.cam.getVideoTracks().forEach(t=>t.enabled=true);
-        ZS.cam1=1;
-        await syncTracksToPeers();
-        touchPresence(true);
-      }catch(e){ZS.cam1=0;toast("⚠️ "+mediaErrorMsg(e,"cam"))}
-    }else{
-      ZS.cam1=0;
-      if(ZS.cam)ZS.cam.getVideoTracks().forEach(t=>t.enabled=false);
-      await syncTracksToPeers();
-      touchPresence(true);
-    }
-  }
-  draw();
- },
- async zscr(){
-  if(!canPresent())return toast("⚠️ "+A("المشاركة متاحة للإدارة والمسؤول فقط","Sharing is for host and presenter only"));
-  if(ZS.scr){
-    ZS.scr.getTracks().forEach(t=>t.stop());
-    ZS.scr=null;
-    ZS.screenActive=0;
-    if(!st.adm)releaseStageOverrideIfOwner();
-    stopLiveFrameSync();
-    ZS.menu=null;
-    await syncTracksToPeers();
-    syncStageToCloud({screenActive:false,liveFrameUrl:""});
+    syncSfuPermissions();
     draw();
     return;
   }
+  const okMic=await openMicFast();
+  if(okMic)draw();
+ },
+ async zquickcam(){
+  if(!ZS.joined)return toast("⚠️ "+A("ادخل المحاضرة أولًا","Join the lecture first"));
+  try{
+    if(!ZS.cam1){
+      ZS.audioOnly=0;
+      await ensureCam();
+      ZS.cam1=1;
+    }else{
+      ZS.cam1=0;
+      if(ZS.cam){ZS.cam.getTracks().forEach(t=>t.stop());ZS.cam=null}
+    }
+    await syncTracksToPeers();
+    draw();
+  }catch(e){
+    ZS.cam1=0;
+    toast("⚠️ "+mediaErrorMsg(e,"cam"));
+  }
+ },
+ async zscr(){
   await startFullScreenShare();
  },
  zpickmedia(accept){
-  if(!canPresent())return toast("⚠️ "+A("المشاركة متاحة للإدارة والمسؤول فقط","Sharing is for host and presenter only"));
+  ZS.menu=null;
   const inp=$("z-media-input");
   if(!inp)return;
   inp.value="";
   inp.accept=accept||"*/*";
-  ZS.menu=null;
-  draw();
-  setTimeout(()=>$("z-media-input")?.click(),30);
+  inp.onchange=async()=>{
+    const file=inp.files?.[0];
+    if(!file)return;
+    await ACT.zsharefile(file);
+  };
+  inp.click();
  },
- async zpdfpage(delta){
-  if(ZS.sharedType!=="pdf")return;
-  const nextPage=Math.max(1,Math.min(ZS.pdfNumPages||1,(ZS.pdfPage||1)+Number(delta||0)));
-  if(ZS.pdfDoc){
-    await renderPdfPageToCanvas(nextPage,canPresent());
-  }else{
-    ZS.pdfPage=nextPage;
-    if(canPresent())syncStageToCloud({pdfPage:ZS.pdfPage,pdfNumPages:ZS.pdfNumPages});
+ async zsharefile(file){
+  if(!canPresent()||!file)return;
+  if(!st.adm)claimStageOverride();
+  ZS.audioOnly=0;
+  ZS.screenActive=0;
+  ZS.sharedImg="";
+  ZS.sharedVid="";
+  ZS.pageDataUrl="";
+  ZS.liveFrameUrl="";
+  ZS.pdfDoc=null;
+  ZS.slides=[];
+  ZS.textContent="";
+  pdfPageCache.clear();
+  pdfPrefetching.clear();
+  const fname=(file.name||"").toLowerCase();
+  const ftype=(file.type||"").toLowerCase();
+
+  if(ftype.startsWith("image/")||/\.(png|jpe?g|gif|webp)$/i.test(fname)){
+    const u=await compressToDataUrl(file,1600,1000,480000);
+    ZS.sharedType="image";
+    ZS.sharedImg=u;
+    syncStageToCloud({sharedType:"image",sharedImg:u});
+    draw();
+    return;
   }
+
+  if(ftype.startsWith("video/")||/\.(mp4|webm|mov|m4v)$/i.test(fname)){
+    dropVidEl();
+    const u=URL.createObjectURL(file);
+    const v=document.createElement("video");
+    v.id="z-shared-vid";v.src=u;v.controls=true;v.autoplay=true;v.playsInline=true;v.muted=!ZS.shareAudio;
+    v.style.cssText="width:100%;height:100%;max-height:74svh;object-fit:contain;background:#090a0d;border-radius:10px";
+    v.onloadedmetadata=()=>{startVidCapture();startLiveFrameSync()};
+    v.onplay=()=>{startVidCapture();startLiveFrameSync()};
+    ZS.vidEl=v;
+    ZS.sharedType="video";
+    ZS.sharedVid=file.size<450000?await readVideoDataUrl(file,450000):"";
+    syncStageToCloud({sharedType:"video",sharedVid:ZS.sharedVid});
+    draw();
+    return;
+  }
+
+  if(ftype==="application/pdf"||fname.endsWith(".pdf")){
+    const pdfjs=await loadPdfJs();
+    const bytes=new Uint8Array(await file.arrayBuffer());
+    const docPdf=await pdfjs.getDocument({data:bytes}).promise;
+    ZS.pdfDoc=docPdf;
+    ZS.pdfNumPages=docPdf.numPages||1;
+    ZS.pdfPage=1;
+    ZS.sharedType="pdf";
+    draw();
+    setTimeout(()=>renderPdfPageToCanvas(1,true),40);
+    return;
+  }
+
+  if(fname.endsWith(".pptx")||ftype.includes("presentationml")){
+    const slides=await parsePptxSlides(file);
+    ZS.slides=slides.length?slides:[{index:1,text:file.name}];
+    ZS.slideIdx=1;
+    ZS.sharedType="pptx";
+    syncStageToCloud({sharedType:"pptx",slides:ZS.slides,slideIdx:1});
+    draw();
+    return;
+  }
+
+  const txt=await file.text().catch(()=>"");
+  ZS.sharedType="text";
+  ZS.textContent=(txt||file.name).slice(0,8000);
+  syncStageToCloud({sharedType:"text",textContent:ZS.textContent});
   draw();
  },
- zslide(delta){
-  if(ZS.sharedType!=="pptx"||!ZS.slides.length)return;
-  ZS.slideIdx=Math.max(1,Math.min(ZS.slides.length,(ZS.slideIdx||1)+Number(delta||0)));
-  if(canPresent())syncStageToCloud({slideIdx:ZS.slideIdx,slides:ZS.slides});
+ async zpdfpage(p){
+  if(!canPresent()||!ZS.pdfDoc)return;
+  const delta=parseInt(p,10)||0;
+  const nextPage=Math.max(1,Math.min(ZS.pdfNumPages||1,(ZS.pdfPage||1)+delta));
+  if(nextPage===ZS.pdfPage&&ZS.pageDataUrl)return;
+  await renderPdfPageToCanvas(nextPage,true);
+ },
+ zslide(p){
+  if(!canPresent()||!ZS.slides.length)return;
+  const delta=parseInt(p,10)||0;
+  const nextIdx=Math.max(1,Math.min(ZS.slides.length,(ZS.slideIdx||1)+delta));
+  ZS.slideIdx=nextIdx;
+  syncStageToCloud({sharedType:"pptx",slides:ZS.slides,slideIdx:ZS.slideIdx});
   draw();
  },
  zclearshare(){
   if(!canPresent())return;
   if(ZS.scr){ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null}
   if(ZS.vidShareStream){ZS.vidShareStream.getTracks().forEach(t=>t.stop());ZS.vidShareStream=null}
-  stopLiveFrameSync();
   dropVidEl();
-  pdfPageCache.forEach(entry=>{try{entry.bmp?.close?.()}catch(e){}});
-  pdfPageCache.clear();
-  pdfPrefetching.clear();
+  stopLiveFrameSync();
+  ZS.sharedImg="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedType="";
+  ZS.pageDataUrl="";ZS.pdfDoc=null;ZS.slides=[];ZS.textContent="";ZS.screenActive=0;
+  pdfPageCache.clear();pdfPrefetching.clear();
   if(!st.adm)releaseStageOverrideIfOwner();
-  ZS.sharedType="";ZS.sharedImg="";ZS.pageDataUrl="";ZS.liveFrameUrl="";ZS.sharedVid="";ZS.sharedUrl="";
-  ZS.pdfDoc=null;ZS.pdfNumPages=1;ZS.pdfPage=1;
-  ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";ZS.screenActive=0;ZS.menu=null;
-  syncTracksToPeers();
-  syncStageToCloud({sharedType:"",sharedImg:"",pageDataUrl:"",liveFrameUrl:"",sharedVid:"",screenActive:false});
-  draw();
- },
- async zsendreact(emoji){
+  syncStageToCloud({sharedType:"",sharedImg:"",pageDataUrl:"",liveFrameUrl:"",sharedVid:"",sharedUrl:"",screenActive:false,slides:[],textContent:""});
   ZS.menu=null;
-  if(!emoji||!db||!st.user||!st.zoom)return;
-  const roomId=String(st.zoom.ts);
-  const who=displayName();
-  const isHand=emoji==="✋";
-  if(isHand){
-    const nextHand=ZS.hand?0:1;
-    ZS.hand=nextHand;
-    setDoc(doc(db,"zoom_hands",st.user.uid),{roomId,uid:st.user.uid,name:who,raised:!!nextHand,ts:Date.now()},{merge:true}).catch(()=>{});
-    if(!nextHand){draw();return}
-  }
-  const item={roomId,uid:st.user.uid,who,emoji,ts:Date.now()};
-  ZS.reactions=[...ZS.reactions.slice(-7),item];
   draw();
-  addDoc(collection(db,"zoom_reactions"),item).catch(()=>{});
- },
- async zlowerhand(uid){
-  if(!st.adm||!uid||!db)return;
-  delete ZS.hands[uid];
-  draw();
-  setDoc(doc(db,"zoom_hands",uid),{raised:false,ts:Date.now()},{merge:true}).catch(()=>{});
- },
- async zmuteall(){
-  if(!st.adm||!db)return;
-  ZS.roomCtrl.allowMic=0;
-  draw();
-  await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:false,ts:Date.now()},{merge:true}).catch(()=>{});
-  toast("🔇 "+A("تم كتم مايكات الطلاب","Student microphones muted"));
- },
- async zunmuteall(){
-  if(!st.adm||!db)return;
-  ZS.roomCtrl.allowMic=1;
-  draw();
-  await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:true,ts:Date.now()},{merge:true}).catch(()=>{});
-  toast("🎙 "+A("تم السماح للطلاب بفتح المايك","Students allowed to unmute"));
  },
  async zsendmsg(){
-  const inp=$("z-chat-in");if(!inp)return;
-  const txt=inp.value.trim();if(!txt)return;
-  try{await sendEphemeralChat(txt);inp.value="";scrollChatToBottom(true)}
-  catch(e){toast("⚠️ "+e.message)}
- },
- zexpand(){
-  ZS.expanded=ZS.expanded?0:1;
-  ZS.menu=null;
-  draw();
- },
- zinvite(){
-  const url=location.href;
-  const code=ls("zc")||"";
-  const txt=code?`ZOOM ALNOOR\n${url}\nCode: ${code}`:url;
-  if(navigator.clipboard?.writeText)navigator.clipboard.writeText(txt).catch(()=>{});
-  toast("🔗 "+A("تم نسخ رابط الدعوة","Invite link copied"));
- },
- zreport(){ZS.menu=null;draw();toast("⚠️ "+A("تم تسجيل الملاحظة للإدارة","Note logged for host"))},
- async zreconnect(){
-  if(!ZS.joined||!st.user)return;
-  zs(A("جارٍ إعادة الاتصال…","Reconnecting…"));
-  if(useSFU()){
-    const oldRoom=ZS.sfu;ZS.sfu=null;ZS.sfuConnecting=false;ZS.sfuEpoch++;ZS.sfuTracks.clear();
-    if(oldRoom){oldRoom.removeAllListeners();await oldRoom.disconnect().catch(()=>{})}
-    await connectSfu().catch(e=>toast("⚠️ "+e.message));
-  }else{
-    [...ZS.peers.keys()].forEach(closePeer);
-    touchPresence(true);
-    connectToPresentPeers();
-  }
-  toast("🔄 "+A("تمت إعادة مزامنة الاتصال","Connection refreshed"));
- },
- async zpurgechat(){
-  if(!st.adm||!db)return;
+  const input=$("z-chat-in");
+  const text=input?.value.trim()||"";
+  if(!text)return;
   try{
-    const s=await getDocs(query(collection(db,"zoom_chat"),limit(100)));
-    if(!s.empty){
-      const b=writeBatch(db);
-      s.docs.forEach(d=>b.delete(d.ref));
-      await b.commit();
-    }
-    toast("🗑 "+A("تم حذف أرشيف الشات القديم","Legacy chat archive deleted"));
-  }catch(e){toast("⚠️ "+A("تعذر الحذف: ","Delete failed: ")+(e.code||e.message))}
+    await sendEphemeralChat(text);
+    if(input){input.value="";input.focus()}
+  }catch(e){
+    toast("⚠️ "+(e.message||A("تعذر إرسال الرسالة","Could not send message")));
+  }
  },
- async zrec(){if(!st.adm)return;if(ZS.rec&&ZS.rec.state!="inactive"){ZS.rec.stop();return}
-  const s=ZS.scr||ZS.cam||ZS.micStream;if(!s)return toast("⚠️ "+A("فعّل الشاشة أو الكاميرا أو المايك أولاً","Enable screen, camera or mic first"));
-  if(!window.MediaRecorder)return toast("⚠️ "+A("المتصفح لا يدعم التسجيل","Recording not supported"));
-  ZS.ch=[];const r=new MediaRecorder(s);ZS.rec=r;r.ondataavailable=e=>{if(e.data.size)ZS.ch.push(e.data)};
-  r.onstop=()=>{const b=new Blob(ZS.ch,{type:r.mimeType||"video/webm"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="alnoor-lecture.webm";a.click();ZS.rec=null;draw()};
-  r.start();draw();toast("⏺ "+A("بدأ التسجيل","Recording started"))}
+ async zrec(){if(!st.adm||!ZS.joined)return;
+  if(ZS.rec&&ZS.rec.state!="inactive"){ZS.rec.stop();return}
+  const stream=ZS.scr||(ZS.cam1&&ZS.cam)||ZS.micStream;
+  if(!stream)return toast("⚠️ "+A("شغّل المايك أو الكاميرا أو مشاركة الشاشة أولًا","Enable mic, camera, or screen share first"));
+  const tracks=[...stream.getTracks()];
+  if(ZS.micStream&&!tracks.some(t=>t.kind==="audio"))tracks.push(...ZS.micStream.getAudioTracks());
+  const recStream=new MediaStream(tracks);
+  if(!window.MediaRecorder)return toast("⚠️ "+A("المتصفح لا يدعم التسجيل","Recording is not supported in this browser"));
+  ZS.ch=[];const r=new MediaRecorder(recStream);ZS.rec=r;
+  r.ondataavailable=e=>{if(e.data.size)ZS.ch.push(e.data)};
+  r.onstop=()=>{const b=new Blob(ZS.ch,{type:r.mimeType||"video/webm"});const url=URL.createObjectURL(b);const a=document.createElement("a");a.href=url;a.download="alnoor-lecture.webm";a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);ZS.rec=null;draw()};
+  r.start();draw()}
 };
-
-document.addEventListener("pointerdown",unlockRemoteAudioOnGesture,{passive:true});
-document.addEventListener("keydown",unlockRemoteAudioOnGesture,{passive:true});
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){requestWakeLock();if(ZS.joined&&!useSFU()){touchPresence(true);connectToPresentPeers()}}else releaseWakeLock()});
-
-const CHG={
- filt(e){st.filt=e.target.value;draw()},
- async rst(e){const[u,k]=e.target.dataset.p.split("|");await run(()=>changeRegistrationStatus(u,k,e.target.value),A("تم تحديث الحالة","Status updated"))},
- async zq(e){const[w,h]=ZQ[e.target.value]||[1280,720];if(ZS.cam)ZS.cam.getVideoTracks().forEach(t=>t.applyConstraints({width:{ideal:w},height:{ideal:h}}).catch(()=>{}));if(ZS.scr)ZS.scr.getVideoTracks().forEach(t=>t.applyConstraints({width:{ideal:w},height:{ideal:h}}).catch(()=>{}))}
-};
-
-document.addEventListener("change",async e=>{
- const cropSl=e.target.closest("[data-crop-slider]");
- if(cropSl){
-   const[id,axis]=cropSl.dataset.cropSlider.split("|");
-   if(st.crops[id]){st.crops[id][axis]=parseFloat(cropSl.value);syncCropPreview(id)}
-   return;
- }
- if(e.target.id==="p-photo-file"){
-   const file=e.target.files?.[0];if(!file)return;
-   try{
-     const src=await compressToDataUrl(file,900,900,520000);
-     st.crops["me"]={src,zoom:1,x:0,y:0};
-     draw();
-   }catch(err){toast("⚠️ "+err.message)}
-   return;
- }
- if(e.target.id?.startsWith("e-team-")&&e.target.id.endsWith("-file")){
-   const id=e.target.id.replace(/^e-team-/,"").replace(/-file$/,"");
-   const file=e.target.files?.[0];if(!file)return;
-   try{
-     const src=await compressToDataUrl(file,900,900,520000);
-     st.crops[id]={src,zoom:1,x:0,y:0};
-     draw();
-   }catch(err){toast("⚠️ "+err.message)}
-   return;
- }
- if(e.target.id==="z-media-input"){
-   const file=e.target.files?.[0];if(!file||!canPresent())return;
-   pdfPageCache.forEach(entry=>{try{entry.bmp?.close?.()}catch(err){}});
-   pdfPageCache.clear();
-   pdfPrefetching.clear();
-   const fname=(file.name||"").toLowerCase();
-   const isPdf=file.type==="application/pdf"||fname.endsWith(".pdf");
-   const isPptx=fname.endsWith(".pptx")||fname.endsWith(".ppt")||/presentationml|powerpoint/.test(file.type||"");
-   const isImg=file.type.startsWith("image/")||/\.(png|jpe?g|webp|gif)$/i.test(fname);
-   const isVid=file.type.startsWith("video/")||/\.(mp4|webm|ogg|mov)$/i.test(fname);
-
-   if(ZS.scr){ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null}
-   if(ZS.vidShareStream){ZS.vidShareStream.getTracks().forEach(t=>t.stop());ZS.vidShareStream=null}
-   stopLiveFrameSync();
-   dropVidEl();
-   ZS.audioOnly=0;
-   if(!st.adm)claimStageOverride();
-
-   if(isPdf){
-     try{
-       const pdfjs=await loadPdfJs();
-       const buf=await file.arrayBuffer();
-       const docPdf=await pdfjs.getDocument({data:buf}).promise;
-       ZS.sharedType="pdf";ZS.sharedImg="";ZS.sharedVid="";ZS.sharedUrl="";ZS.slides=[];ZS.textContent="";
-       ZS.pdfDoc=docPdf;ZS.pdfNumPages=docPdf.numPages||1;ZS.pdfPage=1;
-       draw();
-       await renderPdfPageToCanvas(1,true);
-       prefetchPdfPage(2);
-     }catch(err){
-       console.error(err);
-       toast("⚠️ "+A("تعذر فتح ملف PDF","Could not open PDF file"));
-     }
-   }else if(isPptx){
-     try{
-       const slides=await parsePptxSlides(file);
-       ZS.sharedType="pptx";ZS.sharedImg="";ZS.pageDataUrl="";ZS.sharedVid="";ZS.sharedUrl="";ZS.pdfDoc=null;ZS.textContent="";
-       ZS.slides=slides.length?slides:[{index:1,text:file.name}];
-       ZS.slideIdx=1;
-       syncStageToCloud({sharedType:"pptx",slides:ZS.slides,slideIdx:1});
-       draw();
-     }catch(err){
-       console.error(err);
-       toast("⚠️ "+A("تعذر قراءة ملف العرض التقديمي","Could not parse presentation"));
-     }
-   }else if(isImg){
-     try{
-       const dataUrl=await compressToDataUrl(file,1600,1000,480000);
-       ZS.sharedType="image";ZS.sharedImg=dataUrl;ZS.pageDataUrl=dataUrl;ZS.sharedVid="";ZS.sharedUrl="";ZS.pdfDoc=null;ZS.slides=[];ZS.textContent="";
-       syncStageToCloud({sharedType:"image",sharedImg:dataUrl,pageDataUrl:dataUrl});
-       draw();
-     }catch(err){toast("⚠️ "+err.message)}
-   }else if(isVid){
-     const blobUrl=URL.createObjectURL(file);
-     ZS.sharedType="video";ZS.sharedImg="";ZS.pageDataUrl="";ZS.sharedVid=blobUrl;ZS.sharedUrl="";ZS.pdfDoc=null;ZS.slides=[];ZS.textContent="";
-     const v=document.createElement("video");
-     v.id="z-shared-vid";v.src=blobUrl;v.controls=true;v.autoplay=true;v.playsinline=true;
-     v.style.cssText="width:100%;height:100%;max-height:74svh;object-fit:contain;background:#090a0d;border-radius:10px";
-     v.onloadeddata=()=>{startVidCapture();startLiveFrameSync();syncStageToCloud({sharedType:"video",screenActive:true})};
-     ZS.vidEl=v;
-     syncStageToCloud({sharedType:"video",screenActive:true});
-     draw();
-   }else{
-     try{
-       const txt=await file.text();
-       ZS.sharedType="text";ZS.sharedImg="";ZS.pageDataUrl="";ZS.sharedVid="";ZS.sharedUrl="";ZS.pdfDoc=null;ZS.slides=[];
-       ZS.textContent=(txt||file.name).slice(0,10000);
-       syncStageToCloud({sharedType:"text",textContent:ZS.textContent});
-       draw();
-     }catch(err){
-       ZS.sharedType="other";ZS.sharedImg="";ZS.pageDataUrl="";ZS.sharedVid="";ZS.sharedUrl="";ZS.pdfDoc=null;ZS.slides=[];
-       ZS.textContent=file.name;
-       syncStageToCloud({sharedType:"other",textContent:ZS.textContent});
-       draw();
-     }
-   }
-   return;
- }
- const el=e.target.closest("[data-c]");if(el&&CHG[el.dataset.c])CHG[el.dataset.c](e)
-});
-
-document.addEventListener("input",e=>{
- const cropSl=e.target.closest("[data-crop-slider]");
- if(cropSl){
-   const[id,axis]=cropSl.dataset.cropSlider.split("|");
-   if(st.crops[id]){st.crops[id][axis]=parseFloat(cropSl.value);syncCropPreview(id)}
- }
- if(e.target.id=="fc")st.fc=e.target.value;
-});
 
 document.addEventListener("click",e=>{
- if(ZS.menu&&!e.target.closest("[data-zpop]")&&!e.target.closest('[data-a="zmenu"]')){
-   ZS.menu=null;draw();
- }
- if(st.menuOpen&&!e.target.closest("#nav-drawer")&&!e.target.closest("#menu-btn")){
-   setMenuOpen(false);
- }
- const b=e.target.closest("[data-a]");if(!b)return;
- const a=b.dataset.a;
- if(a=="mute"){const v=b.previousElementSibling;if(v){v.muted=!v.muted;b.textContent=v.muted?"🔇":"🔊"};return}
- if(ACT[a])ACT[a](b.dataset.p,b);
+  if(st.menuOpen&&!e.target.closest("#nav-drawer")&&!e.target.closest("#menu-btn")&&!e.target.closest("#drawer-backdrop")){
+    setMenuOpen(false);
+  }
+  if(ZS.menu&&!e.target.closest(".z-popover")&&!e.target.closest('[data-a="zmenu"]')){
+    ZS.menu=null;draw();
+  }
+  const el=e.target.closest("[data-a]");if(!el)return;
+  if(el.tagName==="A")e.preventDefault();
+  const a=el.dataset.a;
+  if(ACT[a])ACT[a](el.dataset.p,el);
 });
-
+document.addEventListener("change",async e=>{const t=e.target;
+ if(t.dataset.cropSlider){const[id,k]=t.dataset.cropSlider.split("|");if(st.crops[id]){st.crops[id][k]=+t.value;syncCropPreview(id)}return}
+ if(t.id==="p-photo-file"){const f=t.files[0];if(!f)return;try{const u=await compressToDataUrl(f,900,900,600000);st.crops["me"]={src:u,zoom:1,x:0,y:0};draw()}catch(err){toast("⚠️ "+err.message)}return}
+ if(t.id?.startsWith("e-team-")&&t.id.endsWith("-file")){const id=t.id.slice("e-team-".length,-"-file".length),f=t.files[0];if(!f)return;try{const u=await compressToDataUrl(f,900,900,600000);st.crops[id]={src:u,zoom:1,x:0,y:0};draw()}catch(err){toast("⚠️ "+err.message)}return}
+ if(t.dataset.c=="filt"){st.filt=t.value;draw()}
+ if(t.dataset.c=="rst")ACT.rst(t.dataset.p,t.value);
+ if(t.dataset.c=="zq"){const[w,h]=ZQ[t.value]||ZQ["720"];if(ZS.cam)ZS.cam.getVideoTracks()[0]?.applyConstraints({width:{ideal:w},height:{ideal:h}}).catch(()=>{});if(ZS.scr)ZS.scr.getVideoTracks()[0]?.applyConstraints({width:{ideal:w},height:{ideal:h}}).catch(()=>{})}
+});
 document.addEventListener("keydown",e=>{
- if(e.key==="Escape"&&st.menuOpen){setMenuOpen(false);return}
- if(e.key==="Escape"&&ZS.menu){ZS.menu=null;draw();return}
- if(e.key==="Escape"&&ZS.expanded){ZS.expanded=0;draw();return}
- if(e.key!="Enter")return;const b=e.target.closest("[data-e]");if(b&&ACT[b.dataset.e])ACT[b.dataset.e]()});
-if("serviceWorker"in navigator&&isSecureContext){navigator.serviceWorker.register("./sw.js").catch(()=>{})}
+  if(e.key==="Escape"&&st.menuOpen){setMenuOpen(false);return}
+  if(e.key=="Enter"&&!e.shiftKey&&e.target.dataset.e){e.preventDefault();const act=e.target.dataset.e;if(ACT[act])ACT[act](e.target.dataset.p,e.target)}
+});
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible")requestWakeLock();
+  else releaseWakeLock();
+});
+document.addEventListener("pointerdown",unlockRemoteAudioOnGesture,{passive:true});
+document.addEventListener("keydown",unlockRemoteAudioOnGesture,{passive:true});
 initTheme();
 draw();
 </script>
 </body>
-</html>
+  </html>
