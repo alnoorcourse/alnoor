@@ -859,7 +859,7 @@ function startLiveFrameSync(){
   ZS.frameSyncTimer=setInterval(()=>{
     if(!canPresent()||!ZS.joined){stopLiveFrameSync();return}
     const vid=ZS.scr?$("zsv"):(ZS.vidEl||$("z-shared-vid"));
-    if(!vid||vid.readyState<2||!vid.videoWidth||!vid.videoHeight)return;
+    if(!vid||!vid.videoWidth||!vid.videoHeight)return;
     const maxW=960;
     const scale=Math.min(1,maxW/vid.videoWidth);
     c.width=Math.max(1,Math.round(vid.videoWidth*scale));
@@ -2497,25 +2497,50 @@ async function startFullScreenShare(){
     toast("⚠️ "+A("المشاركة متاحة للإدارة والمسؤول فقط","Sharing is for host and presenter only"));
     return;
   }
-  const getDisp=(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia)?navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices):(navigator.getDisplayMedia?navigator.getDisplayMedia.bind(navigator):null);
-  if(!getDisp){
-    toast("⚠️ "+A("متصفح هذا الهاتف لا يسمح بمشاركة شاشة النظام كاملة؛ افتح المنصة من Chrome أو Safari المحدّث، أو شارك PDF والصور مباشرة.","This mobile browser does not expose full-screen capture; open Al-Noor in updated Chrome/Safari or share PDF/images directly."));
-    return;
-  }
+  const getDisp=
+    (navigator.mediaDevices&&typeof navigator.mediaDevices.getDisplayMedia==="function")?navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices):
+    (typeof navigator.getDisplayMedia==="function")?navigator.getDisplayMedia.bind(navigator):
+    (navigator.mediaDevices&&typeof navigator.mediaDevices.webkitGetDisplayMedia==="function")?navigator.mediaDevices.webkitGetDisplayMedia.bind(navigator.mediaDevices):
+    (typeof navigator.webkitGetDisplayMedia==="function")?navigator.webkitGetDisplayMedia.bind(navigator):null;
   try{
     const epoch=ZS.sfuEpoch;
-    let stream;
-    try{
-      stream=await getDisp({
+    let stream=null;
+    const candidates=[
+      {
         video:{displaySurface:"monitor",frameRate:{ideal:20,max:30}},
         audio:!!ZS.shareAudio,
         preferCurrentTab:false,
         selfBrowserSurface:"include",
         surfaceSwitching:"include",
         systemAudio:ZS.shareAudio?"include":"exclude"
-      });
-    }catch(_err){
-      stream=await getDisp({video:true,audio:!!ZS.shareAudio});
+      },
+      {video:{displaySurface:"monitor"},audio:!!ZS.shareAudio},
+      {video:true,audio:!!ZS.shareAudio},
+      {video:true,audio:false},
+      {}
+    ];
+    let lastErr=null;
+    if(getDisp){
+      for(const opts of candidates){
+        try{
+          stream=await getDisp(opts);
+          if(stream)break;
+        }catch(err){
+          lastErr=err;
+          if(err?.name==="NotAllowedError"||err?.name==="AbortError")break;
+        }
+      }
+    }
+    if(!stream&&navigator.mediaDevices&&typeof navigator.mediaDevices.getUserMedia==="function"){
+      try{
+        stream=await navigator.mediaDevices.getUserMedia({video:{cursor:"always"},audio:!!ZS.shareAudio});
+      }catch(_gmErr){
+        if(!getDisp&&lastErr)throw lastErr;
+        if(!getDisp)throw new Error("Display capture attempted");
+      }
+    }
+    if(!stream){
+      throw (lastErr||new Error("Display capture unavailable"));
     }
     if(!ZS.joined||epoch!==ZS.sfuEpoch){stream.getTracks().forEach(t=>t.stop());return}
     if(ZS.scr)ZS.scr.getTracks().forEach(t=>t.stop());
