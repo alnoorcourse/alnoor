@@ -280,6 +280,14 @@ const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}};
 const st={lang:ls("lang")||"ar",user:null,adm:false,ready:false,regMode:false,me:{},regs:{},items:[],ads:[],team:[],lecs:[],revs:[],about:"",zoom:null,seeded:null,metaSrv:false,all:[],studs:[],filt:"",rs:0,fc:"",zok:0,crops:{},menuOpen:false};
 Object.assign(st,{inbox:[],readMessages:new Set(),templates:{},presenter:null,presenters:[],pushConfig:{},pushReady:false,inboxError:"",bulkBusy:false,bulkProgress:"",noticeSession:0});
+const L=s=>s.docs.map(d=>({id:d.id,...d.data()}));
+let un=[];
+const A=(a,e)=>st.lang=="ar"?a:e;
+let AT,AI=0;
+const MY_SID=ls("alnoor_sid")||(ls("alnoor_sid",crypto.randomUUID?.()||Math.random().toString(36).slice(2,14)),ls("alnoor_sid"));
+const isIosDevice=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const isStandaloneApp=()=>window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
+
 function canPresent(){return !!st.user&&(st.adm||!!(st.presenter?.enabled&&String(st.presenter.roomId)===String(st.zoom?.ts)&&st.zoom))}
 const teachingPeer=p=>!!(p?.isAdmin||p?.isPresenter);
 function safeHttpLink(value){
@@ -462,7 +470,7 @@ function listenCommunications(user){
     un.push(sub(collection(db,"lecturePresenters"),snap=>st.presenters=L(snap),"presenters"));
   }
 }
-  function updateInboxBadge(){
+function updateInboxBadge(){
   const badge=$("inbox-badge"),button=$("inbox-button");
   if(badge){badge.textContent=String(unreadMessages());badge.hidden=!unreadMessages()}
   if(button){button.style.display=st.user?"":"none";button.setAttribute("aria-label",A("صندوق الرسائل، غير مقروءة: ","Inbox, unread: ")+unreadMessages())}
@@ -477,19 +485,6 @@ async function registerNoticeWorker(){
   const registration=await navigator.serviceWorker.register(worker.href,{scope:new URL("./",location.href).pathname});
   await navigator.serviceWorker.ready;
   return registration;
-}
-async function enableDeviceNotifications(){
-  if(!st.user)return toast(A("سجّل دخولك أولًا.","Sign in first."));
-  if(!("Notification"in window)||!("PushManager"in window))return toast(A("هذا المتصفح لا يدعم إشعارات الجهاز؛ استخدم الصندوق داخل المنصة.","This browser does not support device notifications; use the inbox."));
-  const uid=st.user.uid;
-  const permission=Notification.permission==="granted"?"granted":await Notification.requestPermission();
-  if(permission!=="granted")return toast(A("لم تُفعّل إشعارات الجهاز. صندوق الرسائل يعمل بدونها.","Device notifications were not enabled. Your inbox still works."));
-  try{
-    function isIosDevice(){
-  return /iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
-}
-function isStandaloneApp(){
-  return window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
 }
 async function enableDeviceNotifications(){
   if(!st.user)return toast(A("سجّل دخولك أولًا.","Sign in first."));
@@ -544,6 +539,10 @@ async function enableDeviceNotifications(){
     draw();
   }
 }
+async function detachDeviceNotifications(){
+  const id=ls("alnoor_push_device"),owner=ls("alnoor_push_owner");
+  if(id&&owner===st.user?.uid&&db)await deleteDoc(doc(db,"pushDevices",id)).catch(()=>{});
+  const registration="serviceWorker"in navigator?await navigator.serviceWorker.getRegistration(new URL("./sw.js",location.href)):null;
   await (await registration?.pushManager.getSubscription())?.unsubscribe().catch(()=>{});
   ls("alnoor_push_owner","");ls("alnoor_push_device","");ls("alnoor_push_local","");st.pushReady=false;
 }
@@ -553,13 +552,7 @@ async function showOpenSiteNotification(message){
     if(registration)await registration.showNotification(message.title||"النور",{body:message.text||A("رسالة جديدة في صندوقك. افتح المنصة لقراءتها.","A new message is in your inbox. Open the platform to read it."),tag:"alnoor-"+message.id,data:{url:new URL("./index.html#inbox",location.href).href}});
   }catch(e){}
 }
-
-const A=(a,e)=>st.lang=="ar"?a:e,L=s=>s.docs.map(d=>({id:d.id,...d.data()}));
-let AT=0,AI=0,un=[];
-const MY_SID=Math.random().toString(36).slice(2,10);
-
 async function loadFirebaseRuntimeConfig(config){
-  if(config.apiKey&&!/^PASTE/.test(config.apiKey))return;
   try{
     const response=await fetch(new URL("./firebase-config.json",location.href),{cache:"no-store",signal:AbortSignal.timeout(8000)});
     if(!response.ok)return;
@@ -2613,91 +2606,80 @@ const ACT={
     if(!ZS.joined||epoch!==ZS.sfuEpoch){capture.getTracks().forEach(t=>t.stop());return}
     ZS.scr=capture;
     ZS.screenActive=1;
-    const vTrack=capture.getVideoTracks()[0];
-    if(vTrack){
-      vTrack.onended=()=>{
-        stopLiveFrameSync();
-        ZS.scr=null;
-        ZS.screenActive=0;
-        syncTracksToPeers();
-        draw();
-        syncStageToCloud({screenActive:false,liveFrameUrl:""});
-      };
-    }
+    capture.getVideoTracks()[0].onended=()=>{
+      stopLiveFrameSync();
+      ZS.scr=null;
+      ZS.screenActive=0;
+      syncTracksToPeers();
+      draw();
+      syncStageToCloud({screenActive:false,liveFrameUrl:""});
+    };
     await syncTracksToPeers();
     draw();
-    startLiveFrameSync();
     syncStageToCloud({screenActive:true});
-  }catch(e){
-    if(e?.name==="NotAllowedError"||e?.name==="AbortError"){
-      toast(A("تم إلغاء مشاركة الشاشة","Screen sharing canceled"));
-    }else{
-      toast("⚠️ "+A("تعذر مشاركة الشاشة: تحقق من صلاحيات المتصفح","Could not share screen: check browser permissions"));
-    }
+  }catch(err){
+    console.error(err);
+    toast("⚠️ "+A("تعذر بدء مشاركة الشاشة أو تم إلغاؤها","Screen share cancelled or unavailable"));
   }
  },
- zrec(){
-  if(!st.adm)return;
-  if(ZS.rec){ZS.rec.stop();return}
-  const tracks=[
-    ...(ZS.scr?ZS.scr.getVideoTracks():[]),
-    ...(!ZS.scr&&ZS.cam?ZS.cam.getVideoTracks():[]),
-    ...(ZS.micStream?ZS.micStream.getAudioTracks():[])
-  ];
-  if(!tracks.length)return toast("⚠️");
-  const stream=new MediaStream(tracks);
-  ZS.ch=[];
-  ZS.rec=new MediaRecorder(stream);
-  ZS.rec.ondataavailable=e=>{if(e.data.size)ZS.ch.push(e.data)};
-  ZS.rec.onstop=()=>{
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(new Blob(ZS.ch,{type:ZS.rec.mimeType}));
-    a.download="zoom-alnoor-"+Date.now()+".webm";
-    document.body.appendChild(a);a.click();a.remove();
-    ZS.rec=null;
-    draw();
-  };
-  ZS.rec.start();
-  draw();
- }
+ zrec(){if(!st.adm)return;if(ZS.rec){ZS.rec.stop();return}const s=ZS.scr||ZS.cam||ZS.micStream;if(!s)return toast(A("فعّل المايك أو الكاميرا أو الشاشة أولاً","Turn on mic, camera, or screen first"));
+  try{ZS.ch=[];ZS.rec=new MediaRecorder(s);ZS.rec.ondataavailable=e=>{if(e.data.size)ZS.ch.push(e.data)};ZS.rec.onstop=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(ZS.ch,{type:ZS.rec.mimeType}));a.download="alnoor-lecture.webm";a.click();ZS.rec=null;if($("zrb"))$("zrb").textContent="⏺";toast("✅ "+A("تم حفظ التسجيل","Recording saved"))};ZS.rec.start();if($("zrb"))$("zrb").textContent="⏹";toast("⏺ "+A("جاري التسجيل...","Recording..."))}catch(e){toast("⚠️ "+A("التسجيل غير مدعوم هنا","Recording not supported here"))}}
 };
 
-document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){
-    if(st.menuOpen){setMenuOpen(false);return}
-    if(ZS.expanded){ZS.expanded=0;draw();return}
-    if(ZS.menu){ZS.menu=null;draw();return}
+document.addEventListener("change",async e=>{
+  const f=e.target.files?.[0];
+  if(e.target.id==="p-photo-file"&&f){
+    try{
+      const src=await compressToDataUrl(f,900,900,600000);
+      st.crops.me={src,x:0,y:0,zoom:1};
+      draw();
+    }catch(err){toast("⚠️ "+err.message)}
+    e.target.value="";
+    return;
   }
-  const t=e.target;if(e.key=="Enter"&&t?.dataset?.e){e.preventDefault();ACT[t.dataset.e]?.(t.dataset.p,t)}
+  const m=e.target.id?.match(/^e-(team|ads)-(f\d+|.+)-file$/);
+  if(m&&f){
+    const[,c,id]=m;
+    if(c==="team"){
+      try{const src=await compressToDataUrl(f,900,900,600000);st.crops[id]={src,x:0,y:0,zoom:1};draw()}
+      catch(err){toast("⚠️ "+err.message)}
+      e.target.value="";
+      return;
+    }
+    if(c==="ads"&&/^video\//.test(f.type)&&f.size>650000){
+      toast("⚠️ "+A("الفيديو أكبر من الحد المباشر؛ يُفضل اختيار صورة 4K أو فيديو قصير جداً","Video exceeds direct limit; prefer a 4K image or very short clip"));
+      e.target.value="";
+      return;
+    }
+  }
+  const s=e.target.closest("[data-c]");if(!s)return;const k=s.dataset.c,p=s.dataset.p;
+  if(k=="filt"){st.filt=s.value;draw()}
+  if(k=="rst"&&st.adm){const[u,i]=p.split("|");run(()=>changeRegistrationStatus(u,i,s.value))}
+  if(k=="zq"){const[w,h]=ZQ[s.value]||ZQ["720"];const tr=ZS.cam?.getVideoTracks()[0];if(tr)tr.applyConstraints({width:{ideal:w},height:{ideal:h}}).then(()=>zs(w+"×"+h)).catch(()=>zs(s.value+"p"))}
+});
+document.addEventListener("input",e=>{
+  const sl=e.target.dataset.cropSlider;
+  if(sl){const[id,prop]=sl.split("|");if(st.crops[id]){st.crops[id][prop]=+e.target.value;syncCropPreview(id)}}
 });
 document.addEventListener("click",e=>{
   unlockRemoteAudioOnGesture();
-  if(ZS.menu&&!e.target.closest("[data-zpop]")&&!e.target.closest('[data-a="zmenu"]')){
-    ZS.menu=null;draw();
-  }
-  const b=e.target.closest("[data-a]");
-  if(!b)return;
-  if(b.tagName==="A")e.preventDefault();
-  ACT[b.dataset.a]?.(b.dataset.p,b);
+  if(ZS.menu&&!e.target.closest(".z-popover")&&!e.target.closest('[data-a="zmenu"]')){ZS.menu=null;draw()}
+  const b=e.target.closest("[data-a]");if(!b)return;const f=ACT[b.dataset.a];if(f)f(b.dataset.p,b)
 });
-document.addEventListener("change",async e=>{const t=e.target;
-  if(t?.id==="p-photo-file"&&t.files?.[0]){
-    const r=new FileReader();
-    r.onload=()=>{st.crops.me={src:String(r.result||""),zoom:1,x:0,y:0};draw()};
-    r.readAsDataURL(t.files[0]);
-    return;
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){
+    if($("alnoor-onboarding")){e.preventDefault();return closeOnboarding("skipped")}
+    if(ZS.menu){ZS.menu=null;return draw()}
+    if(ZS.expanded){ZS.expanded=0;return draw()}
+    if(st.menuOpen)setMenuOpen(false)
   }
-  const m=t?.id?.match(/^e-team-(f\d)-file$/);if(m&&t.files?.[0]){const id=m[1],r=new FileReader();r.onload=()=>{st.crops[id]={src:String(r.result||""),zoom:1,x:0,y:0};draw()};r.readAsDataURL(t.files[0]);return}
-  if(t?.dataset?.c=="filt"){st.filt=t.value;draw()}
-  if(t?.dataset?.c=="rst"){
-    const[u,i]=t.dataset.p.split("|");
-    run(()=>changeRegistrationStatus(u,i,t.value),A("تم التحديث وإيداع الرسالة.","Updated and delivered."));
-  }
-  if(t?.dataset?.c=="zq"&&ZS.cam){const[w,h]=ZQ[t.value];ZS.cam.getVideoTracks()[0]?.applyConstraints({width:{ideal:w},height:{ideal:h}}).then(()=>{const s=ZS.cam.getVideoTracks()[0].getSettings();zs(s.width+"×"+s.height)}).catch(()=>{})}});
-document.addEventListener("input",e=>{const s=e.target?.dataset?.cropSlider;if(!s)return;const[id,prop]=s.split("|"),cr=st.crops[id];if(!cr)return;cr[prop]=parseFloat(e.target.value)||0;syncCropPreview(id)});
+  if(e.key=="Enter"&&e.target.dataset.e){e.preventDefault();ACT[e.target.dataset.e]?.()}
+});
+matchMedia("(prefers-color-scheme:dark)").addEventListener("change",()=>{
+  if(!ls("theme")&&ls("dark")===null)applyTheme(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");
+});
+setInterval(()=>{const e=$("z-duration");if(e&&ZS.joined&&ZS.enteredAt){const s=Math.max(0,Math.floor((Date.now()-ZS.enteredAt)/1000));e.textContent=[Math.floor(s/3600),Math.floor((s%3600)/60),s%60].map(n=>String(n).padStart(2,"0")).join(":")}},1000);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")requestWakeLock();else releaseWakeLock()});
-addEventListener("pagehide",()=>{zStop()});
-setInterval(()=>{const el=$("z-duration");if(!el)return;if(!ZS.enteredAt){el.textContent="00:00:00";return}const sec=Math.floor((Date.now()-ZS.enteredAt)/1000);el.textContent=[sec/3600,(sec%3600)/60,sec%60].map(n=>String(Math.floor(n)).padStart(2,"0")).join(":")},1000);
 initTheme();
 draw();
 </script>
