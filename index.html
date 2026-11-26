@@ -1102,8 +1102,7 @@ async function parsePptxSlides(file){
     }).filter(Boolean);
     slides.push({
       index:i+1,
-      text:lines.length?lines.join("
-"):A("شريحة مرئية","Visual slide")
+      text:lines.length?lines.join("\n"):A("شريحة مرئية","Visual slide")
     });
   }
   return slides;
@@ -2658,466 +2657,471 @@ const ACT={
   if(!st.adm||!st.zoom)return;
   const uid=$("lecture-presenter")?.value,student=st.studs.find(s=>s.id===uid);
   if(!uid)return toast(A("اختر حسابًا أولًا.","Choose an account first."));
-  await run(()=>setDoc(doc(db,"lecturePresenters",uid),{uid,name:student?.name||student?.email||uid,roomId:String(st.zoom.ts),enabled:true,updatedAt:Date.now()}),A("تم تعيين المسؤول للمحاضرة الحالية","Presenter assigned for the current lecture"));
+  await run(()=>setDoc(doc(db,"lecturePresenters",uid),{uid,name:student?.name||student?.email||uid,roomId:String(st.zoom.ts),enabled:true,assignedAt:Date.now()}),A("تم تعيين المسؤول للمحاضرة الحالية","Presenter assigned for this lecture"));
  },
  async removePresenter(uid){
   if(!st.adm||!uid)return;
-  await run(()=>deleteDoc(doc(db,"lecturePresenters",uid)),A("تم إلغاء صلاحية الشرح","Presenter role revoked"));
+  await run(()=>deleteDoc(doc(db,"lecturePresenters",uid)),A("تم إلغاء صلاحية الشرح","Presenter role removed"));
  },
  async saveCoPresenters(){
   if(!st.adm)return;
-  if(!st.zoom)return toast(A("أنشئ محاضرة أولًا لتحديد مسؤولي مشاركة الشاشة.","Create a lecture first to set screen-share presenters."));
-  const n1=$("co-pres-1")?.value||"";
-  const n2=$("co-pres-2")?.value||"";
-  const n3=$("co-pres-3")?.value||"";
+  const n1=$("co-pres-1")?.value||"",n2=$("co-pres-2")?.value||"",n3=$("co-pres-3")?.value||"";
   const parsed=parseCoPresenterNames(n1,n2,n3);
   if(!parsed.ok)return toast("⚠️ "+parsed.error);
   await run(async()=>{
+    const roomId=String(st.zoom?.ts||ZS.roomId||"");
     st.coPresenters=parsed.names;
     await setDoc(doc(db,"site","zoom_co_presenters"),{
-      roomId:String(st.zoom.ts),
+      roomId,
       names:parsed.names,
       updatedAt:Date.now(),
       updatedBy:st.user?.uid||""
-    });
-    draw();
-  },A("تم اعتماد مسؤولي مشاركة الشاشة والتحكم","Screen-share & control presenters saved"));
+    },{merge:true});
+  },A("تم اعتماد مسؤولي مشاركة الشاشة والتحكم","Co-presenters saved"));
  },
  async clearCoPresenters(){
   if(!st.adm)return;
   await run(async()=>{
+    const roomId=String(st.zoom?.ts||ZS.roomId||"");
     st.coPresenters=[];
     await setDoc(doc(db,"site","zoom_co_presenters"),{
-      roomId:String(st.zoom?.ts||""),
+      roomId,
       names:[],
-      updatedAt:Date.now()
-    });
-    draw();
+      updatedAt:Date.now(),
+      updatedBy:st.user?.uid||""
+    },{merge:true});
   },A("تم مسح قائمة مسؤولي الشاشة","Co-presenters list cleared"));
  },
  async regLecture(id){
   if(!st.user)return;
-  const lecture=st.lecs.find(l=>l.id===id);if(!lecture)return;
-  await run(()=>setDoc(doc(db,"regs",st.user.uid),{email:st.user.email||"",list:{["lec_"+id]:{title:lecture.title,kind:"lecture",status:"pending",ts:Date.now()}}},{merge:true}),A("تم إرسال طلب التسجيل","Registration submitted"));
+  const lecture=st.lecs.find(l=>l.id===id);
+  if(!lecture)return;
+  await run(()=>setDoc(doc(db,"regs",st.user.uid),{name:st.me.name||"",phone:st.me.phone||"",email:st.user.email||"",list:{["lec_"+id]:{title:lecture.title,kind:"lecture",status:"pending",ts:Date.now()}}},{merge:true}),A("تم إرسال طلب التسجيل","Application sent"));
  },
- home(){go("dashboard")},goRoute(p){go(p||"dashboard")},
- lang(){st.lang=st.lang=="ar"?"en":"ar";ls("lang",st.lang);draw()},
- theme(){const cur=document.documentElement.getAttribute("data-theme")==="dark"?"dark":"light";applyTheme(cur==="dark"?"light":"dark")},
- onboard(){openOnboarding()},
- async out(){
-  setMenuOpen(false);
-  try{await detachDeviceNotifications()}catch(e){}
-  zStop();
-  if(auth)await signOut(auth);
-  st.user=null;st.adm=false;st.zok=0;st.regMode=false;go("dashboard");draw();
- },
- togglemode(p){st.regMode=p=="1";draw()},
- async studin(){const e=$("se")?.value.trim(),p=$("sp")?.value.trim();if(!e||!pin6(p))return toast(A("أدخل البريد والرمز المكون من 6 أرقام","Enter email and a 6-digit PIN"));await run(()=>signInWithEmailAndPassword(auth,e,p),A("تم تسجيل الدخول","Signed in"))},
- async studreg(){const e=$("se")?.value.trim(),p=$("sp")?.value.trim(),p2=$("sp2")?.value.trim();if(!e||!pin6(p))return toast(A("أدخل البريد ورمزاً من 6 أرقام","Enter email and a 6-digit PIN"));if(p!==p2)return toast(A("الرمزان غير متطابقين","PINs do not match"));await run(async()=>{const c=await createUserWithEmailAndPassword(auth,e,p);await setDoc(doc(db,"students",c.user.uid),{email:e,created:Date.now()},{merge:true})},A("تم إنشاء الحساب وتسجيل الدخول","Account created and signed in"))},
- async adminin(){const e=$("ae")?.value.trim(),p=$("ac2")?.value.trim();if(!e||!p)return toast(A("أدخل البريد وكلمة المرور","Enter email and password"));if(e.toLowerCase()!=ADMIN_EMAIL.toLowerCase())return toast(A("هذا البريد ليس بريد الإدارة","Not the admin email"));await run(()=>signInWithEmailAndPassword(auth,e,p),A("تم دخول الإدارة","Admin signed in"))},
- async saveP(_,b){const d={};["name","phone","major","uni","note"].forEach(k=>d[k]=$(`p_${k}`)?.value.trim()||"");
-  if(st.crops["me"]){try{d.photo=await renderCroppedAvatar(st.crops["me"]);delete st.crops["me"]}catch(e){return toast(e.message)}}
-  await run(()=>setDoc(doc(db,"students",st.user.uid),d,{merge:true}),A("تم حفظ بياناتك","Profile saved"),b);draw()},
- async delStudPhoto(_,b){
-  if(st.crops["me"])delete st.crops["me"];
-  await run(()=>setDoc(doc(db,"students",st.user.uid),{photo:deleteField()},{merge:true}),A("تمت إزالة الصورة","Photo removed"),b);draw();
- },
- async reg(id,b){if(!st.me.name||!st.me.phone)return toast(A("أكمل الاسم والهاتف في لوحتي أولاً","Complete your name and phone in My space first"));const it=st.items.find(x=>x.id==id);if(!it)return;await run(()=>setDoc(doc(db,"regs",st.user.uid),{email:st.user.email||"",name:st.me.name,phone:st.me.phone,list:{[id]:{title:it.t,kind:it.kind||"c",status:"pending",ts:Date.now()}}},{merge:true}),A("تم إرسال طلبك","Application sent"),b)},
- ad(p){adShow(+p)},
- mute(){const v=document.querySelector("#atc video");if(v)v.muted=!v.muted},
- star(p){st.rs=+p;st.fc=$("fc")?.value||"";draw()},
- async sfb(_,b){if(!st.rs)return toast(A("اختر تقييماً من 1 إلى 5 نجوم","Choose a rating from 1 to 5 stars"));const c=$("fc")?.value.trim()||"";if(!c)return toast(A("اكتب تعليقاً","Write a comment"));await run(async()=>{await addDoc(collection(db,"reviews"),{s:st.rs,c,n:st.me.name||st.user.email||A("طالب","Student"),ts:Date.now(),ok:false});st.rs=0;st.fc=""},A("تم إرسال تقييمك للمراجعة","Review sent for approval"),b)},
- async saveA(_,b){const text=$("ab")?.value.trim()||"";await run(()=>setDoc(doc(db,"site","about"),{text}),A("تم حفظ النبذة","About saved"),b)},
- async add(c,b){const d=rdF("n-"+c,c);if(c=="ads"&&!d.title&&!d.desc)return toast(A("اكتب عنواناً أو شرحاً","Write a title or description"));if((c=="courses"||c=="skills"||c=="vols")&&!d.t)return toast(A("اكتب العنوان","Write a title"));if(c=="lecs"&&!d.title)return toast(A("اكتب عنوان المحاضرة","Write a lecture title"));
-  const f=$(`n-${c}-file`)?.files?.[0];if(f){try{Object.assign(d,await fdata(c,f))}catch(e){return toast(e.message)}}
-  if(c=="ads"||c=="lecs")d.ts=Date.now();
-  await run(async()=>{
-    const batch=writeBatch(db);
-    const ref=doc(collection(db,colOf(c)));
-    batch.set(ref,d);
-    if(["courses","vols","skills","lecs"].includes(c)){
-      const tpl=readTemplate(`n-${c}`);
-      const key=c==="lecs"?"lec_"+ref.id:ref.id;
-      batch.set(doc(db,"messageTemplates",key),tpl);
-      st.templates[key]=tpl;
-    }
-    if(c==="ads"||c==="courses"||c==="skills"||c==="vols"||c==="lecs"){
-      const title=c==="ads"?(d.title||A("إعلان جديد من النور","New announcement from Al-Noor")):c==="lecs"?A("محاضرة جديدة: ","New lecture: ")+d.title:A("إضافة جديدة: ","New opportunity: ")+d.t;
-      const text=c==="ads"?(d.desc||title):[d.desc||d.t,d.p?A("المكان: ","Place: ")+d.p:"",d.d?A("التاريخ: ","Date: ")+d.d:"",d.price!==undefined?A("السعر: ","Price: ")+(d.price>0?d.price+" "+A("د.أ","JD"):A("مجاني","Free")):""].filter(Boolean).join(" · ");
-      const routeMap={ads:"ads",courses:"courses",skills:"skills",vols:"volunteering",lecs:"lectures"};
-      addAnnouncementToBatch(batch,"ann_"+ref.id+"_"+Date.now(),title,text,routeMap[c]);
-    }
-    await batch.commit();
-  },A("تمت الإضافة","Added"),b)},
- async save(p,b){const[c,id]=p.split("|"),d=rdF(`e-${c}-${id}`,c);const f=$(`e-${c}-${id}-file`)?.files?.[0];if(f){try{Object.assign(d,await fdata(c,f))}catch(e){return toast(e.message)}}else if(c=="team"&&st.crops[id]){try{d.photo=await renderCroppedAvatar(st.crops[id]);delete st.crops[id]}catch(e){return toast(e.message)}}
-  await run(async()=>{
-    const batch=writeBatch(db);
-    batch.set(doc(db,colOf(c),id),d,{merge:true});
-    if(["courses","vols","skills","lecs"].includes(c)){
-      const tpl=readTemplate(`e-${c}-${id}`);
-      const key=c==="lecs"?"lec_"+id:id;
-      batch.set(doc(db,"messageTemplates",key),tpl);
-      st.templates[key]=tpl;
-    }
-    await batch.commit();
-  },A("تم الحفظ","Saved"),b);draw()},
- cropReset(id){delete st.crops[id];draw()},
- async del(p,b){const[c,id]=p.split("|");if(!confirm(A("هل أنت متأكد من الحذف؟","Are you sure you want to delete?")))return;await run(()=>deleteDoc(doc(db,colOf(c),id)),A("تم الحذف","Deleted"),b)},
- async rdel(p,b){const[u,k]=p.split("|");if(!confirm(A("حذف هذا التسجيل؟","Delete this registration?")))return;await run(()=>updateDoc(doc(db,"regs",u),{["list."+k]:deleteField()}),A("تم الحذف","Deleted"),b)},
- async rv(p,b){const[id,v]=p.split("|");await run(()=>updateDoc(doc(db,"reviews",id),{ok:v=="1"}),A("تم التحديث","Updated"),b)},
- csv(){const rows=st.all.filter(r=>!st.filt||r.item==st.filt);const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';const csv="﻿"+[A("الاسم,الهاتف,البريد,العنوان,النوع,الحالة","Name,Phone,Email,Title,Kind,Status"),...rows.map(r=>[q(r.name),q(r.phone),q(r.email),q(r.title),q(r.kind),q(r.status||"pending")].join(","))].join("
-");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="alnoor-registrations.csv";a.click()},
-
- async zcreate(_,b){const raw=$("zc")?.value.trim();const code=raw||String(Math.floor(100000+Math.random()*900000));const h=await sha(code);await run(async()=>{const ts=Date.now();await setDoc(doc(db,"site","zoom"),{h,ts});await setDoc(doc(db,"site","zoom_co_presenters"),{roomId:String(ts),names:st.coPresenters||[],updatedAt:ts});await setDoc(doc(db,"site","zoom_stage_owner"),{roomId:String(ts),name:"",uid:"",isAdmin:false,active:false,ts});ls("zc",code);st.zoom={h,ts};ZS.roomId=String(ts);ZS.stageSig=undefined;lastRemoteStageTs=0;zStop();joinRoom();startZoomRealtimeSubs();draw()},A("تم تفعيل المحاضرة","Lecture opened"),b)},
- async zclose(_,b){if(!confirm(A("إغلاق المحاضرة الحالية؟","Close the current lecture?")))return;await run(async()=>{await deleteDoc(doc(db,"site","zoom"));await setDoc(doc(db,"site","zoom_stage"),{sharedType:"",sharedImg:"",pageDataUrl:"",screenActive:false,liveFrameUrl:"",ts:Date.now()},{merge:true});await setDoc(doc(db,"site","zoom_stage_owner"),{name:"",uid:"",isAdmin:false,active:false,ts:Date.now()},{merge:true});ls("zc","");st.zoom=null;zStop();draw()},A("تم إغلاق المحاضرة","Lecture closed"),b)},
- async zenter(_,b){const c=$("zin")?.value.trim();if(!c)return toast(A("أدخل الكود","Enter the code"));const h=await sha(c);if(!st.zoom||h!=st.zoom.h)return toast(A("الكود غير صحيح","Wrong code"));st.zok=st.zoom.ts;joinRoom();startZoomRealtimeSubs();draw()},
- zleave(){zStop();if(!st.adm)st.zok=0;go("dashboard");draw()},
- async zdevices(){await openDeviceTest()},
+ zdevices(){openDeviceTest()},
  async zreconnect(){
-  if(!inRoom())return;
+  if(!ZS.joined||!st.user)return toast(A("أنت خارج المحاضرة","Not in lecture"));
   if(useSFU()){
+    ZS.sfuEpoch++;ZS.sfuConnecting=false;
     const oldRoom=ZS.sfu;ZS.sfu=null;
     if(oldRoom){oldRoom.removeAllListeners();oldRoom.disconnect().catch(()=>{})}
     ZS.sfuTracks.clear();
     await connectSfu().catch(e=>toast("⚠️ "+e.message));
     return;
   }
-  ZS.peers.forEach(c=>{try{c.pc.close()}catch(e){}});ZS.peers.clear();ZS.remoteStreams.clear();
-  touchPresence(true);connectToPresentPeers();draw();
+  ZS.peers.forEach(c=>{try{c.pc.close()}catch(e){}});ZS.peers.clear();ZS.remoteStreams.clear();syncAudioElements();
+  startRtcSignalingSub();touchPresence(true);connectToPresentPeers();
   toast(A("جارٍ إعادة الاتصال...","Reconnecting..."));
  },
- zexpand(){ZS.expanded=!ZS.expanded;ZS.menu=null;draw()},
- zmenu(p){ZS.menu=ZS.menu===p?null:p;draw()},
- zside(p){ZS.side=ZS.side===p?null:p;ZS.menu=null;draw()},
+ zmenu(p){
+  if(p==="share"&&!canPresent())return toast(A("مشاركة الشاشة للإدارة أو للمسؤولين المعتمدين فقط","Screen sharing is for host or designated presenters"));
+  ZS.menu=ZS.menu===p?null:p;
+  draw();
+ },
+ zside(p){
+  ZS.side=ZS.side===p||!p?null:p;
+  draw();
+  if(ZS.side==="chat")scrollChatToBottom(true);
+ },
  zscrollchat(){scrollChatToBottom(true)},
  zviewmode(p){
-  ZS.audioOnly=p==="audio"?1:0;
-  if(ZS.audioOnly&&ZS.cam1&&ZS.cam){ZS.cam.getTracks().forEach(t=>t.enabled=false)}
-  else if(!ZS.audioOnly&&ZS.cam1&&ZS.cam){ZS.cam.getTracks().forEach(t=>t.enabled=true)}
-  ZS.menu=null;syncTracksToPeers();draw();
- },
- async ztoggleopt(p){
-  if(p==="batterySaver"){ZS.batterySaver=!ZS.batterySaver;if(ZS.cam){ZS.cam.getTracks().forEach(t=>t.stop());ZS.cam=null}if(ZS.cam1){try{await ensureCam()}catch(e){}}syncTracksToPeers()}
-  else if(p==="captions"){ZS.captions=!ZS.captions}
-  else if(p==="shareAudio"){ZS.shareAudio=!ZS.shareAudio;syncTracksToPeers()}
-  else if(p==="speaker"){ZS.speaker=!ZS.speaker;syncAudioElements()}
-  draw();
- },
- async zquickmic(){
-  if(!inRoom())return toast(A("ادخل المحاضرة أولًا","Join the lecture first"));
-  await openMicFast();
-  draw();
- },
- async zquickcam(){
-  if(!inRoom())return toast(A("ادخل المحاضرة أولًا","Join the lecture first"));
-  if(ZS.cam1){
+  if(p==="audio"){
+    ZS.audioOnly=1;
     ZS.cam1=0;
-    ZS.cam?.getTracks().forEach(t=>t.enabled=false);
-    syncTracksToPeers();touchPresence(true);draw();return;
-  }
-  try{
+    if(ZS.cam){ZS.cam.getTracks().forEach(t=>t.stop());ZS.cam=null}
+    syncTracksToPeers();
+    touchPresence(true);
+  }else{
     ZS.audioOnly=0;
-    await ensureCam();
-    ZS.cam1=1;
-    ZS.cam.getVideoTracks().forEach(t=>t.enabled=true);
-    syncTracksToPeers();touchPresence(true);draw();
-  }catch(e){ZS.cam1=0;toast("⚠️ "+mediaErrorMsg(e,"cam"))}
- },
- zinvite(){
-  const url=location.href;
-  navigator.clipboard?.writeText(url).catch(()=>{});
-  if(navigator.share)navigator.share({title:"ZOOM ALNOOR",url}).catch(()=>{});
-  toast("🔗 "+A("تم نسخ رابط الدعوة","Invite link copied"));
- },
- zreport(){toast("⚠️ "+A("تم تسجيل الملاحظة للإدارة","Note recorded for host"))},
-
- async zt(k){
-  if(!inRoom())return toast(A("ادخل المحاضرة أولًا","Join the lecture first"));
-  if(k=="mic"){
-    if(ZS.mic){
-      ZS.mic=0;
-      ZS.micStream?.getAudioTracks().forEach(t=>{t.enabled=false});
-      zs(A("المايك مطفي","Mic off"));
-      syncTracksToPeers();draw();return;
-    }
-    await openMicFast();
-    draw();return;
   }
-  if(k=="cam1"){
-    if(ZS.cam1){
-      ZS.cam1=0;
-      ZS.cam?.getTracks().forEach(t=>{t.enabled=false});
-      syncTracksToPeers();touchPresence(true);draw();return;
-    }
-    try{
-      ZS.audioOnly=0;
-      await ensureCam();
-      ZS.cam1=1;
-      ZS.cam.getVideoTracks().forEach(t=>{t.enabled=true});
-      syncTracksToPeers();touchPresence(true);draw();
-    }catch(e){ZS.cam1=0;toast("⚠️ "+mediaErrorMsg(e,"cam"))}
-  }
- },
-
- async zsendreact(emoji){
-  if(!inRoom()||!db||!st.user)return;
-  const who=displayName();
-  const isHand=(emoji==="✋");
-  if(isHand){
-    ZS.hand=ZS.hand?0:1;
-    setDoc(doc(db,"zoom_hands",st.user.uid),{uid:st.user.uid,name:who,raised:!!ZS.hand,roomId:String(st.zoom.ts),ts:Date.now()},{merge:true}).catch(()=>{});
-  }
-  const item={id:"r_"+Date.now()+"_"+Math.random().toString(36).slice(2,6),emoji,who,uid:st.user.uid,roomId:String(st.zoom.ts),ts:Date.now()};
-  ZS.reactions=[...ZS.reactions.slice(-7),item];
   ZS.menu=null;
   draw();
-  addDoc(collection(db,"zoom_reactions"),item).catch(()=>{});
  },
-
- async zlowerhand(uid){
+ ztoggleopt(p){
+  if(p==="speaker"){
+    ZS.speaker=!ZS.speaker?1:0;
+    syncAudioElements();
+    const v=$("z-shared-vid");
+    if(v&&!st.adm)v.muted=!ZS.speaker;
+    draw();
+  }else if(p==="shareAudio"){
+    ZS.shareAudio=!ZS.shareAudio?1:0;
+    syncTracksToPeers();
+    draw();
+  }else if(p==="batterySaver"){
+    ZS.batterySaver=!ZS.batterySaver?1:0;
+    if(ZS.batterySaver&&ZS.cam){ZS.cam.getTracks().forEach(t=>t.stop());ZS.cam=null;ZS.cam1=0;syncTracksToPeers()}
+    draw();
+  }else if(p==="captions"){
+    ZS.captions=!ZS.captions?1:0;
+    draw();
+  }
+ },
+ zexpand(){
+  ZS.expanded=!ZS.expanded?1:0;
+  draw();
+ },
+ async zsendreact(emoji){
+  if(!ZS.joined||!st.user||!emoji)return;
+  if(emoji==="✋"){
+    ZS.hand=!ZS.hand?1:0;
+    if(db){
+      setDoc(doc(db,"zoom_hands",st.user.uid),{
+        uid:st.user.uid,
+        roomId:ZS.roomId,
+        name:displayName(),
+        raised:!!ZS.hand,
+        ts:Date.now()
+      },{merge:true}).catch(()=>{});
+    }
+  }
+  ZS.menu=null;
+  draw();
+  if(db){
+    addDoc(collection(db,"zoom_reactions"),{
+      roomId:ZS.roomId,
+      uid:st.user.uid,
+      who:displayName(),
+      emoji,
+      ts:Date.now()
+    }).catch(()=>{});
+  }
+ },
+ zlowerhand(uid){
   if(!st.adm||!uid||!db)return;
-  await setDoc(doc(db,"zoom_hands",uid),{raised:false,ts:Date.now()},{merge:true}).catch(()=>{});
+  setDoc(doc(db,"zoom_hands",uid),{raised:false,ts:Date.now()},{merge:true}).catch(()=>{});
  },
-
- async zmuteall(){
+ zmuteall(){
   if(!st.adm||!db)return;
   ZS.roomCtrl.allowMic=0;
-  await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:false,ts:Date.now()},{merge:true}).catch(()=>{});
+  setDoc(doc(db,"site","zoom_ctrl"),{allowMic:false,ts:Date.now()},{merge:true}).catch(()=>{});
+  toast("🔇");
   draw();
-  toast("🔇 "+A("تم كتم مايكات الطلاب","Muted student microphones"));
  },
-
- async zunmuteall(){
+ zunmuteall(){
   if(!st.adm||!db)return;
   ZS.roomCtrl.allowMic=1;
-  await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:true,ts:Date.now()},{merge:true}).catch(()=>{});
+  setDoc(doc(db,"site","zoom_ctrl"),{allowMic:true,ts:Date.now()},{merge:true}).catch(()=>{});
+  toast("🎙");
   draw();
-  toast("🎙 "+A("تم السماح للطلاب بتشغيل المايك","Allowed student microphones"));
  },
-
- async zscr(){
-  if(!canPresent())return toast(A("مشاركة الشاشة متاحة للإدارة ومسؤولي المحاضرة","Screen share is available to host and designated presenters"));
-  if(ZS.scr){
-    ZS.scr.getTracks().forEach(t=>t.stop());
-    ZS.scr=null;
-    ZS.screenActive=0;
-    releaseStageOverrideIfOwner();
-    stopLiveFrameSync();
-    syncTracksToPeers();
-    syncStageToCloud({screenActive:false,liveFrameUrl:""});
-    draw();return;
+ zinvite(){
+  const txt=A("انضم إلى قاعة النور المباشرة على المنصة: ","Join Al-Noor live classroom on the platform: ")+location.href.split("#")[0]+"#zoom-alnoor";
+  if(navigator.clipboard?.writeText){
+    navigator.clipboard.writeText(txt).then(()=>toast(A("تم نسخ رابط الدعوة","Invite link copied"))).catch(()=>toast(txt));
+  }else{
+    toast(txt);
   }
-  await startFullScreenShare();
  },
-
+ zreport(){toast(A("تم تسجيل البلاغ للإدارة","Report sent to host"))},
  zpickmedia(accept){
-  if(!canPresent())return toast(A("مشاركة الملفات متاحة للإدارة ومسؤولي المحاضرة","File sharing is available to host and designated presenters"));
+  if(!canPresent())return toast(A("مشاركة الملفات للإدارة أو للمسؤولين المعتمدين فقط","File sharing is for host or designated presenters"));
   ZS.menu=null;
   const inp=$("z-media-input");
   if(!inp)return;
   inp.value="";
   inp.accept=accept||"*/*";
-  inp.onchange=async()=>{
-    const file=inp.files?.[0];
-    if(!file)return;
-    const lower=file.name.toLowerCase();
+  inp.onchange=async e=>{
+    const f=e.target.files?.[0];
+    if(!f)return;
+    claimStageOverride();
+    if(ZS.scr){ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null;ZS.screenActive=0}
+    stopLiveFrameSync();
+    dropVidEl();
+    ZS.sharedImg="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedType="";ZS.pageDataUrl="";
+    ZS.pdfDoc=null;ZS.pdfNumPages=1;ZS.pdfPage=1;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";
+    ZS.audioOnly=0;
+    pdfPageCache.clear();pdfPrefetching.clear();
+
+    const nameLower=(f.name||"").toLowerCase();
+    const isPdf=f.type==="application/pdf"||nameLower.endsWith(".pdf");
+    const isPptx=nameLower.endsWith(".pptx")||nameLower.endsWith(".ppt")||/presentation|powerpoint/.test(f.type||"");
+    const isImg=/^image\//.test(f.type||"")||/\.(png|jpe?g|webp|gif|bmp)$/i.test(nameLower);
+    const isVid=/^video\//.test(f.type||"")||/\.(mp4|webm|mov|m4v|ogg)$/i.test(nameLower);
+    const isText=/^text\//.test(f.type||"")||/\.(txt|md|csv|json|log)$/i.test(nameLower);
+
     try{
-      if(file.type==="application/pdf"||lower.endsWith(".pdf")){
-        toast("⏳ "+A("جاري فتح ملف PDF...","Opening PDF..."));
-        const pdfjs=await loadPdfJs();
-        const ab=await file.arrayBuffer();
-        const pdfDoc=await pdfjs.getDocument({data:ab}).promise;
-        pdfPageCache.clear();
-        pdfPrefetching.clear();
-        ZS.pdfDoc=pdfDoc;
-        ZS.pdfNumPages=pdfDoc.numPages||1;
-        ZS.pdfPage=1;
+      if(isPdf){
         ZS.sharedType="pdf";
-        ZS.sharedImg="";ZS.sharedVid="";ZS.slides=[];ZS.textContent="";ZS.audioOnly=0;
-        claimStageOverride();
+        const pdfjs=await loadPdfJs();
+        const bytes=new Uint8Array(await f.arrayBuffer());
+        ZS.pdfDoc=await pdfjs.getDocument({data:bytes}).promise;
+        ZS.pdfNumPages=ZS.pdfDoc.numPages||1;
+        ZS.pdfPage=1;
         draw();
         await renderPdfPageToCanvas(1,true);
         return;
       }
-      if(lower.endsWith(".pptx")||lower.endsWith(".ppt")||file.type.includes("presentation")){
-        toast("⏳ "+A("جاري استخراج شرائح العرض...","Extracting presentation slides..."));
-        const slides=await parsePptxSlides(file);
-        if(!slides.length)return toast(A("لم يتم العثور على شرائح نصية في الملف","No slides found in file"));
+      if(isPptx){
         ZS.sharedType="pptx";
-        ZS.slides=slides;
+        const slides=await parsePptxSlides(f);
+        ZS.slides=slides.length?slides:[{index:1,text:A("عرض تقديمي: ","Presentation: ")+f.name}];
         ZS.slideIdx=1;
-        ZS.sharedImg="";ZS.sharedVid="";ZS.pdfDoc=null;ZS.pageDataUrl="";ZS.textContent="";ZS.audioOnly=0;
-        claimStageOverride();
+        ZS.textContent=ZS.slides[0]?.text||"";
+        draw();
         syncStageToCloud({sharedType:"pptx",slides:ZS.slides,slideIdx:1});
-        draw();
         return;
       }
-      if(file.type.startsWith("image/")){
-        const imgUrl=await compressToDataUrl(file,1920,1080,620000);
+      if(isImg){
         ZS.sharedType="image";
+        const imgUrl=await compressToDataUrl(f,1600,1200,520000);
         ZS.sharedImg=imgUrl;
-        ZS.pageDataUrl=imgUrl;
-        ZS.sharedVid="";ZS.pdfDoc=null;ZS.slides=[];ZS.textContent="";ZS.audioOnly=0;
-        claimStageOverride();
-        syncStageToCloud({sharedType:"image",sharedImg:imgUrl,pageDataUrl:imgUrl});
         draw();
+        syncStageToCloud({sharedType:"image",sharedImg:imgUrl});
         return;
       }
-      if(file.type.startsWith("video/")){
-        const blobUrl=URL.createObjectURL(file);
-        dropVidEl();
-        const vid=document.createElement("video");
-        vid.id="z-shared-vid";
-        vid.src=blobUrl;
-        vid.controls=true;
-        vid.autoplay=true;
-        vid.playsInline=true;
-        vid.style.cssText="width:100%;height:100%;max-height:66svh;object-fit:contain;background:#090a0d";
-        ZS.vidEl=vid;
+      if(isVid){
         ZS.sharedType="video";
-        ZS.sharedVid=blobUrl;
-        ZS.screenActive=1;
-        ZS.sharedImg="";ZS.pageDataUrl="";ZS.pdfDoc=null;ZS.slides=[];ZS.textContent="";ZS.audioOnly=0;
-        claimStageOverride();
+        const blobUrl=URL.createObjectURL(f);
+        const v=document.createElement("video");
+        v.id="z-shared-vid";v.src=blobUrl;v.controls=true;v.autoplay=true;v.playsInline=true;
+        v.style.cssText="width:100%;height:100%;max-height:78svh;object-fit:contain;background:#090a0d;border-radius:10px";
+        v.onloadedmetadata=()=>startVidCapture();
+        v.onplay=()=>startVidCapture();
+        ZS.vidEl=v;
         draw();
-        startVidCapture();
         startLiveFrameSync();
         syncStageToCloud({sharedType:"video",screenActive:true});
         return;
       }
-      const txt=await file.text();
-      ZS.sharedType="text";
-      ZS.textContent=txt.slice(0,12000)||file.name;
-      ZS.sharedImg="";ZS.pageDataUrl="";ZS.sharedVid="";ZS.pdfDoc=null;ZS.slides=[];ZS.audioOnly=0;
-      claimStageOverride();
-      syncStageToCloud({sharedType:"text",textContent:ZS.textContent});
+      if(isText){
+        ZS.sharedType="text";
+        ZS.textContent=(await f.text()).slice(0,12000);
+        draw();
+        syncStageToCloud({sharedType:"text",textContent:ZS.textContent});
+        return;
+      }
+      ZS.sharedType="other";
+      ZS.textContent=`${f.name} (${Math.max(1,Math.round(f.size/1024))} KB)`;
       draw();
+      syncStageToCloud({sharedType:"other",textContent:ZS.textContent});
     }catch(err){
       console.error(err);
-      toast("⚠️ "+A("تعذر فتح الملف: ","Could not open file: ")+(err.message||""));
+      toast("⚠️ "+A("تعذر فتح الملف للمشاركة","Could not open file for sharing"));
     }
   };
   inp.click();
  },
-
  async zpdfpage(delta){
   if(!canPresent()||ZS.sharedType!=="pdf"||!ZS.pdfDoc)return;
-  const next=Math.max(1,Math.min(ZS.pdfNumPages||1,(ZS.pdfPage||1)+Number(delta||0)));
-  await renderPdfPageToCanvas(next,true);
+  const step=parseInt(delta,10)||1;
+  const nextPage=Math.max(1,Math.min(ZS.pdfNumPages||1,ZS.pdfPage+step));
+  if(nextPage===ZS.pdfPage)return;
+  ZS.pdfPage=nextPage;
+  const lbl=$("z-pdf-page-lbl");
+  if(lbl)lbl.textContent=`${ZS.pdfPage} / ${ZS.pdfNumPages}`;
+  await renderPdfPageToCanvas(nextPage,true);
  },
-
  zslide(delta){
   if(!canPresent()||ZS.sharedType!=="pptx"||!ZS.slides.length)return;
-  ZS.slideIdx=Math.max(1,Math.min(ZS.slides.length,(ZS.slideIdx||1)+Number(delta||0)));
-  syncStageToCloud({slideIdx:ZS.slideIdx});
+  const step=parseInt(delta,10)||1;
+  ZS.slideIdx=Math.max(1,Math.min(ZS.slides.length,ZS.slideIdx+step));
   draw();
+  syncStageToCloud({sharedType:"pptx",slides:ZS.slides,slideIdx:ZS.slideIdx});
  },
-
  zclearshare(){
   if(!canPresent())return;
+  ZS.scr?.getTracks().forEach(t=>t.stop());ZS.scr=null;
+  ZS.vidShareStream?.getTracks().forEach(t=>t.stop());ZS.vidShareStream=null;
   stopLiveFrameSync();
-  if(ZS.scr){ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null}
-  if(ZS.vidShareStream){ZS.vidShareStream.getTracks().forEach(t=>t.stop());ZS.vidShareStream=null}
   dropVidEl();
-  pdfPageCache.clear();
-  pdfPrefetching.clear();
-  ZS.screenActive=0;
-  ZS.sharedType="";ZS.sharedImg="";ZS.pageDataUrl="";ZS.sharedVid="";ZS.sharedUrl="";
-  ZS.pdfDoc=null;ZS.pdfPage=1;ZS.pdfNumPages=1;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";
+  ZS.sharedImg="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedType="";ZS.pageDataUrl="";ZS.liveFrameUrl="";
+  ZS.pdfDoc=null;ZS.pdfNumPages=1;ZS.pdfPage=1;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";ZS.screenActive=0;
   ZS.menu=null;
+  pdfPageCache.clear();pdfPrefetching.clear();
   releaseStageOverrideIfOwner();
   syncTracksToPeers();
-  syncStageToCloud({sharedType:"",sharedImg:"",pageDataUrl:"",liveFrameUrl:"",screenActive:false});
+  syncStageToCloud({sharedType:"",sharedImg:"",pageDataUrl:"",liveFrameUrl:"",sharedVid:"",sharedUrl:"",slides:[],slideIdx:1,textContent:"",screenActive:false});
   draw();
  },
-
- async zrec(){
-  if(!canPresent())return;
-  if(ZS.rec&&ZS.rec.state!="inactive"){
-    ZS.rec.stop();
-    const b=$("zrb");if(b){b.classList.remove("off");b.textContent="⏺"}
+ async zsendmsg(){
+  const inp=$("z-chat-in");if(!inp)return;
+  const txt=inp.value.trim();if(!txt)return;
+  inp.value="";
+  try{await sendEphemeralChat(txt);scrollChatToBottom(true)}
+  catch(e){toast("⚠️ "+e.message)}
+ },
+ zleave(){zStop();go("dashboard")},
+ onRoute(r){go(r)},
+ async lang(){st.lang=st.lang=="ar"?"en":"ar";ls("lang",st.lang);draw()},
+ theme(){const cur=document.documentElement.getAttribute("data-theme")==="dark"?"dark":"light";applyTheme(cur==="dark"?"light":"dark")},
+ onboard(){openOnboarding()},
+ home(){go(st.user?"dashboard":"ads")},
+ async out(){
+  setMenuOpen(false);
+  if(st.user)await detachDeviceNotifications().catch(()=>{});
+  zStop();
+  if(!auth)return;
+  try{await signOut(auth)}catch(e){console.error(e);toast("⚠️ "+A("تعذر تسجيل الخروج: ","Logout failed: ")+(e.code||e.message))}
+ },
+ togglemode(p){st.regMode=p=="1";draw()},
+ async studreg(_,b){const em=$("se")?.value.trim(),p1=$("sp")?.value.trim(),p2=$("sp2")?.value.trim();if(!em)return toast("⚠️ "+A("أدخل بريدك الإلكتروني","Enter your email"));if(!pin6(p1))return toast("⚠️ "+A("الرمز يجب أن يتكون من 6 أرقام فقط","PIN must be exactly 6 digits"));if(p1!==p2)return toast("⚠️ "+A("الرمزان غير متطابقين","PINs do not match"));if(!auth)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));if(b)b.disabled=true;try{await pers;await createUserWithEmailAndPassword(auth,em,p1)}catch(e){console.error(e);toast("⚠️ "+(e.code=="auth/email-already-in-use"?A("هذا البريد مسجل مسبقاً، جرّب الدخول","Email already registered, try signing in"):e.code=="auth/invalid-email"?A("البريد الإلكتروني غير صحيح","Invalid email"):(e.code||e.message)))}finally{if(b)b.disabled=false}},
+ async studin(_,b){const em=$("se")?.value.trim(),p=$("sp")?.value.trim();if(!em)return toast("⚠️ "+A("أدخل بريدك الإلكتروني","Enter your email"));if(!pin6(p))return toast("⚠️ "+A("الرمز يجب أن يتكون من 6 أرقام فقط","PIN must be exactly 6 digits"));if(!auth)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));if(b)b.disabled=true;try{await pers;await signInWithEmailAndPassword(auth,em,p)}catch(e){console.error(e);toast("⚠️ "+((e.code=="auth/invalid-credential"||e.code=="auth/wrong-password"||e.code=="auth/user-not-found")?A("البريد الإلكتروني أو الرمز غير صحيح","Invalid email or PIN"):(e.code||e.message)))}finally{if(b)b.disabled=false}},
+ async adminin(_,b){const em=$("ae")?.value.trim(),pw=$("ac2")?.value;if(!em||!pw)return toast("⚠️ "+A("أدخل بريد الإدارة والرمز","Enter admin email and password"));if(em.toLowerCase()!=ADMIN_EMAIL.toLowerCase())return toast("⚠️ "+A("هذا الحساب ليس حساب الإدارة","This account is not the admin account"));if(!auth)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));if(b)b.disabled=true;try{await pers;await signInWithEmailAndPassword(auth,em,pw)}catch(e){console.error(e);toast("⚠️ "+A("تعذر الدخول: ","Sign in failed: ")+(e.code||e.message))}finally{if(b)b.disabled=false}},
+ async saveP(_,b){
+  if(!st.user)return;
+  let photo=st.me.photo||"";
+  if(st.crops["me"]){
+    try{photo=await renderCroppedAvatar(st.crops["me"])}catch(e){return toast("⚠️ "+e.message)}
+  }
+  const d={
+    name:$("p_name")?.value.trim()||"",
+    phone:$("p_phone")?.value.trim()||"",
+    major:$("p_major")?.value.trim()||"",
+    uni:$("p_uni")?.value.trim()||"",
+    note:($("p_note")?.value||"").slice(0,2000),
+    photo,
+    email:st.user.email||"",
+    last:Date.now()
+  };
+  await run(async()=>{
+    await setDoc(doc(db,"students",st.user.uid),d,{merge:true});
+    delete st.crops["me"];
+  },A("تم حفظ بياناتك","Profile saved"),b);
+ },
+ async delStudPhoto(_,b){
+  if(!st.user)return;
+  delete st.crops["me"];
+  await run(()=>updateDoc(doc(db,"students",st.user.uid),{photo:""}),A("تمت إزالة الصورة","Photo removed"),b);
+ },
+ async reg(id,b){const it=st.items.find(x=>x.id==id);if(!it)return;const m=st.me;if(!m.name||!m.phone)return toast("⚠️ "+A("أكمل الاسم والهاتف في «لوحتي» أولاً","Complete your name and phone in My space first"));await run(()=>setDoc(doc(db,"regs",st.user.uid),{name:m.name,phone:m.phone,email:st.user.email||"",list:{[id]:{title:it.t,kind:it.kind||"c",status:"pending",ts:Date.now()}}},{merge:true}),A("تم إرسال طلبك","Application sent"),b)},
+ ad(p){adShow(+p)},mute(){const v=document.querySelector("#atc video");if(v){v.muted=!v.muted;const b=document.querySelector(".atm2");if(b)b.textContent=v.muted?"🔇":"🔊"}},
+ star(p){st.rs=+p;draw()},
+ async sfb(_,b){const c=$("fc")?.value.trim();if(!st.rs||!c)return toast("⚠️ "+A("اختر التقييم واكتب تعليقاً","Pick stars and write a comment"));const n=st.me.name||st.user.email||A("طالب","Student");await run(async()=>{await addDoc(collection(db,"reviews"),{s:st.rs,c,n,ok:false,ts:Date.now()});st.rs=0;st.fc=""},A("تم إرسال تقييمك للمراجعة","Review sent for approval"),b)},
+ async zcreate(_,b){const code=($("zc")?.value.trim()||"").toUpperCase()||Math.random().toString(36).slice(2,8).toUpperCase();const h=await sha(code);const ts=Date.now();await run(async()=>{await setDoc(doc(db,"site","zoom"),{h,ts});await setDoc(doc(db,"site","zoom_stage"),{roomId:String(ts),sharedType:"",sharedImg:"",pageDataUrl:"",screenActive:false,liveFrameUrl:"",ts:Date.now()},{merge:false}).catch(()=>{});await setDoc(doc(db,"site","zoom_stage_owner"),{roomId:String(ts),name:"",uid:"",isAdmin:false,active:false,ts:Date.now()},{merge:false}).catch(()=>{});ls("zc",code);st.zok=ts},A("تم إنشاء المحاضرة · الكود: ","Lecture created · Code: ")+code,b)},
+ async zclose(_,b){await run(async()=>{zStop();await setDoc(doc(db,"site","zoom_stage"),{sharedType:"",sharedImg:"",pageDataUrl:"",screenActive:false,liveFrameUrl:"",ts:Date.now()},{merge:false}).catch(()=>{});await setDoc(doc(db,"site","zoom_stage_owner"),{name:"",uid:"",isAdmin:false,active:false,ts:Date.now()},{merge:false}).catch(()=>{});await deleteDoc(doc(db,"site","zoom"));ls("zc","");st.zok=0},A("تم إغلاق المحاضرة","Lecture closed"),b)},
+ async zenter(_,b){const code=($("zin")?.value.trim()||"").toUpperCase();if(!code)return;if(!st.zoom)return toast("⚠️ "+A("لا توجد محاضرة مفتوحة","No active lecture"));if(b)b.disabled=true;try{if(await sha(code)==st.zoom.h){st.zok=st.zoom.ts;toast("✅ "+A("تم الدخول","Entered"));draw()}else toast("⚠️ "+A("الكود غير صحيح","Wrong code"))}finally{if(b)b.disabled=false}},
+ async zt(p){
+  if(!st.joined)return toast("⚠️ "+A("أنت خارج المحاضرة","Not in lecture"));
+  if(p=="mic"){
+    if(!ZS.mic){
+      if(!canPresent()&&!ZS.roomCtrl.allowMic)return toast("🔇 "+A("الإدارة أغلقت المايك حالياً","Host muted microphones"));
+      try{
+        await ensureMic();
+        ZS.mic=1;
+        ZS.micStream.getAudioTracks().forEach(t=>{t.enabled=true});
+        zs(A("المايك شغال","Mic on"));
+        await syncTracksToPeers();
+        scheduleRtcRedraw();
+      }catch(e){
+        ZS.mic=0;
+        toast("⚠️ "+mediaErrorMsg(e,"mic"));
+      }
+    }else{
+      ZS.mic=0;
+      ZS.micStream?.getAudioTracks().forEach(t=>{t.enabled=false});
+      zs(A("المايك مطفي","Mic off"));
+      await syncTracksToPeers();
+      scheduleRtcRedraw();
+    }
+  }else if(p=="cam1"){
+    if(!ZS.cam1){
+      try{
+        await ensureCam();
+        ZS.cam1=1;
+        ZS.audioOnly=0;
+        ZS.cam.getVideoTracks().forEach(t=>{t.enabled=true});
+        await syncTracksToPeers();
+        touchPresence(true);
+        draw();
+      }catch(e){
+        ZS.cam1=0;
+        toast("⚠️ "+mediaErrorMsg(e,"cam"));
+      }
+    }else{
+      ZS.cam1=0;
+      ZS.cam?.getVideoTracks().forEach(t=>{t.enabled=false});
+      await syncTracksToPeers();
+      touchPresence(true);
+      draw();
+    }
+  }
+ },
+ async zquickmic(){
+  if(!ZS.joined)return toast("⚠️ "+A("ادخل المحاضرة أولاً","Join the lecture first"));
+  if(!canPresent()&&!ZS.roomCtrl.allowMic)return toast("🔇 "+A("الإدارة أغلقت المايك حالياً","Host muted microphones"));
+  try{
+    await ensureMic();
+    ZS.mic=!ZS.mic?1:0;
+    ZS.micStream.getAudioTracks().forEach(t=>{t.enabled=!!ZS.mic});
+    zs(ZS.mic?A("المايك شغال","Mic on"):A("المايك مطفي","Mic off"));
+    await syncTracksToPeers();
+    scheduleRtcRedraw();
+  }catch(e){
+    ZS.mic=0;
+    toast("⚠️ "+mediaErrorMsg(e,"mic"));
+  }
+ },
+ async zquickcam(){
+  if(!ZS.joined)return toast("⚠️ "+A("ادخل المحاضرة أولاً","Join the lecture first"));
+  try{
+    await ensureCam();
+    ZS.cam1=!ZS.cam1?1:0;
+    ZS.audioOnly=0;
+    ZS.cam.getVideoTracks().forEach(t=>{t.enabled=!!ZS.cam1});
+    await syncTracksToPeers();
+    touchPresence(true);
+    draw();
+  }catch(e){
+    ZS.cam1=0;
+    toast("⚠️ "+mediaErrorMsg(e,"cam"));
+  }
+ },
+ async zscr(){
+  if(!canPresent())return toast(A("مشاركة الشاشة للإدارة أو للمسؤولين المعتمدين فقط","Screen sharing is for host or designated presenters"));
+  if(ZS.scr){
+    ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null;ZS.screenActive=0;
+    releaseStageOverrideIfOwner();
+    stopLiveFrameSync();
+    await syncTracksToPeers();
+    syncStageToCloud({screenActive:false,liveFrameUrl:""});
+    draw();
     return;
   }
-  const tracks=[];
-  [ZS.scr,ZS.cam,ZS.micStream].forEach(s=>s&&s.getTracks().forEach(t=>tracks.push(t)));
-  if(!tracks.length)return toast(A("فعّل الشاشة أو الكاميرا أو المايك أولاً","Enable screen, camera or mic first"));
-  const mime=["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm","video/mp4"].find(m=>MediaRecorder.isTypeSupported(m))||"";
-  ZS.ch=[];
-  const rec=new MediaRecorder(new MediaStream(tracks),mime?{mimeType:mime}:{});
-  rec.ondataavailable=e=>{if(e.data.size)ZS.ch.push(e.data)};
-  rec.onstop=()=>{const blob=new Blob(ZS.ch,{type:rec.mimeType||"video/webm"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="alnoor-lecture-"+Date.now()+"."+(blob.type.includes("mp4")?"mp4":"webm");a.click();ZS.rec=null;toast(A("تم حفظ التسجيل على جهازك","Recording saved to your device"))};
-  rec.start();ZS.rec=rec;
-  const b=$("zrb");if(b){b.classList.add("off");b.textContent="⏹"}
-  toast("⏺ "+A("بدأ التسجيل المحلي","Local recording started"));
+  await startFullScreenShare();
  },
-
- async zsendmsg(){
-  const input=$("z-chat-in");if(!input)return;
-  const txt=input.value.trim();if(!txt)return;
-  input.value="";
-  try{await sendEphemeralChat(txt)}catch(e){toast("⚠️ "+e.message)}
- },
-
- async zpurgechat(){
-  if(!st.adm)return;
-  if(!confirm(A("حذف سجل المحادثة القديم من قاعدة البيانات نهائياً؟","Delete legacy chat history from database permanently?")))return;
-  await run(async()=>{const snap=await getDocs(collection(db,"zoom_chat"));const b=writeBatch(db);snap.docs.forEach(d=>b.delete(d.ref));await b.commit()},A("تم حذف سجل الدردشة القديم","Legacy chat archive purged"));
- }
+ zrec(){if(!canPresent())return toast(A("التسجيل للإدارة أو للمسؤولين المعتمدين فقط","Recording is for host or designated presenters"));if(ZS.rec&&ZS.rec.state!="inactive"){ZS.rec.stop();return}const v=$("zsv")||$("zv");if(!v||!v.srcObject)return toast("⚠️ "+A("فعّل الكاميرا أو مشاركة الشاشة أولاً","Turn on camera or screen share first"));if(typeof MediaRecorder=="undefined")return toast("⚠️ "+A("التسجيل غير مدعوم على هذا المتصفح","Recording is not supported on this browser"));const s=new MediaStream([...v.srcObject.getTracks(),...(ZS.micStream?ZS.micStream.getAudioTracks():[])]);ZS.ch=[];const m=["video/webm;codecs=vp9,opus","video/webm","video/mp4"].find(x=>MediaRecorder.isTypeSupported(x));const r=new MediaRecorder(s,m?{mimeType:m}:undefined);ZS.rec=r;r.ondataavailable=e=>{if(e.data.size)ZS.ch.push(e.data)};r.onstop=()=>{if(ZS.ch.length){const u=URL.createObjectURL(new Blob(ZS.ch,{type:r.mimeType||"video/webm"})),a=document.createElement("a");a.href=u;a.download="alnoor-lecture.webm";a.click();setTimeout(()=>URL.revokeObjectURL(u),60000)}ZS.rec=null;const b=$("zrb");if(b){b.classList.remove("off");b.textContent="⏺"}};r.start(1000);const b=$("zrb");if(b){b.classList.add("off");b.textContent="⏹"}},
+ async zpurgechat(){if(!st.adm||!db)return;if(!confirm(A("حذف رسائل الشات القديمة إن وجدت؟","Delete legacy chat messages if any exist?")))return;await run(async()=>{const snap=await getDocs(collection(db,"zoom_chat"));if(!snap.empty){const b=writeBatch(db);snap.docs.forEach(d=>b.delete(d.ref));await b.commit()}},A("تم حذف الشات القديم","Legacy chat deleted"))},
+ cropReset(id){delete st.crops[id];draw()},
+ async saveA(_,b){await run(()=>setDoc(doc(db,"site","about"),{text:$("ab")?.value||""}),A("تم حفظ النبذة","About saved"),b)},
+ async add(c,b){const d=rdF("n-"+c,c);if((c=="courses"||c=="skills"||c=="vols")&&!d.t)return toast("⚠️ "+A("أدخل العنوان","Enter title"));if(c=="lecs"&&!d.title)return toast("⚠️ "+A("أدخل عنوان المحاضرة","Enter title"));if(c=="ads"&&!d.title&&!d.desc)return toast("⚠️ "+A("أدخل عنواناً أو شرحاً","Enter title or description"));const f=$(`n-${c}-file`)?.files?.[0];if(f){try{Object.assign(d,await fdata(c,f))}catch(e){return toast("⚠️ "+e.message)}}if(c=="ads"||c=="lecs")d.ts=Date.now();const tpl=["courses","vols","skills","lecs"].includes(c)?readTemplate(`n-${c}`):null;await run(async()=>{const added=await addDoc(collection(db,colOf(c)),d);if(tpl){const key=c==="lecs"?"lec_"+added.id:added.id;await setDoc(doc(db,"messageTemplates",key),tpl);st.templates[key]=tpl}},A("تمت الإضافة","Added"),b)},
+ async save(p,b){const[c,id]=p.split("|"),d=rdF(`e-${c}-${id}`,c),f=$(`e-${c}-${id}-file`)?.files?.[0];if(f||st.crops[id]){try{Object.assign(d,await fdata(c,f||id))}catch(e){return toast("⚠️ "+e.message)}}const tpl=["courses","vols","skills","lecs"].includes(c)?readTemplate(`e-${c}-${id}`):null;await run(async()=>{await setDoc(doc(db,colOf(c),id),d,{merge:true});if(c=="team")st.team=st.team.map(x=>x.id==id?{...x,...d}:x);delete st.crops[id];if(tpl){const key=c==="lecs"?"lec_"+id:id;await setDoc(doc(db,"messageTemplates",key),tpl);st.templates[key]=tpl}},A("تم الحفظ","Saved"),b)},
+ async del(p,b){const[c,id]=p.split("|");if(!confirm(A("حذف هذا العنصر؟","Delete this item?")))return;await run(()=>deleteDoc(doc(db,colOf(c),id)),A("تم الحذف","Deleted"),b)},
+ async rdel(p,b){const[u,k]=p.split("|");if(!confirm(A("حذف هذا التسجيل؟","Delete this registration?")))return;await run(()=>updateDoc(doc(db,"regs",u),{["list."+k]:deleteField()}),A("تم الحذف","Deleted"),b)},
+ async rv(p,b){const[id,v]=p.split("|");await run(()=>updateDoc(doc(db,"reviews"),{ok:v=="1"}),A("تم التحديث","Updated"),b)},
+ csv(){const rows=st.all.filter(r=>!st.filt||r.item==st.filt),q=v=>`"${String(v??"").replace(/"/g,'""').replace(/^[=+\-@]/,"'$&')}"`;
+  const csv="\uFEFF"+[A("الاسم,الهاتف,البريد,العنوان,النوع,الحالة","Name,Phone,Email,Title,Kind,Status"),...rows.map(r=>[q(r.name),q(r.phone),q(r.email),q(r.title),q(r.kind),q(r.status||"pending")].join(","))].join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="alnoor-registrations.csv";a.click();toast("✅ "+A("تم تنزيل ملف CSV","CSV downloaded"))}
 };
 
 document.addEventListener("click",e=>{
- unlockRemoteAudioOnGesture();
- if(ZS.menu&&!e.target.closest("[data-zpop]")&&!e.target.closest('[data-a="zmenu"]')){
-   ZS.menu=null;draw();
- }
- if(st.menuOpen&&!e.target.closest("#nav-drawer")&&!e.target.closest("#menu-btn")){
-   setMenuOpen(false);
- }
- const el=e.target.closest("[data-a]");if(!el)return;
- const a=el.dataset.a;
- if(ACT[a])ACT[a](el.dataset.p||"",el);
+  if(!e.target.closest(".z-popover")&&!e.target.closest('[data-a="zmenu"]')&&ZS.menu){ZS.menu=null;draw()}
+  const b=e.target.closest("[data-a]");if(!b)return;
+  if(b.tagName==="A"&&b.getAttribute("href")?.startsWith("#"))e.preventDefault();
+  ACT[b.dataset.a]?.(b.dataset.p,b);
 });
+document.addEventListener("input",e=>{const el=e.target;if(el.id=="fc")st.fc=el.value;
+  if(el.dataset.cropSlider){const[id,prop]=el.dataset.cropSlider.split("|"),cr=st.crops[id];if(cr){cr[prop]=+el.value;syncCropPreview(id)}}});
+document.addEventListener("change",async e=>{const el=e.target;
+  if(el.dataset.c=="filt"){st.filt=el.value;draw()}
+  else if(el.dataset.c=="zq"){st.zq=el.value;if(ZS.cam1&&ZS.cam){const[w,h]=ZQ[st.zq]||[1280,720];ZS.cam.getVideoTracks()[0]?.applyConstraints({width:{ideal:w},height:{ideal:h}}).catch(()=>{})}}
+  else if(el.dataset.c=="rst"){const[u,k]=el.dataset.p.split("|"),ns=el.value,old=el.dataset.prev??st.all.find(x=>x.uid==u&&x.item==k)?.status??"pending";el.disabled=true;try{await changeRegistrationStatus(u,k,ns);toast("✅ "+A("تم تحديث الحالة وإرسال الإشعار","Status updated and notification sent"))}catch(err){console.error(err);el.value=old;toast("⚠️ "+A("تعذر التحديث: ","Update failed: ")+(err.code||err.message))}finally{el.disabled=false}}
+  else if(el.id==="p-photo-file"&&el.files?.[0]){
+    try{const src=await compressToDataUrl(el.files[0],900,900,320000);st.crops["me"]={src,zoom:1,x:0,y:0};draw()}
+    catch(err){toast("⚠️ "+err.message)}
+  }
+  else if(el.id?.endsWith("-file")&&/^e-team-f\d+-file$/.test(el.id)&&el.files?.[0]){const id=el.id.replace(/^e-team-|-file$/g,"");try{const src=await compressToDataUrl(el.files[0],900,900,320000);st.crops[id]={src,zoom:1,x:0,y:0};draw()}catch(err){toast("⚠️ "+err.message)}}});
 document.addEventListener("keydown",e=>{
- if(e.key==="Escape"&&st.menuOpen){setMenuOpen(false);return}
- if(e.key!=="Enter"||e.shiftKey)return;
- const el=e.target.closest("[data-e]");if(!el)return;
- e.preventDefault();
- if(ACT[el.dataset.e])ACT[el.dataset.e](el.dataset.p||"",el);
+  if(e.key==="Escape"&&st.menuOpen){setMenuOpen(false);return}
+  if(e.key!="Enter"||e.shiftKey)return;
+  const el=e.target.closest("[data-e]");if(!el)return;
+  e.preventDefault();ACT[el.dataset.e]?.(el.dataset.p,el);
 });
-document.addEventListener("input",e=>{
- const sl=e.target.dataset.cropSlider;
- if(sl){const[id,prop]=sl.split("|"),cr=st.crops[id];if(cr){cr[prop]=+e.target.value;syncCropPreview(id)}}
-});
-document.addEventListener("change",async e=>{
- const f=e.target.files?.[0];
- if(f&&e.target.id==="p-photo-file"){
-   try{const src=await compressToDataUrl(f,900,900,520000);st.crops["me"]={src,x:0,y:0,zoom:1};draw()}catch(err){toast(err.message)}
-   return;
- }
- if(f&&e.target.id?.startsWith("e-team-")&&e.target.id.endsWith("-file")){
-   const id=e.target.id.replace(/^e-team-/,"").replace(/-file$/,"");
-   try{const src=await compressToDataUrl(f,900,900,520000);st.crops[id]={src,x:0,y:0,zoom:1};draw()}catch(err){toast(err.message)}
-   return;
- }
- const c=e.target.dataset.c,p=e.target.dataset.p;
- if(c=="filt"){st.filt=e.target.value;draw()}
- else if(c=="rst"){const[u,k]=p.split("|");await run(()=>changeRegistrationStatus(u,k,e.target.value),A("تم تحديث الحالة","Status updated"))}
- else if(c=="zq"){
-   const[w,h]=ZQ[e.target.value]||[1280,720];
-   if(ZS.cam)ZS.cam.getVideoTracks().forEach(t=>t.applyConstraints({width:{ideal:w},height:{ideal:h}}).catch(()=>{}));
-   if(ZS.scr)ZS.scr.getVideoTracks().forEach(t=>t.applyConstraints({width:{ideal:w},height:{ideal:h}}).catch(()=>{}));
- }
-});
-addEventListener("pagehide",()=>{if(ZS.joined){releaseWakeLock();touchPresence(false);if(!useSFU()){ZS.peers.forEach(c=>{try{c.pc.close()}catch(e){}});ZS.peers.clear()}}});
-addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="hidden"){releaseWakeLock();if(ZS.joined)touchPresence(true)}
-  else if(ZS.joined){requestWakeLock();touchPresence(true);if(!useSFU())connectToPresentPeers();else syncAudioElements()}
-});
-initTheme();
-draw();
-if("serviceWorker"in navigator&&isSecureContext){
-  navigator.serviceWorker.register(new URL("./sw.js",location.href).href,{scope:new URL("./",location.href).pathname}).catch(()=>{});
-}
+document.addEventListener("pointerdown",unlockRemoteAudioOnGesture,{passive:true});
+document.addEventListener("keydown",unlockRemoteAudioOnGesture,{passive:true});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){requestWakeLock();if(ZS.joined&&!useSFU()){touchPresence(true);connectToPresentPeers()}}else releaseWakeLock()});
+
+initTheme();draw();
 </script>
 </body>
   </html>
