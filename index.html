@@ -84,6 +84,11 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .star{background:none;border:0;font-size:28px;color:#B8C4D0;padding:0 2px}.star.on{color:#F5A623}
 
 /* ---------- غرفة ZOOM ALNOOR ---------- */
+.z-override-banner{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 16px;background:linear-gradient(90deg,#102e4a,#163e54);border-bottom:1px solid #2b6cb0;color:#e0f2fe;font-size:12.5px}
+.z-override-banner strong{color:#7dd3fc}
+.z-tile.main-share.stage-override{border-color:#38bdf8;box-shadow:0 0 0 2px rgba(56,189,248,.25),0 10px 28px rgba(0,0,0,.45)}
+.z-stage-tag{position:absolute;top:10px;inset-inline-start:10px;z-index:5;background:rgba(13,27,42,.88);border:1px solid #38bdf8;color:#e0f2fe;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700}
+.z-co-card{background:color-mix(in srgb,var(--tealS) 45%,var(--card));border:1px solid color-mix(in srgb,var(--teal) 30%,transparent);border-radius:12px;padding:10px 12px;margin-top:8px}
 .z-wrap{background:#121316;border:3px solid #2a2c33;border-radius:24px;box-shadow:0 14px 36px rgba(0,0,0,.35);color:#f3f4f6;overflow:hidden;position:relative;display:flex;flex-direction:column}
 .z-wrap.expanded{position:fixed;inset:0;z-index:60;border-radius:0;border:0;width:100vw;height:100svh;max-height:100svh;background:#090a0d}
 .z-wrap.expanded .z-top,
@@ -283,6 +288,29 @@ const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}};
 const st={lang:ls("lang")||"ar",user:null,adm:false,ready:false,regMode:false,me:{},regs:{},items:[],ads:[],team:[],lecs:[],revs:[],about:"",zoom:null,seeded:null,metaSrv:false,all:[],studs:[],filt:"",rs:0,fc:"",zok:0,crops:{},menuOpen:false};
 Object.assign(st,{inbox:[],readMessages:new Set(),templates:{},presenter:null,presenters:[],pushConfig:{},pushReady:false,inboxError:"",bulkBusy:false,bulkProgress:"",noticeSession:0});
+Object.assign(st,{coPresenters:[],stageOwner:{name:"",uid:"",isAdmin:false,active:false,ts:0}});
+
+function parseCoPresenterNames(n1,n2="",n3=""){
+  const a=String(n1||"").trim();
+  const b=String(n2||"").trim();
+  const c=String(n3||"").trim();
+  if(!a)return{ok:false,names:[],error:A("الاسم الأول للمسؤول إجباري ولا يمكن تركه فارغًا.","The first presenter name is required.")};
+  const list=Array.from(new Set([a,b,c].filter(Boolean))).slice(0,3);
+  return{ok:true,names:list,error:""};
+}
+function isNameInCoPresenters(name){
+  const target=String(name||"").trim().toLowerCase();
+  if(!target)return false;
+  return (st.coPresenters||[]).some(n=>String(n||"").trim().toLowerCase()===target);
+}
+function hasPresenterRole(){
+  if(!st.user)return false;
+  if(st.adm)return true;
+  const sameRoom=!st.zoom?.ts||String(st.presenter?.roomId||"")===String(st.zoom?.ts||"");
+  if(st.presenter?.enabled&&sameRoom)return true;
+  const myNames=[st.me?.name,st.user?.displayName,st.user?.email?.split("@")[0]].filter(Boolean);
+  return myNames.some(isNameInCoPresenters);
+}
 const L=s=>s.docs.map(d=>({id:d.id,...d.data()}));
 let un=[];
 const A=(a,e)=>st.lang=="ar"?a:e;
@@ -291,7 +319,7 @@ const MY_SID=ls("alnoor_sid")||(ls("alnoor_sid",crypto.randomUUID?.()||Math.rand
 const isIosDevice=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
 const isStandaloneApp=()=>window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
 
-function canPresent(){return !!st.user&&(st.adm||!!(st.presenter?.enabled&&String(st.presenter.roomId)===String(st.zoom?.ts)&&st.zoom))}
+function canPresent(){return !!st.user&&!!st.zoom&&(st.adm||hasPresenterRole())}
 const teachingPeer=p=>!!(p?.isAdmin||p?.isPresenter);
 function safeHttpLink(value){
   if(!value)return "";
@@ -426,11 +454,26 @@ function vCommunicationAdmin(){
         <div style="min-width:0;flex:1"><b>${esc(m.title||A("رسالة","Message"))}</b><div class="sub" style="font-size:12px">${m.recipient==="all"?A("عامة للجميع","Public to all"):A("موجهة لطالب","Personal")} • ${m.ts?new Date(m.ts).toLocaleString():""}</div></div>
         <button type="button" class="btn g" style="color:var(--red);border-color:var(--red);padding:5px 12px;font-size:13px" data-a="delMessageAll" data-p="${esc(m.id)}">🗑 ${A("حذف عند الجميع","Delete for everyone")}</button>
       </div>`).join("")}</div></details>`:""}
-    <h3 style="margin-top:20px">${A("مسؤول شرح لهذه المحاضرة فقط","Presenter for this lecture only")}</h3>
-    <p class="sub">${A("صلاحية مايك وكاميرا وفتح ملفات ومشاركة شاشة، بدون صلاحيات إدارة المنصة. تنتهي تلقائيًا بتغيير المحاضرة.","Can use mic, camera, files and screen sharing, but has no platform admin rights. Expires when this lecture changes.")}</p>
-    <select id="lecture-presenter"><option value="">${A("اختر حسابًا","Choose an account")}</option>${st.studs.map(s=>`<option value="${esc(s.id)}">${esc(s.name||s.email||s.id)}</option>`).join("")}</select>
-    <button type="button" class="btn t" data-a="assignPresenter" ${!st.zoom?"disabled":""}>${A("تعيين للمحاضرة الحالية","Assign to current lecture")}</button>
-    ${st.presenters.filter(p=>p.enabled&&String(p.roomId)===String(st.zoom?.ts)).map(p=>`<div class="row"><span>${esc(p.name||p.uid)}</span><button type="button" class="btn g" data-a="removePresenter" data-p="${esc(p.uid)}">${A("إلغاء صلاحية الشرح","Revoke presenter role")}</button></div>`).join("")}
+    <h3 style="margin-top:20px">${A("مسؤولو مشاركة الشاشة والتحكم بالمحاضرة (حتى 3 أسماء)","Lecture screen-share & full-control presenters (up to 3 names)")}</h3>
+    <p class="sub">${A("الاسم الأول إجباري، والاسمان الثاني والثالث اختياريان. عند مشاركة أي مسؤول منهم تظهر شاشته للجميع وتغطي على شاشة الإدارة مع كامل أزرار التحكم.","First name is required; second and third are optional. When any designated presenter shares, their screen overrides the host stage for everyone with full controls.")}</p>
+    <div class="z-co-card">
+      <div class="fld">
+        <label>${A("اسم المسؤول الأول (إجباري *)","Presenter 1 name (required *)")}<input id="co-pres-1" required placeholder="${A("مثال: د. أحمد","e.g. Dr. Ahmad")}" value="${esc(st.coPresenters[0]||"")}"></label>
+        <label>${A("اسم المسؤول الثاني (اختياري)","Presenter 2 name (optional)")}<input id="co-pres-2" placeholder="${A("اختياري","Optional")}" value="${esc(st.coPresenters[1]||"")}"></label>
+        <label>${A("اسم المسؤول الثالث (اختياري)","Presenter 3 name (optional)")}<input id="co-pres-3" placeholder="${A("اختياري","Optional")}" value="${esc(st.coPresenters[2]||"")}"></label>
+      </div>
+      <div class="row" style="margin-top:4px">
+        <button type="button" class="btn t" data-a="saveCoPresenters" ${!st.zoom?"disabled":""}>${A("اعتماد مسؤولي الشاشة","Save co-presenters")}</button>
+        ${st.coPresenters.length?`<button type="button" class="btn g" data-a="clearCoPresenters">${A("مسح القائمة","Clear list")}</button>`:""}
+      </div>
+      ${st.coPresenters.length?`<div class="row" style="margin-top:8px">${st.coPresenters.map((nm,idx)=>`<span class="tag">${idx===0?A("أساسي: ","Primary: ")+esc(nm):esc(nm)}</span>`).join("")}</div>`:""}
+    </div>
+    <div style="margin-top:14px">
+      <label>${A("ربط حساب طالب بالمحاضرة الحالية (اختياري)","Link a student account to current lecture (optional)")}</label>
+      <select id="lecture-presenter"><option value="">${A("اختر حسابًا","Choose an account")}</option>${st.studs.map(s=>`<option value="${esc(s.id)}">${esc(s.name||s.email||s.id)}</option>`).join("")}</select>
+      <div class="row"><button type="button" class="btn t" data-a="assignPresenter" ${!st.zoom?"disabled":""}>${A("تعيين للمحاضرة الحالية","Assign to current lecture")}</button></div>
+      ${st.presenters.filter(p=>p.enabled&&String(p.roomId)===String(st.zoom?.ts)).map(p=>`<div class="row"><span>${esc(p.name||p.uid)}</span><button type="button" class="btn g" data-a="removePresenter" data-p="${esc(p.uid)}">${A("إلغاء صلاحية الشرح","Revoke presenter role")}</button></div>`).join("")}
+    </div>
     <details style="margin-top:18px"><summary>${A("إعداد إشعارات الهاتف — بعد نشر الخادم","Phone push setup — after server deployment")}</summary>
     <p class="sub">${A("ارفع ملفات الحزمة وانشر خدمة الإشعارات، ثم اضغط لنشر إعداداتها العامة. لا تضع أي مفتاح خاص في هذه الصفحة.","Upload the package and deploy the notification service, then publish its public settings. Never put a private key in this page.")}</p>
     <button type="button" class="btn g" data-a="setupPush">${A("نشر إعدادات الإشعارات","Publish push settings")}</button></details></section>`;
@@ -706,7 +749,12 @@ const tag=s=>`<span class="tag${s=="pending"?" r":""}">${s=="pending"?A("قيد 
 const price=p=>p>0?`<span class="price">${p} ${A("د.أ","JD")}</span>`:`<span class="tag">${A("مجاني","Free")}</span>`;
 const stars=n=>"★".repeat(n)+"☆".repeat(5-n);
 const pin6=v=>/^\d{6}$/.test(String(v||"").trim());
-const displayName=()=>st.adm?A("الإدارة","Host"):(st.me.name||st.user?.email?.split("@")[0]||A("طالب","Student"));
+const displayName=()=>{
+  if(st.adm)return A("الإدارة","Host");
+  const candidates=[st.me?.name,st.presenter?.name,st.user?.displayName,st.user?.email?.split("@")[0]].filter(Boolean);
+  const matched=candidates.find(isNameInCoPresenters);
+  return matched||st.me?.name||st.user?.email?.split("@")[0]||A("طالب","Student");
+};
 
 const sub=(q,cb,k)=>onSnapshot(q,s=>{cb(s);rd(k)},e=>{console.error(e);toast("⚠️ "+A("تعذرت المزامنة: ","Sync error: ")+e.code)});
 function rd(k){
@@ -802,9 +850,28 @@ function stopLiveFrameSync(){
   ZS.liveFrameUrl="";
 }
 
+function claimStageOverride(){
+  if(!canPresent()||!st.user)return;
+  const owner={name:displayName(),uid:st.user.uid,isAdmin:!!st.adm,active:true,ts:Date.now()};
+  st.stageOwner=owner;
+  if(db){
+    setDoc(doc(db,"site","zoom_stage_owner"),{roomId:ZS.roomId||String(st.zoom?.ts||""),...owner},{merge:true}).catch(()=>{});
+  }
+}
+function releaseStageOverrideIfOwner(){
+  if(!st.user||st.stageOwner?.uid!==st.user.uid)return;
+  st.stageOwner={name:"",uid:"",isAdmin:false,active:false,ts:Date.now()};
+  if(db){
+    setDoc(doc(db,"site","zoom_stage_owner"),{roomId:ZS.roomId||String(st.zoom?.ts||""),name:"",uid:"",isAdmin:false,active:false,ts:Date.now()},{merge:true}).catch(()=>{});
+  }
+}
 function buildStagePayload(extra={}){
+  const isOverride=!st.adm&&canPresent();
   return{
     senderUid:st.user?.uid||"",
+    senderName:displayName(),
+    senderIsAdmin:!!st.adm,
+    overrideHost:isOverride,
     roomId:ZS.roomId||String(st.zoom?.ts||""),
     sharedType:ZS.sharedType||"",
     sharedImg:(ZS.sharedImg&&ZS.sharedImg.length<660000)?ZS.sharedImg:"",
@@ -825,6 +892,11 @@ function buildStagePayload(extra={}){
 
 function syncStageToCloud(extra={}){
   if(!canPresent()||!ZS.joined)return;
+  const hasContent=!!(ZS.scr||ZS.screenActive||ZS.sharedType||ZS.sharedImg||ZS.sharedVid||ZS.pageDataUrl||ZS.liveFrameUrl||extra.screenActive||extra.sharedType);
+  if(!st.adm){
+    if(hasContent)claimStageOverride();
+    else releaseStageOverrideIfOwner();
+  }
   const payload=buildStagePayload(extra);
   lastRemoteStageTs=payload.ts;
   try{zoomBC?.postMessage({type:"stage",payload})}catch(e){}
@@ -963,7 +1035,12 @@ function startVidCapture(){
   }catch(e){console.error(e)}
 }
 function hostScreenStream(){
-  const streams=[...ZS.remoteStreams].sort(([a],[b])=>Number(b===ZS.stageSender)-Number(a===ZS.stageSender));
+  const priorityUid=st.stageOwner?.active&&st.stageOwner?.uid?st.stageOwner.uid:ZS.stageSender;
+  const streams=[...ZS.remoteStreams].sort(([a,pa],[b,pb])=>{
+    const aPri=Number(a===priorityUid||(pa?.isPresenter&&!pa?.isAdmin));
+    const bPri=Number(b===priorityUid||(pb?.isPresenter&&!pb?.isAdmin));
+    return bPri-aPri;
+  });
   for(const [uid,p] of streams){
     const stream=p.streams?.screen,track=stream?.getVideoTracks()[0];
     if((teachingPeer(p)||teachingPeer(ZS.presence?.[uid]))&&track?.readyState==="live"&&!track.muted)return stream;
@@ -1437,6 +1514,15 @@ function applyRemoteStageData(d){
   if(d.senderUid===st.user?.uid&&(d.ts||0)<=lastRemoteStageTs)return;
   lastRemoteStageTs=d.ts||Date.now();
   ZS.stageSender=d.senderUid||"";
+  if(d.senderUid){
+    st.stageOwner={
+      name:d.senderName||(d.senderIsAdmin?A("الإدارة","Host"):A("مسؤول المحاضرة","Presenter")),
+      uid:d.senderUid,
+      isAdmin:!!d.senderIsAdmin,
+      active:!!(d.screenActive||d.sharedType||d.sharedImg||d.sharedVid||d.pageDataUrl||d.liveFrameUrl),
+      ts:d.ts||Date.now()
+    };
+  }
   ZS.sharedType=d.sharedType||"";
   ZS.sharedImg=d.sharedImg||"";
   ZS.pageDataUrl=d.pageDataUrl||"";
@@ -1563,6 +1649,19 @@ function startZoomRealtimeSubs(){
     const list=L(s).filter(r=>r.ts&&(now-r.ts<12000)).sort((a,b)=>(a.ts||0)-(b.ts||0)).slice(-8);
     ZS.reactions=list;
   },"zoom_reactions"));
+
+  ZS.roomUnsubs.push(sub(doc(db,"site","zoom_co_presenters"),s=>{
+    const d=s.exists()?s.data():{};
+    if(d.roomId&&String(d.roomId)!==roomId){st.coPresenters=[];return}
+    st.coPresenters=Array.isArray(d.names)?d.names.filter(Boolean).slice(0,3):[];
+  },"zoom_stage"));
+
+  ZS.roomUnsubs.push(sub(doc(db,"site","zoom_stage_owner"),s=>{
+    const d=s.exists()?s.data():{};
+    if(d.roomId&&String(d.roomId)!==roomId){st.stageOwner={name:"",uid:"",isAdmin:false,active:false,ts:0};return}
+    st.stageOwner=d.active?d:{name:"",uid:"",isAdmin:false,active:false,ts:0};
+    ZS.stageDraw=1;
+  },"zoom_stage"));
 }
 
 if(ok){
@@ -1866,24 +1965,24 @@ function zroom(){
   }else{
     const tiles=[];
     if(ZS.scr){
-      tiles.push(`<div class="z-tile main-share"><video id="zsv" autoplay playsinline muted></video></div>`);
+      tiles.push(`<div class="z-tile main-share${overrideActive?" stage-override":""}">${overrideActive?`<span class="z-stage-tag">🖥 ${esc(st.stageOwner.name)}</span>`:""}<video id="zsv" autoplay playsinline muted></video></div>`);
     }else if((ZS.screenActive||ZS.sharedType==="video")&&!ZS.scr){
       const hasLiveVidStream=!!hostScreenStream();
       if(hasLiveVidStream){
-        tiles.push(`<div class="z-tile main-share"><video id="z-remote-screen-vid" autoplay playsinline muted></video></div>`);
+        tiles.push(`<div class="z-tile main-share${overrideActive?" stage-override":""}">${overrideActive?`<span class="z-stage-tag">🖥 ${esc(st.stageOwner.name)}</span>`:""}<video id="z-remote-screen-vid" autoplay playsinline muted></video></div>`);
       }else if(ZS.sharedVid){
-        tiles.push(`<div class="z-tile main-share"><div class="z-doc-box"><video id="z-shared-vid" src="${esc(ZS.sharedVid)}" controls autoplay playsinline></video></div></div>`);
+        tiles.push(`<div class="z-tile main-share${overrideActive?" stage-override":""}">${overrideActive?`<span class="z-stage-tag">🖥 ${esc(st.stageOwner.name)}</span>`:""}<div class="z-doc-box"><video id="z-shared-vid" src="${esc(ZS.sharedVid)}" controls autoplay playsinline></video></div></div>`);
       }else if(ZS.liveFrameUrl){
-        tiles.push(`<div class="z-tile main-share"><div class="z-doc-box"><img id="z-live-frame-img" class="z-shared-page-img" src="${esc(ZS.liveFrameUrl)}" alt=""></div></div>`);
+        tiles.push(`<div class="z-tile main-share${overrideActive?" stage-override":""}">${overrideActive?`<span class="z-stage-tag">🖥 ${esc(st.stageOwner.name)}</span>`:""}<div class="z-doc-box"><img id="z-live-frame-img" class="z-shared-page-img" src="${esc(ZS.liveFrameUrl)}" alt=""></div></div>`);
       }else{
-        tiles.push(`<div class="z-tile main-share"><div class="z-slide-card"><div style="font-size:28px">🖥</div><div style="font-size:18px;font-weight:700">${A("بث مباشر","Live")}</div></div></div>`);
+        tiles.push(`<div class="z-tile main-share${overrideActive?" stage-override":""}">${overrideActive?`<span class="z-stage-tag">🖥 ${esc(st.stageOwner.name)}</span>`:""}<div class="z-slide-card"><div style="font-size:28px">🖥</div><div style="font-size:18px;font-weight:700">${A("بث مباشر","Live")}</div></div></div>`);
       }
     }
     if(ZS.sharedVid&&canPresent()){
-      tiles.push(`<div class="z-tile main-share"><div class="z-doc-box" id="z-vid-slot"></div></div>`);
+      tiles.push(`<div class="z-tile main-share${overrideActive?" stage-override":""}">${overrideActive?`<span class="z-stage-tag">🖥 ${esc(st.stageOwner.name)}</span>`:""}<div class="z-doc-box" id="z-vid-slot"></div></div>`);
     }
     if(ZS.sharedImg){
-      tiles.push(`<div class="z-tile main-share"><div class="z-doc-box">
+      tiles.push(`<div class="z-tile main-share${overrideActive?" stage-override":""}">${overrideActive?`<span class="z-stage-tag">🖥 ${esc(st.stageOwner.name)}</span>`:""}<div class="z-doc-box">
         <img src="${esc(ZS.sharedImg)}" alt="">
       </div></div>`);
     }
@@ -1896,7 +1995,7 @@ function zroom(){
         :(ZS.pageDataUrl
           ?`<img class="z-shared-page-img" src="${esc(ZS.pageDataUrl)}" alt="">`
           :`<div class="z-slide-card" style="min-height:180px"><div class="z-pill">${ZS.pdfPage} / ${ZS.pdfNumPages}</div></div>`);
-      tiles.push(`<div class="z-tile main-share"><div class="z-doc-box">
+      tiles.push(`<div class="z-tile main-share${overrideActive?" stage-override":""}">${overrideActive?`<span class="z-stage-tag">🖥 ${esc(st.stageOwner.name)}</span>`:""}<div class="z-doc-box">
         <div class="z-doc-toolbar">${pdfNavHtml}</div>
         <div id="z-pdf-wrap" class="z-pdf-wrap">${pdfBodyHtml}</div>
       </div></div>`);
@@ -1905,12 +2004,12 @@ function zroom(){
       const pptNavHtml=canPresent()
         ?`<button type="button" class="z-btn on" style="height:28px;padding:0 10px;font-size:12px" data-a="zslide" data-p="-1">◀</button><span class="z-pill">${curSlide.index} / ${Math.max(1,ZS.slides.length)}</span><button type="button" class="z-btn on" style="height:28px;padding:0 10px;font-size:12px" data-a="zslide" data-p="1">▶</button>`
         :`<span class="z-pill">${curSlide.index} / ${Math.max(1,ZS.slides.length)}</span>`;
-      tiles.push(`<div class="z-tile main-share"><div class="z-slide-card">
+      tiles.push(`<div class="z-tile main-share${overrideActive?" stage-override":""}">${overrideActive?`<span class="z-stage-tag">🖥 ${esc(st.stageOwner.name)}</span>`:""}<div class="z-slide-card">
         <div class="z-slide-lines">${esc(curSlide.text)}</div>
         <div class="row" style="justify-content:center">${pptNavHtml}</div>
       </div></div>`);
     }else if(ZS.sharedType==="text"||ZS.sharedType==="other"){
-      tiles.push(`<div class="z-tile main-share"><div class="z-slide-card">
+      tiles.push(`<div class="z-tile main-share${overrideActive?" stage-override":""}">${overrideActive?`<span class="z-stage-tag">🖥 ${esc(st.stageOwner.name)}</span>`:""}<div class="z-slide-card">
         ${ZS.textContent?`<div class="z-slide-lines">${esc(ZS.textContent)}</div>`:`<div style="font-size:24px">📄</div>`}
       </div></div>`);
     }
@@ -1925,12 +2024,21 @@ function zroom(){
     ?`<div class="z-reactions-stack">${ZS.reactions.map(r=>`<div class="z-reaction-pop"><span>${esc(r.emoji)}</span><b>${esc(r.who||A("طالب","Student"))}</b></div>`).join("")}</div>`
     :"";
 
+  const overrideActive=!!(st.stageOwner?.active&&st.stageOwner?.uid&&st.stageOwner.uid!==st.user?.uid&&!st.stageOwner.isAdmin);
+  const overrideBanner=overrideActive
+    ?`<div class="z-override-banner"><span>🖥 <strong>${esc(st.stageOwner.name||A("مسؤول المحاضرة","Co-presenter"))}</strong> — ${A("شاشة المسؤول تغطي الشاشة الرئيسية للجميع الآن","Presenter screen is overriding the main stage for everyone")}</span><span class="z-pill">${A("عرض مباشر","Live override")}</span></div>`
+    :"";
+  const presenterPill=canPresent()&&!st.adm
+    ?`<span class="z-pill" style="border-color:#38bdf8;color:#7dd3fc">⭐ ${esc(displayName())}</span>`
+    :"";
+
   return`<div id="zr" class="z-wrap${ZS.expanded?" expanded":""}">
     <div class="z-top">
       <div class="z-top-badge">
         <span class="z-dot"></span>
         <span>✚ ${A("النور · قاعة التعليم الطبي","Al-Noor · Medical learning")}</span>
         <span class="z-pill">${A("بث مباشر","Live")}</span>
+        ${presenterPill}
         <span class="z-pill">👥 ${totalCount}</span>
         ${(()=>{const a=[...ZS.peers.values()],n=a.filter(c=>c.pc.connectionState==="connected").length;return a.length?`<span class="z-pill">🔗 ${n}/${a.length}</span>`:""})()}
       </div>
@@ -1954,6 +2062,7 @@ function zroom(){
     </div>
     ${hostBar}
     ${handsBar}
+    ${overrideBanner}
     <div class="z-body${ZS.side?" with-side":""}">
       <div class="z-stage${ZS.audioOnly?" audio-only":""}">
         ${reactionsHtml}
@@ -2257,6 +2366,49 @@ const ACT={
   if(!st.adm||!st.zoom)return;
   const uid=$("lecture-presenter")?.value,student=st.studs.find(s=>s.id===uid);if(!student)return;
   await run(()=>setDoc(doc(db,"lecturePresenters",uid),{uid,name:student.name||student.email||"",roomId:String(st.zoom.ts),enabled:true,assignedBy:st.user.uid,ts:Date.now()}),A("تم تعيين مسؤول شرح للمحاضرة فقط.","Presenter assigned to this lecture only."));
+ },
+ async saveCoPresenters(){
+  if(!st.adm||!st.zoom)return;
+  const parsed=parseCoPresenterNames($("co-pres-1")?.value,$("co-pres-2")?.value,$("co-pres-3")?.value);
+  if(!parsed.ok)return toast("⚠️ "+parsed.error);
+  const roomId=String(st.zoom.ts);
+  st.coPresenters=parsed.names;
+  await run(async()=>{
+    await setDoc(doc(db,"site","zoom_co_presenters"),{
+      roomId,
+      names:parsed.names,
+      primaryName:parsed.names[0],
+      updatedBy:st.user.uid,
+      ts:Date.now()
+    },{merge:true});
+    const matchedStudents=st.studs.filter(s=>parsed.names.some(nm=>String(s.name||"").trim().toLowerCase()===String(nm||"").trim().toLowerCase()));
+    for(const student of matchedStudents){
+      await setDoc(doc(db,"lecturePresenters",student.id),{
+        uid:student.id,
+        name:student.name||"",
+        roomId,
+        enabled:true,
+        assignedBy:st.user.uid,
+        ts:Date.now()
+      },{merge:true});
+    }
+  },A("تم اعتماد مسؤولي مشاركة الشاشة للمحاضرة الحالية.","Co-presenters saved for this lecture."));
+  draw();
+ },
+ async clearCoPresenters(){
+  if(!st.adm)return;
+  st.coPresenters=[];
+  await run(async()=>{
+    await setDoc(doc(db,"site","zoom_co_presenters"),{
+      roomId:String(st.zoom?.ts||""),
+      names:[],
+      primaryName:"",
+      updatedBy:st.user.uid,
+      ts:Date.now()
+    },{merge:true});
+    releaseStageOverrideIfOwner();
+  },A("تم مسح قائمة مسؤولي الشاشة.","Co-presenters list cleared."));
+  draw();
  },
  async removePresenter(uid){if(st.adm)await run(()=>runTransaction(db,async transaction=>{
    const stageRef=doc(db,"site","zoom_stage"),stage=await transaction.get(stageRef);
@@ -2626,6 +2778,7 @@ const ACT={
   ZS.menu=null;
   if(ZS.scr){
     ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null;ZS.screenActive=0;
+    if(!st.adm)releaseStageOverrideIfOwner();
     stopLiveFrameSync();
     await syncTracksToPeers();
     draw();
@@ -2643,6 +2796,7 @@ const ACT={
     });
     if(!ZS.joined||epoch!==ZS.sfuEpoch){s.getTracks().forEach(t=>t.stop());return}
     ZS.scr=s;ZS.screenActive=1;ZS.audioOnly=0;
+    if(!st.adm)claimStageOverride();
     s.getVideoTracks()[0].onended=()=>{
       if(ZS.scr===s){
         ZS.scr=null;ZS.screenActive=0;
