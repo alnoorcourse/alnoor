@@ -457,19 +457,12 @@ function listenCommunications(user){
     }
     if(ZS.joined){touchPresence(true);connectToPresentPeers()}draw();
   }));
-  un.push(onSnapshot(doc(db,"site","push_config"),snap=>{if(session===st.noticeSession)st.pushConfig=snap.exists()?snap.data():{}}));
   if(st.adm){
     un.push(sub(collection(db,"messageTemplates"),snap=>{const map={};snap.docs.forEach(d=>map[d.id]=d.data());st.templates=map},"templates"));
     un.push(sub(collection(db,"lecturePresenters"),snap=>st.presenters=L(snap),"presenters"));
   }
-  if(ls("alnoor_push_owner")===user.uid&&"serviceWorker"in navigator){
-    navigator.serviceWorker.getRegistration(new URL("./sw.js",location.href)).then(async registration=>{
-      const subscription=await registration?.pushManager.getSubscription();
-      if(session===st.noticeSession){st.pushReady=!!subscription;if(route()==="inbox")draw()}
-    }).catch(()=>{});
-  }
 }
-function updateInboxBadge(){
+  function updateInboxBadge(){
   const badge=$("inbox-badge"),button=$("inbox-button");
   if(badge){badge.textContent=String(unreadMessages());badge.hidden=!unreadMessages()}
   if(button){button.style.display=st.user?"":"none";button.setAttribute("aria-label",A("صندوق الرسائل، غير مقروءة: ","Inbox, unread: ")+unreadMessages())}
@@ -480,51 +473,75 @@ function vapidBytes(value){
 }
 async function registerNoticeWorker(){
   if(!isSecureContext||!("serviceWorker"in navigator))throw new Error(A("الإشعارات تحتاج HTTPS ومتصفحًا يدعمها.","Notifications require HTTPS and a supported browser."));
-  const worker=new URL("./sw.js",location.href),registration=await navigator.serviceWorker.register(worker.href,{scope:new URL("./",location.href).pathname});
-  if(registration.active)return registration;
-  await new Promise((resolve,reject)=>{
-    const waiting=registration.installing||registration.waiting;
-    if(!waiting)return reject(new Error("Worker not active"));
-    const timer=setTimeout(()=>reject(new Error("Worker activation timed out")),15000);
-    waiting.addEventListener("statechange",()=>{if(waiting.state==="activated"){clearTimeout(timer);resolve()}else if(waiting.state==="redundant"){clearTimeout(timer);reject(new Error("Worker failed"))}});
-  });
+  const worker=new URL("./sw.js",location.href);
+  const registration=await navigator.serviceWorker.register(worker.href,{scope:new URL("./",location.href).pathname});
+  await navigator.serviceWorker.ready;
   return registration;
 }
 async function enableDeviceNotifications(){
   if(!st.user)return toast(A("سجّل دخولك أولًا.","Sign in first."));
   if(!("Notification"in window)||!("PushManager"in window))return toast(A("هذا المتصفح لا يدعم إشعارات الجهاز؛ استخدم الصندوق داخل المنصة.","This browser does not support device notifications; use the inbox."));
-  const uid=st.user.uid,permission=await Notification.requestPermission();
+  const uid=st.user.uid;
+  const permission=Notification.permission==="granted"?"granted":await Notification.requestPermission();
   if(permission!=="granted")return toast(A("لم تُفعّل إشعارات الجهاز. صندوق الرسائل يعمل بدونها.","Device notifications were not enabled. Your inbox still works."));
   try{
     const registration=await registerNoticeWorker();
     if(st.user?.uid!==uid)return;
-    if(!st.pushConfig.publicKey){
-      toast(A("تم السماح بتنبيهات الموقع المفتوح. إشعارات الموقع المغلق تحتاج تهيئة خادم الدفع.","Open-site alerts are allowed. Closed-site push still needs server configuration."));draw();return;
+    ls("alnoor_push_owner",uid);
+    ls("alnoor_push_local","1");
+
+    if(!st.pushConfig?.publicKey){
+      st.pushReady=true;
+      await registration.showNotification(A("تم تفعيل إشعارات النور على هذا الجهاز","Al-Noor notifications enabled"),{
+        body:A("ستصلك تنبيهات القبول والإعلانات الفورية على هذا الجهاز.","Acceptance alerts and announcements are now active on this device."),
+        tag:"alnoor-enabled",
+        data:{url:new URL("./index.html#inbox",location.href).href}
+      });
+      toast("✅ "+A("تم ربط الإشعارات بنجاح على هذا الجهاز","Notifications linked on this device"));
+      draw();
+      return;
     }
-    const subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:vapidBytes(st.pushConfig.publicKey)});
+
+    let subscription=await registration.pushManager.getSubscription();
+    if(!subscription){
+      subscription=await registration.pushManager.subscribe({
+        userVisibleOnly:true,
+        applicationServerKey:vapidBytes(st.pushConfig.publicKey)
+      });
+    }
     const id=await sha(subscription.endpoint);
     if(st.user?.uid!==uid){await subscription.unsubscribe();return}
     await setDoc(doc(db,"pushDevices",id),{uid,subscription:subscription.toJSON(),enabled:true,updatedAt:Date.now()});
-    ls("alnoor_push_owner",uid);ls("alnoor_push_device",id);st.pushReady=true;
-    await registration.showNotification(A("إشعارات النور جاهزة على هذا الجهاز","Al-Noor notifications enabled"),{body:A("القبول والإعلانات ستظهر هنا عند وصولها من الخادم.","Acceptance messages and announcements will appear when sent by the server."),tag:"alnoor-enabled",data:{url:new URL("./index.html#inbox",location.href).href}});
+    ls("alnoor_push_device",id);
+    st.pushReady=true;
+    await registration.showNotification(A("إشعارات النور جاهزة على هذا الجهاز","Al-Noor notifications enabled"),{
+      body:A("القبول والإعلانات ستظهر هنا عند وصولها.","Acceptance messages and announcements will appear here."),
+      tag:"alnoor-enabled",
+      data:{url:new URL("./index.html#inbox",location.href).href}
+    });
+    toast("✅ "+A("تم تسجيل الجهاز لاستقبال الإشعارات بالخلفية","Device registered for background notifications"));
     draw();
   }catch(error){
-    st.pushReady=false;toast(A("تعذر تسجيل إشعارات الخلفية. تأكد من رفع sw.js وضبط خدمة الدفع وصلاحياتها. صندوق الرسائل ما زال يعمل.","Could not register background push. Upload sw.js and configure push service and permissions. Inbox remains available."));draw();
+    console.error("Push registration error:",error);
+    st.pushReady=false;
+    toast("⚠️ "+A("تعذر ربط الإشعارات: ","Push error: ")+(error?.message||A("تأكد من وجود ملف sw.js","Check sw.js file")));
+    draw();
   }
 }
 async function detachDeviceNotifications(){
   const id=ls("alnoor_push_device"),owner=ls("alnoor_push_owner");
-  if(id&&owner===st.user?.uid&&db)await deleteDoc(doc(db,"pushDevices",id));
+  if(id&&owner===st.user?.uid&&db)await deleteDoc(doc(db,"pushDevices",id)).catch(()=>{});
   const registration="serviceWorker"in navigator?await navigator.serviceWorker.getRegistration(new URL("./sw.js",location.href)):null;
-  await (await registration?.pushManager.getSubscription())?.unsubscribe();
-  ls("alnoor_push_owner","");ls("alnoor_push_device","");st.pushReady=false;
+  await (await registration?.pushManager.getSubscription())?.unsubscribe().catch(()=>{});
+  ls("alnoor_push_owner","");ls("alnoor_push_device","");ls("alnoor_push_local","");st.pushReady=false;
 }
 async function showOpenSiteNotification(message){
   try{
     const registration=await navigator.serviceWorker?.getRegistration(new URL("./sw.js",location.href));
-    if(registration)await registration.showNotification(message.title||"النور",{body:A("رسالة جديدة في صندوقك. افتح المنصة لقراءتها.","A new message is in your inbox. Open the platform to read it."),tag:"alnoor-"+message.id,data:{url:new URL("./index.html#inbox",location.href).href}});
+    if(registration)await registration.showNotification(message.title||"النور",{body:message.text||A("رسالة جديدة في صندوقك. افتح المنصة لقراءتها.","A new message is in your inbox. Open the platform to read it."),tag:"alnoor-"+message.id,data:{url:new URL("./index.html#inbox",location.href).href}});
   }catch(e){}
 }
+
 const A=(a,e)=>st.lang=="ar"?a:e,L=s=>s.docs.map(d=>({id:d.id,...d.data()}));
 let AT=0,AI=0,un=[];
 const MY_SID=Math.random().toString(36).slice(2,10);
