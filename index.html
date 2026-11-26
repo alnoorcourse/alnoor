@@ -824,7 +824,7 @@ const ZS={
 let zoomSubStarted=false;
 let lastRemoteStageTs=0;
 
-function canvasToFastSyncedImage(canvas,maxLen=560000,maxDim=1120,quality=0.72){
+function canvasToFastSyncedImage(canvas,maxLen=420000,maxDim=1024,quality=0.68){
   if(!canvas||!canvas.width||!canvas.height)return"";
   const tmp=document.createElement("canvas");
   let w=canvas.width,h=canvas.height;
@@ -834,16 +834,22 @@ function canvasToFastSyncedImage(canvas,maxLen=560000,maxDim=1120,quality=0.72){
     h=Math.max(1,Math.round(h*k));
   }
   tmp.width=w;tmp.height=h;
-  tmp.getContext("2d").drawImage(canvas,0,0,w,h);
+  const ctx=tmp.getContext("2d");
+  ctx.fillStyle="#ffffff";
+  ctx.fillRect(0,0,w,h);
+  ctx.drawImage(canvas,0,0,w,h);
   let out=tmp.toDataURL("image/jpeg",quality);
   if(out.length>maxLen){
     const s2=document.createElement("canvas");
-    s2.width=Math.max(1,Math.round(w*0.75));
-    s2.height=Math.max(1,Math.round(h*0.75));
-    s2.getContext("2d").drawImage(tmp,0,0,s2.width,s2.height);
-    out=s2.toDataURL("image/jpeg",Math.max(0.45,quality-0.1));
+    s2.width=Math.max(1,Math.round(w*0.72));
+    s2.height=Math.max(1,Math.round(h*0.72));
+    const c2=s2.getContext("2d");
+    c2.fillStyle="#ffffff";
+    c2.fillRect(0,0,s2.width,s2.height);
+    c2.drawImage(tmp,0,0,s2.width,s2.height);
+    out=s2.toDataURL("image/jpeg",0.52);
   }
-  return out.length<=740000?out:"";
+  return out.length<=650000?out:"";
 }
 
 function startLiveFrameSync(){
@@ -949,13 +955,22 @@ function syncStageToCloud(extra={}){
   if(!st.adm){
     if(hasContent)claimStageOverride();
     else releaseStageOverrideIfOwner();
+  }else if(hasContent&&db){
+    setDoc(doc(db,"site","zoom_stage_owner"),{
+      roomId:String(st.zoom?.ts||""),
+      uid:st.user?.uid||"",
+      name:displayName(),
+      isAdmin:true,
+      active:true,
+      ts:Date.now()
+    },{merge:true}).catch(()=>{});
   }
   const payload=buildStagePayload(extra);
   lastRemoteStageTs=payload.ts;
   try{zoomBC?.postMessage({type:"stage",payload})}catch(e){}
   broadcastStageOverPeers(payload);
   if(db){
-    setDoc(doc(db,"site","zoom_stage"),payload,{merge:true}).catch(e=>{
+    setDoc(doc(db,"site","zoom_stage"),payload,{merge:false}).catch(e=>{
       console.warn("zoom_stage write fallback via peers:",e?.code||e);
     });
     if(st.user){
@@ -967,7 +982,7 @@ function syncStageToCloud(extra={}){
         isAdmin:!!st.adm,
         isPresenter:canPresent()&&!st.adm,
         sharing:hasContent,
-        stagePayload:JSON.stringify(payload).slice(0,680000),
+        stagePayload:JSON.stringify(payload).slice(0,650000),
         lastSeen:Date.now()
       },{merge:true}).catch(()=>{});
     }
@@ -1977,7 +1992,15 @@ function attachMediaElements(){
   }
 }
 
+function getStageOverrideState(){
+  const active=!!(st.stageOwner?.active&&st.stageOwner?.uid&&st.stageOwner.uid!==st.user?.uid&&!st.stageOwner.isAdmin);
+  const banner=active
+    ?`<div class="z-override-banner"><span>🖥 <strong>${esc(st.stageOwner.name||A("مسؤول المحاضرة","Co-presenter"))}</strong> — ${A("شاشة المسؤول تغطي الشاشة الرئيسية للجميع الآن","Presenter screen is overriding the main stage for everyone")}</span><span class="z-pill">${A("عرض مباشر","Live override")}</span></div>`
+    :"";
+  return{active,banner};
+}
 function zroom(){
+  const {active:overrideActive,banner:overrideBanner}=getStageOverrideState();
   const myName=esc(displayName());
   const hasScreen=!!(ZS.scr||ZS.screenActive);
   const hasCam=!!(ZS.cam&&ZS.cam1&&!ZS.audioOnly);
@@ -2155,10 +2178,7 @@ function zroom(){
     ?`<div class="z-reactions-stack">${ZS.reactions.map(r=>`<div class="z-reaction-pop"><span>${esc(r.emoji)}</span><b>${esc(r.who||A("طالب","Student"))}</b></div>`).join("")}</div>`
     :"";
 
-  const overrideActive=!!(st.stageOwner?.active&&st.stageOwner?.uid&&st.stageOwner.uid!==st.user?.uid&&!st.stageOwner.isAdmin);
-  const overrideBanner=overrideActive
-    ?`<div class="z-override-banner"><span>🖥 <strong>${esc(st.stageOwner.name||A("مسؤول المحاضرة","Co-presenter"))}</strong> — ${A("شاشة المسؤول تغطي الشاشة الرئيسية للجميع الآن","Presenter screen is overriding the main stage for everyone")}</span><span class="z-pill">${A("عرض مباشر","Live override")}</span></div>`
-    :"";
+
   const presenterPill=canPresent()&&!st.adm
     ?`<span class="z-pill" style="border-color:#38bdf8;color:#7dd3fc">⭐ ${esc(displayName())}</span>`
     :"";
@@ -2431,6 +2451,109 @@ let dragCrop=null;
 document.addEventListener("pointerdown",e=>{const stage=e.target.closest(".crop-stage");if(!stage)return;const id=stage.dataset.cropId,cr=st.crops[id];if(!cr)return;stage.setPointerCapture?.(e.pointerId);dragCrop={id,sx:e.clientX,sy:e.clientY,ox:cr.x,oy:cr.y}});
 document.addEventListener("pointermove",e=>{if(!dragCrop)return;const cr=st.crops[dragCrop.id];if(!cr)return;cr.x=Math.max(-75,Math.min(75,Math.round(dragCrop.ox+(e.clientX-dragCrop.sx))));cr.y=Math.max(-75,Math.min(75,Math.round(dragCrop.oy+(e.clientY-dragCrop.sy))));const sx=$(`crop-sliders-${dragCrop.id}-x`);if(sx)sx.value=cr.x;syncCropPreview(dragCrop.id)});
 document.addEventListener("pointerup",()=>{dragCrop=null});
+
+async function openMicFast(){
+  if(!canPresent()&&!ZS.roomCtrl.allowMic){
+    toast("🔇 "+A("الإدارة أغلقت المايك حالياً","Host muted microphones"));
+    return false;
+  }
+  if(ZS.micStream&&ZS.micStream.getAudioTracks().some(t=>t.readyState==="live")){
+    ZS.mic=1;
+    ZS.micStream.getAudioTracks().forEach(t=>{t.enabled=true});
+    zs(A("المايك شغال","Mic on"));
+    startAudioMeter(ZS.micStream);
+    syncTracksToPeers();
+    return true;
+  }
+  try{
+    const epoch=ZS.sfuEpoch;
+    const audioOpts={
+      echoCancellation:true,
+      noiseSuppression:true,
+      autoGainControl:true,
+      ...(deviceChoice.mic?{deviceId:{ideal:deviceChoice.mic}}:{})
+    };
+    const stream=await navigator.mediaDevices.getUserMedia({audio:audioOpts,video:false});
+    if(!ZS.joined||epoch!==ZS.sfuEpoch){stream.getTracks().forEach(t=>t.stop());return false}
+    ZS.micStream=stream;
+    ZS.mic=1;
+    stream.getAudioTracks().forEach(t=>{
+      t.enabled=true;
+      t.onended=()=>{ZS.mic=0;syncTracksToPeers();scheduleRtcRedraw();toast(A("انقطع المايكروفون؛ اختره من فحص الأجهزة","Microphone disconnected; select a device in diagnostics"))};
+    });
+    zs(A("المايك شغال","Mic on"));
+    startAudioMeter(stream);
+    syncTracksToPeers();
+    return true;
+  }catch(e){
+    ZS.mic=0;
+    toast("⚠️ "+mediaErrorMsg(e,"mic"));
+    return false;
+  }
+}
+
+async function startFullScreenShare(){
+  if(!canPresent()){
+    toast("⚠️ "+A("المشاركة متاحة للإدارة والمسؤول فقط","Sharing is for host and presenter only"));
+    return;
+  }
+  const getDisp=(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia)?navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices):(navigator.getDisplayMedia?navigator.getDisplayMedia.bind(navigator):null);
+  if(!getDisp){
+    toast("⚠️ "+A("متصفح هذا الهاتف لا يسمح بمشاركة شاشة النظام كاملة؛ افتح المنصة من Chrome أو Safari المحدّث، أو شارك PDF والصور مباشرة.","This mobile browser does not expose full-screen capture; open Al-Noor in updated Chrome/Safari or share PDF/images directly."));
+    return;
+  }
+  try{
+    const epoch=ZS.sfuEpoch;
+    let stream;
+    try{
+      stream=await getDisp({
+        video:{displaySurface:"monitor",frameRate:{ideal:20,max:30}},
+        audio:!!ZS.shareAudio,
+        preferCurrentTab:false,
+        selfBrowserSurface:"include",
+        surfaceSwitching:"include",
+        systemAudio:ZS.shareAudio?"include":"exclude"
+      });
+    }catch(_err){
+      stream=await getDisp({video:true,audio:!!ZS.shareAudio});
+    }
+    if(!ZS.joined||epoch!==ZS.sfuEpoch){stream.getTracks().forEach(t=>t.stop());return}
+    if(ZS.scr)ZS.scr.getTracks().forEach(t=>t.stop());
+    ZS.scr=stream;
+    ZS.screenActive=1;
+    ZS.audioOnly=0;
+    ZS.menu=null;
+    if(!st.adm)claimStageOverride();
+
+    const vTrack=stream.getVideoTracks()[0];
+    if(vTrack){
+      vTrack.contentHint="detail";
+      vTrack.onended=()=>{
+        if(ZS.scr===stream){
+          ZS.scr=null;
+          ZS.screenActive=0;
+          if(!st.adm)releaseStageOverrideIfOwner();
+          stopLiveFrameSync();
+          syncTracksToPeers();
+          syncStageToCloud({screenActive:false,liveFrameUrl:""});
+          if(route()==="zoom-alnoor")draw();
+        }
+      };
+    }
+
+    await syncTracksToPeers();
+    startLiveFrameSync();
+    syncStageToCloud({screenActive:true});
+    draw();
+    toast("📱 "+A("تم بدء مشاركة الشاشة بالكامل! يمكنك الآن التنقل بين جميع تطبيقات جهازك وستظهر للجميع.","Full screen sharing started! Switch to any app on your device and everyone will see it."));
+  }catch(e){
+    if(e?.name!=="AbortError"&&e?.name!=="NotAllowedError"){
+      toast("⚠️ "+A("تعذرت مشاركة الشاشة: تأكد من السماح للمتصفح بالتسجيل/العرض فوق التطبيقات","Screen share failed: allow browser screen recording/overlay permission"));
+    }else if(e?.name==="NotAllowedError"){
+      toast("⚠️ "+A("تم إلغاء مشاركة الشاشة أو لم يُمنح الإذن من النظام","Screen share cancelled or system permission denied"));
+    }
+  }
+}
 
 async function ensureMic(){
   if(ZS.micStream&&ZS.micStream.active)return ZS.micStream;
@@ -2849,23 +2972,15 @@ const ACT={
   if(!ZS.joined)joinRoom();
   if(!ZS.joined)return;
   if(k=="mic"){
-    if(!canPresent()&&!ZS.roomCtrl.allowMic&&!ZS.mic){
-      return toast("🔇");
-    }
-    try{
-      if(!ZS.mic){
-        const s=await ensureMic();
-        s.getAudioTracks().forEach(t=>t.enabled=true);
-        ZS.mic=1;
-        zs(A("المايك شغال","Mic on"));
-      }else{
-        ZS.mic=0;
-        if(ZS.micStream)ZS.micStream.getAudioTracks().forEach(t=>t.enabled=false);
-        zs(A("المايك مطفي","Mic off"));
-      }
-      await syncTracksToPeers();
+    if(!ZS.mic){
+      if(await openMicFast())draw();
+    }else{
+      ZS.mic=0;
+      if(ZS.micStream)ZS.micStream.getAudioTracks().forEach(t=>t.enabled=false);
+      zs(A("المايك مطفي","Mic off"));
+      syncTracksToPeers();
       draw();
-    }catch(e){toast("⚠️ "+mediaErrorMsg(e,"mic"))}
+    }
   }else{
     try{
       if(!ZS.cam1){
@@ -2886,15 +3001,7 @@ const ACT={
  async zquickmic(){
   if(!ZS.joined)joinRoom();
   if(!ZS.joined)return;
-  if(!canPresent()&&!ZS.roomCtrl.allowMic&&!ZS.mic)return toast("🔇");
-  try{
-    const s=await ensureMic();
-    s.getAudioTracks().forEach(t=>t.enabled=true);
-    ZS.mic=1;
-    zs(A("المايك شغال","Mic on"));
-    await syncTracksToPeers();
-    draw();
-  }catch(e){toast("⚠️ "+mediaErrorMsg(e,"mic"))}
+  if(await openMicFast())draw();
  },
  async zquickcam(){
   if(!ZS.joined)joinRoom();
@@ -2918,47 +3025,7 @@ const ACT={
     syncStageToCloud({screenActive:false,liveFrameUrl:""});
     return;
   }
-  const getDisp=(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia)?navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices):(navigator.getDisplayMedia?navigator.getDisplayMedia.bind(navigator):null);
-  if(!getDisp){
-    return toast("⚠️ "+A("متصفح هذا الهاتف لا يسمح بمشاركة شاشة النظام كاملة؛ افتح المنصة من Chrome أو Safari المحدّث، أو شارك الملفات والصور مباشرة.","This mobile browser does not expose full-screen capture; open Al-Noor in updated Chrome/Safari or share files/images directly."));
-  }
-  try{
-    const epoch=ZS.sfuEpoch;
-    let s;
-    try{
-      s=await getDisp({
-        video:{displaySurface:"monitor",width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:24}},
-        audio:!!ZS.shareAudio,
-        preferCurrentTab:false,
-        selfBrowserSurface:"include",
-        surfaceSwitching:"include",
-        systemAudio:"include"
-      });
-    }catch(_err){
-      s=await getDisp({video:true,audio:!!ZS.shareAudio});
-    }
-    if(!ZS.joined||epoch!==ZS.sfuEpoch){s.getTracks().forEach(t=>t.stop());return}
-    ZS.scr=s;ZS.screenActive=1;ZS.audioOnly=0;
-    if(!st.adm)claimStageOverride();
-    s.getVideoTracks()[0].onended=()=>{
-      if(ZS.scr===s){
-        ZS.scr=null;ZS.screenActive=0;
-        if(!st.adm)releaseStageOverrideIfOwner();
-        stopLiveFrameSync();
-        syncTracksToPeers();
-        draw();
-        syncStageToCloud({screenActive:false,liveFrameUrl:""});
-      }
-    };
-    await syncTracksToPeers();
-    draw();
-    startLiveFrameSync();
-    syncStageToCloud({screenActive:true});
-    toast("📱 "+A("تم بدء مشاركة الشاشة بالكامل! يمكنك الآن التنقل بين جميع تطبيقات جهازك وستظهر للجميع.","Full screen sharing started! Switch to any app on your device and everyone will see it."));
-  }catch(e){
-    if(e?.name==="NotAllowedError")return toast("⚠️ "+A("تم إلغاء مشاركة الشاشة أو لم يُمنح الإذن من النظام","Screen share cancelled or system permission denied"));
-    toast("⚠️ "+A("تعذر مشاركة شاشة الجهاز: تأكد من السماح للمتصفح بالتسجيل/العرض فوق التطبيقات","Cannot share device screen: allow browser screen recording/overlay permission"));
-  }
+  await startFullScreenShare();
  },
  zrec(){
   if(!st.adm)return;
@@ -3037,4 +3104,4 @@ initTheme();
 draw();
 </script>
 </body>
-  </html>1
+  </html>
