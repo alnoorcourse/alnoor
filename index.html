@@ -140,6 +140,35 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;text-
 .z-reactions-stack{position:absolute;top:10px;inset-inline-end:10px;display:flex;flex-direction:column;gap:6px;z-index:6;pointer-events:none}
 .z-reaction-pop{background:rgba(24,27,36,.94);border:1px solid #525a70;border-radius:999px;padding:5px 12px;font-size:14px;color:#fff;display:inline-flex;align-items:center;gap:6px;box-shadow:0 6px 18px rgba(0,0,0,.45)}
 
+/* Direct Stage Annotation, Laser, Sticky Notes & Floating Board */
+.z-stage-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;background:#152836;border-bottom:1px solid #2a475c;padding:7px 12px;font-size:12px}
+.z-tool-group{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.z-tbtn{height:28px;padding:0 9px;border-radius:8px;border:1px solid #335169;background:#1e3649;color:#f1f5f9;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.z-tbtn.on{background:#0e9384;border-color:#2dd4bf;color:#fff}
+.z-swatch{width:17px;height:17px;border-radius:50%;border:2px solid rgba(255,255,255,.35);padding:0}
+.z-swatch.on{border-color:#fff;transform:scale(1.15);box-shadow:0 0 0 2px #14b8a6}
+.z-color{width:22px;height:22px;padding:0;border:0;background:none}
+.z-range{width:64px;accent-color:#14b8a6;cursor:pointer}
+.z-live-overlay{position:absolute;inset:0;width:100%;height:100%;z-index:18;touch-action:none}
+.z-live-overlay.draw-active{cursor:crosshair;pointer-events:auto}
+.z-live-overlay.draw-passive{pointer-events:none}
+.z-laser-dot{position:absolute;width:14px;height:14px;border-radius:50%;background:#ef4444;box-shadow:0 0 14px 4px rgba(239,68,68,.85);transform:translate(-50%,-50%);pointer-events:none;z-index:24;display:none}
+.z-stage-note{position:absolute;z-index:22;background:rgba(255,251,204,.96);color:#111827;border:2px solid #0e9384;border-radius:10px;padding:6px 8px;box-shadow:0 10px 24px rgba(0,0,0,.4);min-width:160px;max-width:320px;touch-action:none}
+.z-stage-note-hd{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px;font-weight:800;color:#0f766e;cursor:grab;margin-bottom:4px;user-select:none}
+.z-stage-note textarea{width:100%;min-height:52px;resize:both;border:1px solid #cbd5e1;border-radius:6px;padding:5px 7px;font-size:13px;line-height:1.45;background:#fff;color:#111827}
+.z-stage-note-text{white-space:pre-wrap;font-size:13px;line-height:1.5;font-weight:600;color:#111827}
+.z-note-float{position:absolute;top:14px;inset-inline-end:14px;width:410px;height:300px;min-width:240px;min-height:170px;max-width:calc(100% - 14px);max-height:calc(100% - 14px);background:#151a26;border:2px solid #14b8a6;border-radius:14px;box-shadow:0 18px 42px rgba(0,0,0,.6);display:flex;flex-direction:column;overflow:hidden;z-index:26;touch-action:none}
+.z-note-float.minimized{height:auto!important;min-height:0;width:auto;min-width:200px}
+.z-note-float.student-view{border-color:#38bdf8}
+.z-note-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;background:#1e2638;border-bottom:1px solid #2f3a54;cursor:grab;user-select:none}
+.z-note-hd:active{cursor:grabbing}
+.z-note-tools{display:flex;align-items:center;justify-content:space-between;gap:5px;flex-wrap:wrap;padding:5px 8px;background:#192030;border-bottom:1px solid #283248;touch-action:auto}
+.z-note-body{position:relative;flex:1;width:100%;height:100%;background:#ffffff;overflow:hidden;touch-action:none}
+.z-note-body.dark-board{background:#101520}
+.z-note-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+.z-note-canvas.readonly{cursor:default}
+.z-resize-handle{position:absolute;bottom:0;inset-inline-start:0;width:18px;height:18px;cursor:nesw-resize;background:linear-gradient(45deg,#14b8a6 0%,#14b8a6 45%,transparent 45%);border-top-right-radius:6px;z-index:20}
+
 .z-popover{position:absolute;bottom:66px;inset-inline:12px;margin:auto;width:min(340px,calc(100% - 24px));background:#1e2028;border:1px solid #383c49;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.55);padding:10px;z-index:70;color:#f3f4f6}
 .z-pop-handle{width:34px;height:4px;border-radius:999px;background:#4b5061;margin:0 auto 10px}
 .z-pop-item{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:9px 12px;border:0;border-radius:10px;background:transparent;color:#f3f4f6;text-align:start;font-size:14px}
@@ -285,6 +314,36 @@ const st={lang:ls("lang")||"ar",user:null,adm:false,ready:false,regMode:false,me
 Object.assign(st,{inbox:[],readMessages:new Set(),templates:{},presenter:null,presenters:[],pushConfig:{},pushReady:false,inboxError:"",bulkBusy:false,bulkProgress:"",noticeSession:0});
 Object.assign(st,{coPresenters:[],stageOwner:{name:"",uid:"",isAdmin:false,active:false,ts:0}});
 
+// Live Screen Annotation, Laser, Notes & Floating Note Board State
+const LIVE={
+  drawMode:true,
+  tool:"highlighter",
+  color:"#facc15",
+  size:5,
+  strokes:[],
+  redoStack:[],
+  activeStroke:null,
+  laser:null,
+  notes:[],
+  boardOpen:false,
+  boardMinimized:false,
+  boardDark:false,
+  boardTool:"pen",
+  boardColor:"#0f172a",
+  boardSize:4,
+  boardX:null,
+  boardY:14,
+  boardW:410,
+  boardH:300,
+  boardStrokes:[],
+  boardRedo:[],
+  boardActive:null,
+  boardNotes:[],
+  seq:0
+};
+const BOARD_COLORS=["#facc15","#ef4444","#0e9384","#38bdf8","#a855f7","#0f172a","#ffffff"];
+const annBC=(typeof BroadcastChannel!=="undefined")?new BroadcastChannel("alnoor_live_ann_v1"):null;
+
 function parseCoPresenterNames(n1,n2="",n3=""){
   const a=String(n1||"").trim();
   const b=String(n2||"").trim();
@@ -316,6 +375,547 @@ const isStandaloneApp=()=>window.matchMedia("(display-mode: standalone)").matche
 
 function canPresent(){return !!st.user&&!!st.zoom&&(st.adm||hasPresenterRole())}
 const teachingPeer=p=>!!(p?.isAdmin||p?.isPresenter);
+
+function buildAnnPayload(){
+  return{
+    senderUid:st.user?.uid||"",
+    roomId:ZS.roomId||String(st.zoom?.ts||""),
+    strokes:LIVE.strokes,
+    activeStroke:LIVE.activeStroke,
+    laser:LIVE.laser,
+    notes:LIVE.notes,
+    boardOpen:LIVE.boardOpen,
+    boardMinimized:LIVE.boardMinimized,
+    boardDark:LIVE.boardDark,
+    boardX:LIVE.boardX,
+    boardY:LIVE.boardY,
+    boardW:LIVE.boardW,
+    boardH:LIVE.boardH,
+    boardStrokes:LIVE.boardStrokes,
+    boardActive:LIVE.boardActive,
+    boardNotes:LIVE.boardNotes,
+    ts:Date.now()
+  };
+}
+
+function broadcastAnnOverPeers(payload){
+  if(!payload)return;
+  const wire=JSON.stringify({__alnoorAnn:1,payload});
+  if(useSFU()&&ZS.sfu?.state==="connected"){
+    try{ZS.sfu.localParticipant.publishData(new TextEncoder().encode(wire),{reliable:true,topic:"alnoor-ann-sync"})}catch(e){}
+  }
+  ZS.peers.forEach(c=>{
+    if(c.chat?.readyState==="open"){
+      try{c.chat.send(wire)}catch(e){}
+    }
+  });
+}
+
+function emitLiveAnnotation(){
+  LIVE.seq=(LIVE.seq||0)+1;
+  const payload=buildAnnPayload();
+  try{annBC?.postMessage({kind:"alnoor_ann",payload})}catch(e){}
+  broadcastAnnOverPeers(payload);
+}
+
+function updateAnnNoteDoms(){
+  for(const n of LIVE.notes){
+    const el=document.querySelector(`[data-ann-note-view="${n.id}"]`);
+    if(el)el.textContent=n.text||"";
+    const box=document.querySelector(`[data-ann-note-box="${n.id}"]`);
+    if(box){box.style.left=n.x+"px";box.style.top=n.y+"px"}
+  }
+  for(const n of LIVE.boardNotes){
+    const el=document.querySelector(`[data-bann-note-view="${n.id}"]`);
+    if(el)el.textContent=n.text||"";
+    const box=document.querySelector(`[data-bann-note-box="${n.id}"]`);
+    if(box){box.style.left=n.x+"px";box.style.top=n.y+"px"}
+  }
+}
+
+function updateAnnLaserDot(){
+  const dot=$("z-laser-dot");
+  const overlay=$("z-live-overlay");
+  if(!dot||!overlay)return;
+  if(!LIVE.laser||!LIVE.laser.active){dot.style.display="none";return}
+  const r=overlay.getBoundingClientRect();
+  dot.style.display="block";
+  dot.style.left=(LIVE.laser.x*r.width)+"px";
+  dot.style.top=(LIVE.laser.y*r.height)+"px";
+}
+
+function drawAnnStroke(ctx,stStroke,cw,ch){
+  if(!stStroke||!stStroke.pts||!stStroke.pts.length)return;
+  ctx.save();
+  const pts=stStroke.pts.map(p=>({x:p.x*cw,y:p.y*ch}));
+  const scale=Math.max(1,(stStroke.size||5)*(Math.min(cw,ch)/500));
+  if(stStroke.tool==="eraser"){
+    ctx.globalCompositeOperation="destination-out";
+    ctx.strokeStyle="rgba(0,0,0,1)";
+    ctx.lineWidth=scale*4.2;
+    ctx.lineCap="round";
+    ctx.lineJoin="round";
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x,pts[0].y);
+    for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
+  if(stStroke.tool==="highlighter"){
+    ctx.globalAlpha=0.36;
+    ctx.strokeStyle=stStroke.color||"#facc15";
+    ctx.lineWidth=scale*4.5;
+    ctx.lineCap="round";
+    ctx.lineJoin="round";
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x,pts[0].y);
+    for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
+  if(stStroke.tool==="rect"){
+    const p0=pts[0],p1=pts[pts.length-1];
+    ctx.globalAlpha=0.95;
+    ctx.strokeStyle=stStroke.color||"#ef4444";
+    ctx.lineWidth=Math.max(2.5,scale*0.85);
+    ctx.strokeRect(p0.x,p0.y,p1.x-p0.x,p1.y-p0.y);
+    ctx.restore();
+    return;
+  }
+  ctx.globalAlpha=0.96;
+  ctx.strokeStyle=stStroke.color||"#ef4444";
+  ctx.lineWidth=Math.max(2,scale*0.75);
+  ctx.lineCap="round";
+  ctx.lineJoin="round";
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x,pts[0].y);
+  for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function paintAnnOverlay(){
+  const canvas=$("z-live-overlay");
+  if(!canvas)return;
+  const r=canvas.getBoundingClientRect();
+  if(r.width<10||r.height<10)return;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=Math.round(r.width*dpr),h=Math.round(r.height*dpr);
+  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}
+  const ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(const s of LIVE.strokes)drawAnnStroke(ctx,s,canvas.width,canvas.height);
+  if(LIVE.activeStroke)drawAnnStroke(ctx,LIVE.activeStroke,canvas.width,canvas.height);
+}
+
+function paintAnnBoard(){
+  const canvas=$("z-board-canvas");
+  const body=$("z-board-body");
+  if(!canvas||!body)return;
+  const r=body.getBoundingClientRect();
+  if(r.width<10||r.height<10)return;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=Math.round(r.width*dpr),h=Math.round(r.height*dpr);
+  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}
+  const ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.save();
+  ctx.strokeStyle=LIVE.boardDark?"rgba(148,163,184,.08)":"rgba(15,23,42,.06)";
+  ctx.lineWidth=1;
+  const step=Math.max(24,Math.round(28*dpr));
+  for(let y=step;y<canvas.height;y+=step){
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();
+  }
+  ctx.restore();
+  for(const s of LIVE.boardStrokes)drawAnnStroke(ctx,s,canvas.width,canvas.height);
+  if(LIVE.boardActive)drawAnnStroke(ctx,LIVE.boardActive,canvas.width,canvas.height);
+}
+
+function applyAnnBoardGeometry(){
+  const box=$("z-board-float");
+  const stage=document.querySelector(".z-stage");
+  if(!box||!stage)return;
+  const sr=stage.getBoundingClientRect();
+  box.style.width=Math.min(LIVE.boardW,Math.max(240,sr.width-14))+"px";
+  if(!LIVE.boardMinimized){
+    box.style.height=Math.min(LIVE.boardH,Math.max(170,sr.height-14))+"px";
+  }else{
+    box.style.height="auto";
+  }
+  if(typeof LIVE.boardX==="number"&&typeof LIVE.boardY==="number"){
+    const maxX=Math.max(6,sr.width-box.offsetWidth-6);
+    const maxY=Math.max(6,sr.height-box.offsetHeight-6);
+    LIVE.boardX=Math.max(6,Math.min(maxX,LIVE.boardX));
+    LIVE.boardY=Math.max(6,Math.min(maxY,LIVE.boardY));
+    box.style.left=LIVE.boardX+"px";
+    box.style.top=LIVE.boardY+"px";
+    box.style.right="auto";
+    box.style.insetInlineEnd="auto";
+  }
+}
+
+function applyIncomingAnnPayload(d){
+  if(!d)return;
+  if(d.senderUid&&d.senderUid===st.user?.uid)return;
+  let needRedraw=false;
+  if(Array.isArray(d.strokes))LIVE.strokes=d.strokes;
+  LIVE.activeStroke=d.activeStroke||null;
+  LIVE.laser=d.laser||null;
+  if(Array.isArray(d.notes)){
+    if(LIVE.notes.length!==d.notes.length)needRedraw=true;
+    LIVE.notes=d.notes;
+  }
+  if(typeof d.boardOpen==="boolean"&&(d.boardOpen!==LIVE.boardOpen||d.boardMinimized!==LIVE.boardMinimized||d.boardDark!==LIVE.boardDark)){
+    LIVE.boardOpen=d.boardOpen;
+    LIVE.boardMinimized=!!d.boardMinimized;
+    LIVE.boardDark=!!d.boardDark;
+    needRedraw=true;
+  }
+  if(typeof d.boardX==="number")LIVE.boardX=d.boardX;
+  if(typeof d.boardY==="number")LIVE.boardY=d.boardY;
+  if(typeof d.boardW==="number")LIVE.boardW=d.boardW;
+  if(typeof d.boardH==="number")LIVE.boardH=d.boardH;
+  if(Array.isArray(d.boardStrokes))LIVE.boardStrokes=d.boardStrokes;
+  LIVE.boardActive=d.boardActive||null;
+  if(Array.isArray(d.boardNotes)){
+    if(LIVE.boardNotes.length!==d.boardNotes.length)needRedraw=true;
+    LIVE.boardNotes=d.boardNotes;
+  }
+  if(needRedraw&&route()=="zoom-alnoor"&&$("zr")){
+    draw();
+  }else{
+    paintAnnOverlay();
+    paintAnnBoard();
+    updateAnnLaserDot();
+    updateAnnNoteDoms();
+    applyAnnBoardGeometry();
+  }
+}
+
+if(annBC){
+  annBC.onmessage=ev=>{
+    if(ev.data?.kind==="alnoor_ann"&&ev.data.payload){
+      applyIncomingAnnPayload(ev.data.payload);
+    }
+  };
+}
+
+function renderStageAnnotationBar(){
+  if(!canPresent())return"";
+  return `<div class="z-stage-tools" data-zpop="1">
+    <div class="z-tool-group">
+      <button type="button" class="z-tbtn${LIVE.drawMode?" on":""}" data-a="annToggleMode">${LIVE.drawMode?A("✍️ التحديد نشط","✍️ Draw active"):A("🖱 تفاعل","🖱 Interact")}</button>
+      <button type="button" class="z-tbtn${LIVE.tool==="highlighter"?" on":""}" data-a="annTool" data-p="highlighter">🖍 ${A("تحديد","Highlight")}</button>
+      <button type="button" class="z-tbtn${LIVE.tool==="pen"?" on":""}" data-a="annTool" data-p="pen">✒ ${A("قلم","Pen")}</button>
+      <button type="button" class="z-tbtn${LIVE.tool==="rect"?" on":""}" data-a="annTool" data-p="rect">▭ ${A("إطار","Box")}</button>
+      <button type="button" class="z-tbtn${LIVE.tool==="laser"?" on":""}" data-a="annTool" data-p="laser">🔴 ${A("مؤشر","Laser")}</button>
+      <button type="button" class="z-tbtn${LIVE.tool==="eraser"?" on":""}" data-a="annTool" data-p="eraser">🧽 ${A("محاية","Eraser")}</button>
+      <button type="button" class="z-tbtn" data-a="annAddNote">📝 ${A("نوت","Note")}</button>
+    </div>
+    <div class="z-tool-group">
+      ${BOARD_COLORS.map(c=>`<button type="button" class="z-swatch${LIVE.color.toLowerCase()===c.toLowerCase()&&LIVE.tool!=="eraser"?" on":""}" style="background:${c}" data-a="annColor" data-p="${c}"></button>`).join("")}
+      <input type="color" class="z-color" id="ann-color-in" value="${esc(LIVE.color)}">
+      <input type="range" class="z-range" id="ann-size-in" min="2" max="20" value="${LIVE.size}" title="${A("السمك","Size")}">
+      <button type="button" class="z-tbtn" data-a="annUndo" title="${A("تراجع","Undo")}">↩</button>
+      <button type="button" class="z-tbtn" data-a="annClear" title="${A("مسح","Clear")}">🗑</button>
+      <button type="button" class="z-tbtn${LIVE.boardOpen?" on":""}" data-a="annBoardToggle">📋 ${A("سبورة نافذة","Note board")}</button>
+    </div>
+  </div>`;
+}
+
+function renderStageAnnotationLayer(){
+  const presenter=canPresent();
+  const notesHtml=LIVE.notes.map(n=>`
+    <div class="z-stage-note" data-ann-note-box="${esc(n.id)}" style="left:${n.x}px;top:${n.y}px;border-color:${esc(n.color||"#0e9384")}">
+      <div class="z-stage-note-hd" data-ann-note-drag="${esc(n.id)}">
+        <span>📝 ${A("ملاحظة","Note")}</span>
+        ${presenter?`<button type="button" style="border:0;background:#dc2626;color:#fff;border-radius:5px;padding:1px 6px;font-size:10px" data-a="annDelNote" data-p="${esc(n.id)}">✕</button>`:""}
+      </div>
+      ${presenter
+        ?`<textarea data-ann-note-in="${esc(n.id)}" placeholder="${A("اكتب ملاحظتك...","Write note...")}">${esc(n.text||"")}</textarea>`
+        :`<div class="z-stage-note-text" data-ann-note-view="${esc(n.id)}">${esc(n.text||"")}</div>`
+      }
+    </div>
+  `).join("");
+
+  const boardNotesHtml=LIVE.boardNotes.map(n=>`
+    <div class="z-stage-note" data-bann-note-box="${esc(n.id)}" style="left:${n.x}px;top:${n.y}px;border-color:${esc(n.color||"#0e9384")}">
+      <div class="z-stage-note-hd" data-bann-note-drag="${esc(n.id)}">
+        <span>📌 ${A("نص","Text")}</span>
+        ${presenter?`<button type="button" style="border:0;background:#dc2626;color:#fff;border-radius:5px;padding:1px 6px;font-size:10px" data-a="bannDelNote" data-p="${esc(n.id)}">✕</button>`:""}
+      </div>
+      ${presenter
+        ?`<textarea data-bann-note-in="${esc(n.id)}" placeholder="${A("اكتب هنا...","Write here...")}">${esc(n.text||"")}</textarea>`
+        :`<div class="z-stage-note-text" data-bann-note-view="${esc(n.id)}">${esc(n.text||"")}</div>`
+      }
+    </div>
+  `).join("");
+
+  const boardToolsHtml=presenter&&!LIVE.boardMinimized?`
+    <div class="z-note-tools">
+      <div class="z-tool-group">
+        <button type="button" class="z-tbtn${LIVE.boardTool==="pen"?" on":""}" style="height:24px;padding:0 7px;font-size:11px" data-a="bannTool" data-p="pen">✒</button>
+        <button type="button" class="z-tbtn${LIVE.boardTool==="highlighter"?" on":""}" style="height:24px;padding:0 7px;font-size:11px" data-a="bannTool" data-p="highlighter">🖍</button>
+        <button type="button" class="z-tbtn${LIVE.boardTool==="rect"?" on":""}" style="height:24px;padding:0 7px;font-size:11px" data-a="bannTool" data-p="rect">▭</button>
+        <button type="button" class="z-tbtn${LIVE.boardTool==="eraser"?" on":""}" style="height:24px;padding:0 7px;font-size:11px" data-a="bannTool" data-p="eraser">🧽</button>
+        <button type="button" class="z-tbtn" style="height:24px;padding:0 7px;font-size:11px" data-a="bannAddNote">🔤</button>
+      </div>
+      <div class="z-tool-group">
+        ${["#0f172a","#dc2626","#0e9384","#2563eb","#facc15","#ffffff"].map(c=>`<button type="button" class="z-swatch${LIVE.boardColor.toLowerCase()===c.toLowerCase()&&LIVE.boardTool!=="eraser"?" on":""}" style="width:15px;height:15px;background:${c}" data-a="bannColor" data-p="${c}"></button>`).join("")}
+        <button type="button" class="z-tbtn" style="height:24px;padding:0 6px;font-size:11px" data-a="bannDark">🌓</button>
+        <button type="button" class="z-tbtn" style="height:24px;padding:0 6px;font-size:11px" data-a="bannUndo">↩</button>
+        <button type="button" class="z-tbtn" style="height:24px;padding:0 6px;font-size:11px" data-a="bannClear">🗑</button>
+      </div>
+    </div>
+  `:"";
+
+  const boardHtml=LIVE.boardOpen?`
+    <div id="z-board-float" class="z-note-float${LIVE.boardMinimized?" minimized":""}${!presenter?" student-view":""}">
+      <div class="z-note-hd" id="z-board-drag">
+        <span style="font-size:12px;font-weight:800">📋 ${A("سبورة ملاحظات إضافية","Floating note board")}</span>
+        <div class="row" style="margin:0;gap:4px">
+          ${presenter?`<button type="button" class="z-tbtn" style="height:22px;padding:0 6px" data-a="bannMin">${LIVE.boardMinimized?"🗖":"—"}</button>`:""}
+          ${presenter?`<button type="button" class="z-tbtn" style="height:22px;padding:0 6px" data-a="bannClose">✕</button>`:""}
+        </div>
+      </div>
+      ${boardToolsHtml}
+      ${!LIVE.boardMinimized?`
+        <div id="z-board-body" class="z-note-body${LIVE.boardDark?" dark-board":""}">
+          <canvas id="z-board-canvas" class="z-note-canvas${!presenter?" readonly":""}"></canvas>
+          ${boardNotesHtml}
+        </div>
+        ${presenter?`<div class="z-resize-handle" id="z-board-resize"></div>`:""}
+      `:""}
+    </div>
+  `:"";
+
+  const overlayCls=(presenter&&LIVE.drawMode)?"draw-active":"draw-passive";
+  return `<canvas id="z-live-overlay" class="z-live-overlay ${overlayCls}"></canvas><div id="z-laser-dot" class="z-laser-dot"></div>${notesHtml}${boardHtml}`;
+}
+
+function bindLiveAnnotationInteractions(){
+  const overlay=$("z-live-overlay");
+  if(overlay&&canPresent()){
+    let active=false;
+    const norm=ev=>{
+      const r=overlay.getBoundingClientRect();
+      return{
+        x:Math.max(0,Math.min(1,(ev.clientX-r.left)/Math.max(1,r.width))),
+        y:Math.max(0,Math.min(1,(ev.clientY-r.top)/Math.max(1,r.height)))
+      };
+    };
+    overlay.onpointerdown=ev=>{
+      if(!LIVE.drawMode)return;
+      if(ev.button!==0&&ev.pointerType==="mouse")return;
+      ev.preventDefault();
+      overlay.setPointerCapture?.(ev.pointerId);
+      const pt=norm(ev);
+      active=true;
+      if(LIVE.tool==="laser"){
+        LIVE.laser={x:pt.x,y:pt.y,active:true};
+        updateAnnLaserDot();
+        emitLiveAnnotation();
+        return;
+      }
+      LIVE.redoStack=[];
+      LIVE.activeStroke={tool:LIVE.tool,color:LIVE.color,size:LIVE.size,pts:[pt]};
+      paintAnnOverlay();
+      emitLiveAnnotation();
+    };
+    overlay.onpointermove=ev=>{
+      if(!active||!LIVE.drawMode)return;
+      ev.preventDefault();
+      const pt=norm(ev);
+      if(LIVE.tool==="laser"){
+        LIVE.laser={x:pt.x,y:pt.y,active:true};
+        updateAnnLaserDot();
+        emitLiveAnnotation();
+        return;
+      }
+      if(!LIVE.activeStroke)return;
+      if(LIVE.tool==="rect"){
+        if(LIVE.activeStroke.pts.length===1)LIVE.activeStroke.pts.push(pt);
+        else LIVE.activeStroke.pts[1]=pt;
+      }else{
+        LIVE.activeStroke.pts.push(pt);
+      }
+      paintAnnOverlay();
+      emitLiveAnnotation();
+    };
+    const endPtr=()=>{
+      if(!active)return;
+      active=false;
+      if(LIVE.tool==="laser"){
+        LIVE.laser=null;
+        updateAnnLaserDot();
+        emitLiveAnnotation();
+        return;
+      }
+      if(LIVE.activeStroke&&LIVE.activeStroke.pts.length)LIVE.strokes.push(LIVE.activeStroke);
+      LIVE.activeStroke=null;
+      paintAnnOverlay();
+      emitLiveAnnotation();
+    };
+    overlay.onpointerup=endPtr;
+    overlay.onpointercancel=endPtr;
+  }
+
+  document.querySelectorAll("[data-ann-note-in]").forEach(ta=>{
+    ta.oninput=()=>{
+      const item=LIVE.notes.find(n=>n.id===ta.dataset.annNoteIn);
+      if(item){item.text=ta.value;emitLiveAnnotation()}
+    };
+  });
+  document.querySelectorAll("[data-ann-note-drag]").forEach(hd=>{
+    if(!canPresent())return;
+    hd.onpointerdown=ev=>{
+      ev.preventDefault();
+      hd.setPointerCapture?.(ev.pointerId);
+      const note=LIVE.notes.find(n=>n.id===hd.dataset.annNoteDrag);
+      const stage=document.querySelector(".z-stage");
+      if(!note||!stage)return;
+      const sr=stage.getBoundingClientRect();
+      const sx=ev.clientX,sy=ev.clientY,ox=note.x,oy=note.y;
+      const onMove=me=>{
+        note.x=Math.max(6,Math.min(sr.width-160,ox+(me.clientX-sx)));
+        note.y=Math.max(6,Math.min(sr.height-80,oy+(me.clientY-sy)));
+        updateAnnNoteDoms();
+        emitLiveAnnotation();
+      };
+      const onUp=()=>{hd.removeEventListener("pointermove",onMove);hd.removeEventListener("pointerup",onUp)};
+      hd.addEventListener("pointermove",onMove);
+      hd.addEventListener("pointerup",onUp);
+    };
+  });
+
+  const bCanvas=$("z-board-canvas");
+  if(bCanvas&&canPresent()){
+    let bDraw=false;
+    const bNorm=ev=>{
+      const r=bCanvas.getBoundingClientRect();
+      return{
+        x:Math.max(0,Math.min(1,(ev.clientX-r.left)/Math.max(1,r.width))),
+        y:Math.max(0,Math.min(1,(ev.clientY-r.top)/Math.max(1,r.height)))
+      };
+    };
+    bCanvas.onpointerdown=ev=>{
+      ev.preventDefault();
+      bCanvas.setPointerCapture?.(ev.pointerId);
+      bDraw=true;
+      LIVE.boardActive={tool:LIVE.boardTool,color:LIVE.boardColor,size:LIVE.boardSize,pts:[bNorm(ev)]};
+      paintAnnBoard();
+      emitLiveAnnotation();
+    };
+    bCanvas.onpointermove=ev=>{
+      if(!bDraw||!LIVE.boardActive)return;
+      ev.preventDefault();
+      const pt=bNorm(ev);
+      if(LIVE.boardTool==="rect"){
+        if(LIVE.boardActive.pts.length===1)LIVE.boardActive.pts.push(pt);
+        else LIVE.boardActive.pts[1]=pt;
+      }else{
+        LIVE.boardActive.pts.push(pt);
+      }
+      paintAnnBoard();
+      emitLiveAnnotation();
+    };
+    const bEnd=()=>{
+      if(!bDraw)return;
+      bDraw=false;
+      if(LIVE.boardActive&&LIVE.boardActive.pts.length)LIVE.boardStrokes.push(LIVE.boardActive);
+      LIVE.boardActive=null;
+      paintAnnBoard();
+      emitLiveAnnotation();
+    };
+    bCanvas.onpointerup=bEnd;
+    bCanvas.onpointercancel=bEnd;
+  }
+
+  document.querySelectorAll("[data-bann-note-in]").forEach(ta=>{
+    ta.oninput=()=>{
+      const item=LIVE.boardNotes.find(n=>n.id===ta.dataset.bannNoteIn);
+      if(item){item.text=ta.value;emitLiveAnnotation()}
+    };
+  });
+  document.querySelectorAll("[data-bann-note-drag]").forEach(hd=>{
+    if(!canPresent())return;
+    hd.onpointerdown=ev=>{
+      ev.preventDefault();
+      hd.setPointerCapture?.(ev.pointerId);
+      const note=LIVE.boardNotes.find(n=>n.id===hd.dataset.bannNoteDrag);
+      const body=$("z-board-body");
+      if(!note||!body)return;
+      const br=body.getBoundingClientRect();
+      const sx=ev.clientX,sy=ev.clientY,ox=note.x,oy=note.y;
+      const onMove=me=>{
+        note.x=Math.max(4,Math.min(br.width-140,ox+(me.clientX-sx)));
+        note.y=Math.max(4,Math.min(br.height-65,oy+(me.clientY-sy)));
+        updateAnnNoteDoms();
+        emitLiveAnnotation();
+      };
+      const onUp=()=>{hd.removeEventListener("pointermove",onMove);hd.removeEventListener("pointerup",onUp)};
+      hd.addEventListener("pointermove",onMove);
+      hd.addEventListener("pointerup",onUp);
+    };
+  });
+
+  const bDrag=$("z-board-drag"),bFloat=$("z-board-float"),stage=document.querySelector(".z-stage");
+  if(bDrag&&bFloat&&stage&&canPresent()){
+    bDrag.onpointerdown=ev=>{
+      if(ev.target.closest("button"))return;
+      ev.preventDefault();
+      bDrag.setPointerCapture?.(ev.pointerId);
+      const sr=stage.getBoundingClientRect(),br=bFloat.getBoundingClientRect();
+      const sx=ev.clientX,sy=ev.clientY,ox=br.left-sr.left,oy=br.top-sr.top;
+      const onMove=me=>{
+        LIVE.boardX=Math.max(6,Math.min(sr.width-bFloat.offsetWidth-6,ox+(me.clientX-sx)));
+        LIVE.boardY=Math.max(6,Math.min(sr.height-bFloat.offsetHeight-6,oy+(me.clientY-sy)));
+        applyAnnBoardGeometry();
+        emitLiveAnnotation();
+      };
+      const onUp=()=>{bDrag.removeEventListener("pointermove",onMove);bDrag.removeEventListener("pointerup",onUp)};
+      bDrag.addEventListener("pointermove",onMove);
+      bDrag.addEventListener("pointerup",onUp);
+    };
+  }
+
+  const bResize=$("z-board-resize");
+  if(bResize&&bFloat&&stage&&canPresent()){
+    bResize.onpointerdown=ev=>{
+      ev.preventDefault();ev.stopPropagation();
+      bResize.setPointerCapture?.(ev.pointerId);
+      const sr=stage.getBoundingClientRect(),br=bFloat.getBoundingClientRect();
+      const sx=ev.clientX,sy=ev.clientY,ow=br.width,oh=br.height,oLeft=br.left-sr.left;
+      const onMove=me=>{
+        const dxLeft=sx-me.clientX;
+        const nextW=Math.max(240,Math.min(sr.width-14,ow+dxLeft));
+        const nextH=Math.max(170,Math.min(sr.height-14,oh+(me.clientY-sy)));
+        LIVE.boardW=nextW;LIVE.boardH=nextH;
+        LIVE.boardX=Math.max(6,oLeft-(nextW-ow));
+        applyAnnBoardGeometry();
+        paintAnnBoard();
+        emitLiveAnnotation();
+      };
+      const onUp=()=>{bResize.removeEventListener("pointermove",onMove);bResize.removeEventListener("pointerup",onUp)};
+      bResize.addEventListener("pointermove",onMove);
+      bResize.addEventListener("pointerup",onUp);
+    };
+  }
+
+  if($("ann-color-in")){
+    $("ann-color-in").oninput=e=>{
+      LIVE.color=e.target.value;
+      if(LIVE.tool==="eraser")LIVE.tool="highlighter";
+      draw();
+    };
+  }
+  if($("ann-size-in")){
+    $("ann-size-in").oninput=e=>{LIVE.size=Number(e.target.value)||5};
+  }
+}
+
 function safeHttpLink(value){
   if(!value)return "";
   try{const u=new URL(String(value).trim());return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:""}catch(e){return ""}
@@ -1253,6 +1853,9 @@ function setupChatChannel(c,channel){
       if(hasContent){
         try{channel.send(JSON.stringify({__alnoorStage:1,payload:buildStagePayload()}))}catch(e){}
       }
+      if(LIVE.strokes.length||LIVE.notes.length||LIVE.boardOpen||LIVE.boardStrokes.length){
+        try{channel.send(JSON.stringify({__alnoorAnn:1,payload:buildAnnPayload()}))}catch(e){}
+      }
     }
   };
   channel.onmessage=ev=>{
@@ -1264,6 +1867,13 @@ function setupChatChannel(c,channel){
           applyRemoteStageData(m.payload);
           if(canPresent())broadcastStageOverPeers(m.payload);
           if(route()=="zoom-alnoor"&&$("zr"))draw();
+        }
+        return;
+      }
+      if(m&&m.__alnoorAnn===1&&m.payload){
+        if(m.payload.senderUid&&m.payload.senderUid!==st.user?.uid){
+          applyIncomingAnnPayload(m.payload);
+          if(canPresent())broadcastAnnOverPeers(m.payload);
         }
         return;
       }
@@ -1456,6 +2066,15 @@ async function connectSfu(){
           if(m?.__alnoorStage===1&&m.payload&&m.payload.senderUid!==st.user?.uid){
             applyRemoteStageData(m.payload);
             if(route()=="zoom-alnoor"&&$("zr"))draw();
+          }
+        }catch(e){}
+        return;
+      }
+      if(topic==="alnoor-ann-sync"&&payload.byteLength<=750000){
+        try{
+          const m=JSON.parse(new TextDecoder().decode(payload));
+          if(m?.__alnoorAnn===1&&m.payload&&m.payload.senderUid!==st.user?.uid){
+            applyIncomingAnnPayload(m.payload);
           }
         }catch(e){}
         return;
@@ -2011,6 +2630,11 @@ function attachMediaElements(){
   if(ZS.sharedType==="pdf"&&ZS.pdfDoc){
     renderPdfPageToCanvas(ZS.pdfPage,false);
   }
+  paintAnnOverlay();
+  paintAnnBoard();
+  updateAnnLaserDot();
+  applyAnnBoardGeometry();
+  bindLiveAnnotationInteractions();
 }
 
 function getStageOverrideState(){
@@ -2199,7 +2823,6 @@ function zroom(){
     ?`<div class="z-reactions-stack">${ZS.reactions.map(r=>`<div class="z-reaction-pop"><span>${esc(r.emoji)}</span><b>${esc(r.who||A("طالب","Student"))}</b></div>`).join("")}</div>`
     :"";
 
-
   const presenterPill=canPresent()&&!st.adm
     ?`<span class="z-pill" style="border-color:#38bdf8;color:#7dd3fc">⭐ ${esc(displayName())}</span>`
     :"";
@@ -2235,10 +2858,12 @@ function zroom(){
     ${hostBar}
     ${handsBar}
     ${overrideBanner}
+    ${renderStageAnnotationBar()}
     <div class="z-body${ZS.side?" with-side":""}">
       <div class="z-stage${ZS.audioOnly?" audio-only":""}${hasAnyVisual?" has-share":""}">
         ${reactionsHtml}
         ${stageContent}
+        ${renderStageAnnotationLayer()}
       </div>
       ${sideHtml}
     </div>
@@ -2281,873 +2906,631 @@ function zStop(){
   dropVidEl();ZS.sigReady=0;
   ZS.joined=0;try{ZS.rtcUnsub?.()}catch(e){}ZS.rtcUnsub=null;
   stopAudioMeter();
+  stopDurationTicker();
   stopLiveFrameSync();
-  clearInterval(ZS.presenceTimer);
-  if(ZS.rec&&ZS.rec.state!=="inactive"){try{ZS.rec.stop()}catch(e){}}
-  [ZS.cam,ZS.micStream,ZS.scr,ZS.vidShareStream].forEach(s=>s&&s.getTracks().forEach(t=>t.stop()));
-  ZS.cam=ZS.micStream=ZS.scr=ZS.vidShareStream=ZS.rec=null;
-  ZS.mic=0;ZS.cam1=0;ZS.menu=null;ZS.expanded=0;
-  ZS.peers.forEach(c=>{try{c.pc.close()}catch(e){}});
-  ZS.peers.clear();ZS.remoteStreams.clear();syncAudioElements();
-  if(db&&st.user){
-    touchPresence(false);
-    if(canPresent())setDoc(doc(db,"site","zoom_stage"),{roomId:ZS.roomId,senderUid:st.user.uid,sharedType:"",sharedImg:"",pageDataUrl:"",screenActive:false,liveFrameUrl:"",ts:Date.now()},{merge:true}).catch(()=>{});
-    if(ZS.hand)setDoc(doc(db,"zoom_hands",st.user.uid),{raised:false,ts:Date.now()},{merge:true}).catch(()=>{});
-  }
-  ZS.hand=0;
-  ZS.presence={};ZS.presSig=undefined;ZS.hands={};ZS.side=null;ZS.screenActive=0;
-  ZS.sharedType="";ZS.sharedImg="";ZS.pageDataUrl="";ZS.sharedVid="";ZS.sharedUrl="";ZS.textContent="";
-  ZS.roomId="";
+  clearInterval(ZS.presenceTimer);ZS.presenceTimer=0;
+  ZS.peers.forEach((c)=>{try{c.pc.close()}catch(e){}});
+  ZS.peers.clear();ZS.remoteStreams.clear();
+  syncAudioElements();
+  if(db&&st.user)setDoc(doc(db,"zoom_presence",st.user.uid),{active:false,cam:false,sharing:false,lastSeen:Date.now()},{merge:true}).catch(()=>{});
+  releaseStageOverrideIfOwner();
+  ZS.micStream?.getTracks().forEach(t=>t.stop());ZS.micStream=null;
+  ZS.cam?.getTracks().forEach(t=>t.stop());ZS.cam=null;
+  ZS.scr?.getTracks().forEach(t=>t.stop());ZS.scr=null;
+  ZS.vidShareStream=null;
+  if(ZS.rec&&ZS.rec.state!="inactive")try{ZS.rec.stop()}catch(e){}ZS.rec=null;
+  ZS.hand=0;ZS.mic=0;ZS.cam1=0;ZS.menu=null;ZS.side=null;ZS.expanded=0;ZS.screenActive=0;ZS.sharedImg="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedType="";ZS.pageDataUrl="";ZS.liveFrameUrl="";ZS.pdfDoc=null;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";ZS.reactions=[];ZS.hands={};ZS.presence={};ZS.stageSender="";
+  pdfPageCache.clear();pdfPrefetching.clear();
 }
 
-function vAdm(){if(!st.adm)return`<h1>${A("لوحة الإدارة","Admin dashboard")}</h1><div class="card"><p class="sub" style="margin:0">${A("هذه الصفحة للإدارة فقط.","This page is for admins only.")}</p></div>`;
- const rows=st.all.filter(r=>!st.filt||r.item==st.filt),T=A,courses=st.items.filter(i=>i.kind=="c"||!i.kind),skills=st.items.filter(i=>i.kind=="s"),vols=st.items.filter(i=>i.kind=="v");
- return`<h1>${T("لوحة الإدارة","Admin dashboard")}</h1>
-<h2>${T("عن النور","About")}</h2><div class="card"><textarea id="ab">${esc(about())}</textarea><div style="height:8px"></div><button type="button" class="btn t" data-a="saveA">${T("حفظ النبذة","Save about")}</button></div>
-<h2>${T("مؤسسو منصة النور","Founders")}</h2><div class="grid">${[1,2,3,4].map(i=>{const m=team().find(x=>x.id=="f"+i)||{};return`<div class="card" style="text-align:center">${m.photo?`<img class="av" alt="${esc(m.name||"")}" src="${esc(m.photo)}">`:`<div class="av">${T("صورة","Photo")}</div>`}<div style="height:8px"></div>${ef("team",{...m,id:"f"+i},"image/*")}</div>`}).join("")}</div>
-<h2>${T("الإعلانات (4K صورة أو فيديو)","Ads (4K image or video)")}</h2>${af("ads","image/*,video/*")}<div class="grid" style="margin-top:12px">${ads().map(a=>`<div class="card"><span class="tag">${a.type=="video"?"🎬":a.src?"🖼 4K":"📝"}</span>${ef("ads",a,"image/*,video/*")}</div>`).join("")}</div>
-<h2>⚡ Skills · ${T("المهارات","Skills")}</h2>${af("skills")}<div class="grid" style="margin-top:12px">${skills.map(i=>`<div class="card">${ef("skills",i)}</div>`).join("")}</div>
-<h2>${T("الدورات الوجاهية (مستقل)","Courses")}</h2>${af("courses")}<div class="grid" style="margin-top:12px">${courses.map(i=>`<div class="card">${ef("courses",i)}</div>`).join("")}</div>
-<h2>${T("التطوعات (مستقل)","Volunteering")}</h2>${af("vols")}<div class="grid" style="margin-top:12px">${vols.map(i=>`<div class="card">${ef("vols",i)}</div>`).join("")}</div>
-<h2>${T("المحاضرات","Lectures")}</h2>${af("lecs")}<div class="grid" style="margin-top:12px">${st.lecs.map(l=>`<div class="card">${ef("lecs",l)}</div>`).join("")}</div>
-<h2>${T("المسجلون","Registrations")} (${rows.length})</h2><div class="card"><div class="row" style="margin:0 0 10px"><select data-c="filt"><option value="">${T("الكل","All")}</option>${st.items.map(i=>`<option value="${i.id}"${st.filt==i.id?" selected":""}>${esc(i.t)}</option>`).join("")}</select><button type="button" class="btn" data-a="csv">⬇ ${T("تنزيل ملف Excel/CSV","Download Excel/CSV")}</button></div><div class="scroll"><table><tr><th>${T("الاسم","Name")}</th><th>${T("الهاتف","Phone")}</th><th>${T("العنوان","Title")}</th><th>${T("الحالة","Status")}</th><th></th></tr>${rows.map(r=>`<tr><td>${esc(r.name)}</td><td dir="ltr">${esc(r.phone)}</td><td>${esc(r.title)}</td><td><select data-c="rst" data-p="${r.uid}|${r.item}">${["pending","ok","done"].map(s=>`<option value="${s}"${(r.status||"pending")==s?" selected":""}>${s=="pending"?T("قيد الانتظار","Pending"):s=="ok"?T("مقبول","Accepted"):T("مكتمل","Done")}</option>`).join("")}</select></td><td><button type="button" class="btn g" data-a="rdel" data-p="${r.uid}|${r.item}">${T("حذف","Delete")}</button></td></tr>`).join("")}</table></div></div>
-<h2>${T("مراجعة التقييمات","Review moderation")}</h2><div class="grid">${st.revs.map(r=>`<div class="card"><div style="color:#F5A623">${stars(r.s)}</div><p>${esc(r.c)}</p><span class="sub">${esc(r.n)}</span><div class="row"><button type="button" class="btn ${r.ok?"g":"t"}" data-a="rv" data-p="${r.id}|${r.ok?0:1}">${r.ok?T("إخفاء","Hide"):T("نشر","Publish")}</button><button type="button" class="btn g" data-a="del" data-p="reviews|${r.id}">${T("حذف","Delete")}</button></div></div>`).join("")||none()}</div>
-<h2>${T("الطلاب","Students")} (${st.studs.length})</h2><div class="card scroll"><table><tr><th>${T("الاسم","Name")}</th><th>Email</th><th>${T("الهاتف","Phone")}</th><th>${T("التخصص","Major")}</th><th>${T("الجامعة","University")}</th><th>${T("آخر دخول","Last visit")}</th><th></th></tr>${st.studs.map(x=>`<tr><td>${esc(x.name)}</td><td dir="ltr">${esc(x.email)}</td><td dir="ltr">${esc(x.phone)}</td><td>${esc(x.major)}</td><td>${esc(x.uni)}</td><td>${x.last?new Date(x.last).toLocaleDateString():""}</td><td><button type="button" class="btn g" data-a="del" data-p="students|${x.id}">${T("حذف","Delete")}</button></td></tr>`).join("")}</table></div>`}
-
-const onboarding={step:0,key:"",role:"",timer:0,seen:new Set(),returnFocus:null};
-function onboardingRole(){return !st.user?"guest":st.adm?"admin":"student"}
-function onboardingKey(){return "alnoor_onboarding_v3_"+onboardingRole()+"_"+(st.user?.uid||"visitor")}
-function onboardingSteps(){
-  const role=onboarding.role;
-  return [
-    {icon:"☰",title:A(role==="admin"?"أهلًا بالإدارة · تنقّل من زر القائمة (☰)":"كل أقسام المنصة في زر القائمة (☰)",role==="admin"?"Welcome host · navigate from Menu (☰)":"All sections inside the Menu button (☰)"),
-      body:A("جمعنا كل أقسام المنصة في قائمة جانبية أنيقة تفتحها من زر الثلاث شحطات (☰ القائمة) أعلى الصفحة: ستجد فيها Skills (المهارات)، الدورات الوجاهية، التطوعات، المحاضرات، ZOOM، الإعلانات، لوحتي، وصندوق الرسائل.","We organized every section inside a clean drawer opened from the three-line Menu button (☰) at the top: Skills, Courses, Volunteering, Lectures, ZOOM, Ads, My space, and Inbox."),
-      note:A("اضغط زر (☰ القائمة) في أي وقت للوصول السريع إلى أي قسم دون ازدحام في الشاشة.","Tap the (☰ Menu) button anytime for quick access without screen clutter.")},
-    {icon:role==="admin"?"▦":"⚡",title:A(role==="guest"?"ابدأ بحسابك":role==="admin"?"إدارة Skills والدورات والتطوعات":"تصفّح Skills والدورات والتطوعات",role==="guest"?"Start with your account":role==="admin"?"Manage Skills, courses & volunteering":"Browse Skills, courses & volunteering"),
-      body:A(role==="guest"?"سجّل دخولك أو أنشئ حسابًا من صفحة الدخول. بعد الدخول ستظهر لك جميع الأقسام داخل قائمة الثلاث شحطات (☰) أعلى الشاشة.":role==="admin"?"من لوحة الإدارة داخل القائمة (☰) أضف المهارات (Skills) والدورات والتطوعات والإعلانات، وتابع طلبات الطلاب ورسائل القبول.":"افتح قائمة الثلاث شحطات (☰) لتجد قسم Skills الجديد، الدورات الوجاهية، والتطوعات. أكمل ملفك في «لوحتي» وسجّل بالفرصة المناسبة.",role==="guest"?"Sign in or create an account on the login page. All sections will then appear in the three-line menu (☰).":role==="admin"?"Open Admin from the (☰) menu to add Skills, courses, volunteering and ads, and manage student approvals.":"Open the (☰) menu to find the new Skills section, Courses, and Volunteering. Complete your profile in My space before applying."),
-      note:A("خلي بياناتك محدثة؛ الجولة ما بتغيّر أي بيانات أو تسجيلات.","Keep your details up to date. This guide does not change data or registrations.")},
-    {icon:"▣",title:A(role==="admin"?"أنشئ المحاضرة وشارك الكود":"ادخل المحاضرة بالكود",role==="admin"?"Create a lecture and share the code":"Join a lecture with its code"),
-      body:A(role==="admin"?"من القائمة (☰) افتح تبويب ZOOM، ثم اضغط «إنشاء وتفعيل». شارك كود الدخول مع الطلاب. إغلاق المحاضرة ينهي الوصول إليها.":"بعد تسجيل الدخول، افتح تبويب ZOOM من القائمة (☰) وأدخل الكود الذي وصلك من الإدارة. إذا ما في محاضرة مفتوحة، ارجع عند موعدها.",role==="admin"?"Open ZOOM from the (☰) menu and choose Create. Share the access code with students. Closing the lecture ends access.":"After signing in, open ZOOM from the (☰) menu and enter the code from your host. If no lecture is open, return at the scheduled time."),
-      note:A("لا تشارك كود المحاضرة خارج المجموعة المصرّح لها.","Only share lecture codes with authorized participants.")},
-    {icon:"◉",title:A("افحص الصوت قبل البداية","Check your audio before you begin"),
-      body:A("من «فحص الأجهزة» جرّب المايك 3 ثوانٍ واسمع التسجيل المحلي، وشوف معاينة الكاميرا. اسمح للمتصفح بالأجهزة، واستخدم سماعة لتخفيف الصدى. داخل المحاضرة فعّل المايك بزرّه عندما تريد الكلام.","In device diagnostics, record a local 3-second mic test and check the camera preview. Allow browser permissions and use headphones to reduce echo. Use the mic button in the lecture when you want to speak."),
-      note:A(role==="admin"?"لمشاركة فيديو بصوته، اختر تبويبًا وفعّل «مشاركة صوت التبويب» إذا كان متصفحك يدعمها.":"الميكروفون والكاميرا لا يعملان تلقائيًا. الإدارة قد توقف مايكات الطلاب مؤقتًا.",role==="admin"?"To share video with audio, choose a browser tab and enable Share tab audio where supported.":"Your microphone and camera never start automatically. The host may temporarily disable student microphones.")},
-    {icon:"✉",title:A("صندوق رسائلك وإشعاراتك","Your inbox & notifications"),
-      body:A("قبولك بالمهارات والدورات والتطوعات والمحاضرات، ورسالة الإدارة ورابط المجموعة، بيوصلوا إلى «صندوق الرسائل» (في الشريط العلوي أو داخل قائمة ☰). افتح الصندوق واضغط «تفعيل الإشعارات» ثم اسمح للمتصفح. الشات داخل المحاضرة مختلف: مؤقت وينمسح من جهازك عند المغادرة.","Acceptance decisions, your host's message and group links arrive in Inbox (in the top bar or inside the ☰ menu). Choose Enable notifications there, then allow browser permission. Lecture chat is separate: temporary and cleared on your device when leaving."),
-      note:A("على iPhone وiPad قد تحتاج إضافة الموقع للشاشة الرئيسية وفتحه منها. الإشعار مع إغلاق الموقع يتطلب إعداد خدمة الدفع؛ الرسالة تبقى بالصندوق حتى لو رفضت الإذن.","On iPhone and iPad you may need to add the site to your Home Screen and open it from there. Notifications when the site is closed require a configured push service; the message stays in your inbox even if you deny permission.")}
-  ];
-}
-function closeOnboarding(result=""){
-  clearTimeout(onboarding.timer);onboarding.timer=0;
-  const dialog=$("alnoor-onboarding");
-  if(!dialog)return;
-  if(result){onboarding.seen.add(onboarding.key);ls(onboarding.key,result)}
-  dialog.close();dialog.remove();
-  if(onboarding.returnFocus?.isConnected)onboarding.returnFocus.focus({preventScroll:true});
-  onboarding.returnFocus=null;
-}
-function paintOnboarding(){
-  const dialog=$("alnoor-onboarding");if(!dialog)return;
-  const steps=onboardingSteps(),step=steps[onboarding.step],last=onboarding.step===steps.length-1;
-  dialog.lang=st.lang;dialog.dir=st.lang==="ar"?"rtl":"ltr";
-  dialog.innerHTML=`
-    <div class="onboard-head"><span>${A("دليلك لأول محاضرة","Your first-lecture guide")}</span><button type="button" class="onboard-skip" data-ob="skip">${A("تخطّي الجولة","Skip guide")}</button></div>
-    <div class="onboard-art" aria-hidden="true"><div class="onboard-symbol">${step.icon}</div>
-      <svg viewBox="0 0 400 32" fill="none"><path d="M1 17H110L124 17L135 7L149 28L163 2L180 17H399" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </div>
-    <ol class="onboard-progress" aria-label="${A("خطوات الجولة","Guide steps")}">${steps.map((s,i)=>`<li ${i===onboarding.step?'aria-current="step"':""} class="${i<onboarding.step?"complete":""}"><span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">${esc(s.title)}</span></li>`).join("")}</ol>
-    <section class="onboard-body" aria-live="polite" aria-atomic="true">
-      <h2 id="onboard-title" tabindex="-1">${esc(step.title)}</h2>
-      <p id="onboard-description">${esc(step.body)}</p><div class="onboard-note">${esc(step.note)}</div>
-      ${onboarding.step===0?`<button type="button" class="btn g" style="margin-top:12px" data-ob="openMenu">${A("افتح القائمة (☰) الآن","Open Menu (☰) now")}</button>`:""}
-      ${last&&st.user?`<button type="button" class="btn t" style="margin-top:12px" data-ob="notifications">${A("تفعيل الإشعارات","Enable notifications")}</button>`:""}
-    </section>
-    <div class="onboard-foot">
-      <button type="button" class="btn g" data-ob="back" ${onboarding.step===0?"disabled":""}>${A("السابق","Back")}</button>
-      <span class="onboard-count">${A("الخطوة ","Step ")}<bdi dir="ltr">${onboarding.step+1} / ${steps.length}</bdi></span>
-      <button type="button" class="btn t" data-ob="${last?"finish":"next"}">${last?A("ابدأ الآن","Get started"):A("التالي","Next")}</button>
-    </div>`;
-  $("onboard-title").focus({preventScroll:true});
-  dialog.scrollTop=0;
-}
-function openOnboarding(){
-  clearTimeout(onboarding.timer);
-  if($("alnoor-onboarding"))return;
-  if($("alnoor-devices"))return toast(A("أغلق فحص الأجهزة أولًا لفتح الدليل.","Close device diagnostics before opening the guide."));
-  setMenuOpen(false);
-  onboarding.step=0;onboarding.role=onboardingRole();onboarding.key=onboardingKey();
-  onboarding.returnFocus=document.activeElement;
-  const dialog=document.createElement("dialog");dialog.id="alnoor-onboarding";dialog.className="onboard-dialog";
-  dialog.setAttribute("aria-labelledby","onboard-title");dialog.setAttribute("aria-describedby","onboard-description");
-  dialog.addEventListener("cancel",e=>{e.preventDefault();closeOnboarding("skipped")});
-  dialog.addEventListener("click",e=>{
-    e.stopPropagation();
-    const action=e.target.closest("[data-ob]")?.dataset.ob;
-    if(action==="skip")closeOnboarding("skipped");
-    else if(action==="openMenu"){closeOnboarding("done");setMenuOpen(true)}
-    else if(action==="notifications"){closeOnboarding("done");go("inbox");enableDeviceNotifications().catch(()=>toast(A("تعذر تفعيل الإشعارات الآن؛ رسائلك تبقى بالصندوق.","Could not enable notifications now; messages stay in your inbox.")))}
-    else if(action==="finish")closeOnboarding("done");
-    else if(action==="next"){onboarding.step=Math.min(onboardingSteps().length-1,onboarding.step+1);paintOnboarding()}
-    else if(action==="back"){onboarding.step=Math.max(0,onboarding.step-1);paintOnboarding()}
-  });
-  document.body.appendChild(dialog);dialog.showModal();paintOnboarding();
-}
-function maybeStartOnboarding(){
-  if(!st.ready||ZS.joined||route()==="zoom-alnoor"||document.querySelector("dialog[open]"))return;
-  const key=onboardingKey();
-  if(ls(key)||onboarding.seen.has(key))return;
-  clearTimeout(onboarding.timer);
-  onboarding.timer=setTimeout(()=>{
-    if(st.ready&&key===onboardingKey()&&!ZS.joined&&route()!=="zoom-alnoor"&&!document.querySelector("dialog[open]")&&!ls(key)&&!onboarding.seen.has(key))openOnboarding();
-  },450);
-}
+function vAdm(){
+ const f=(c,acc)=>`<div class="grid">${(c=="team"?team():c=="ads"?ads():c=="courses"?st.items.filter(i=>i.kind=="c"):c=="skills"?st.items.filter(i=>i.kind=="s"):c=="vols"?st.items.filter(i=>i.kind=="v"):st.lecs).map(o=>`<div class="card">${ef(c,o,acc)}</div>`).join("")}</div>${af(c,acc,c=="courses"?"c":c=="skills"?"s":c=="vols"?"v":null)}`;
+ const r=st.all.filter(x=>!st.filt||x.item==st.filt);
+ return`<h1>${A("لوحة الإدارة","Admin dashboard")}</h1>
+  <div class="stats" style="margin-bottom:14px">
+    <div><b>${st.studs.length}</b>${A("الطلاب","Students")}</div>
+    <div><b>${st.all.length}</b>${A("التسجيلات","Registrations")}</div>
+    <div><b>${st.items.filter(i=>i.kind=="s").length}</b>${A("المهارات","Skills")}</div>
+    <div><b>${st.items.filter(i=>i.kind=="c").length}</b>${A("الدورات","Courses")}</div>
+  </div>
+  ${st.seeded===false?`<div class="warn">${A("البيانات الأولية غير محمّلة بعد. ","Starter data is not loaded yet. ")}<button type="button" class="btn t" data-a="seed">${A("تحميل الآن","Load now")}</button></div>`:""}
+  ${vCommunicationAdmin()}
+  <h2>${A("المهارات · Skills","Skills")}</h2>${f("skills")}
+  <h2>${A("الدورات الوجاهية","On-site courses")}</h2>${f("courses")}
+  <h2>${A("التطوعات","Volunteering")}</h2>${f("vols")}
+  <h2>${A("الإعلانات","Announcements")}</h2>${f("ads","image/*,video/*")}
+  <h2>${A("المحاضرات","Lectures")}</h2>${f("lecs")}
+  <h2>${A("الطلاب المسجلون","Registered students")} (${st.studs.length})</h2>
+  <div class="card scroll"><table><thead><tr><th>${A("الاسم","Name")}</th><th>${A("البريد","Email")}</th><th>${A("الهاتف","Phone")}</th><th>${A("التخصص","Major")}</th><th>${A("الجامعة","University")}</th><th>${A("ملاحظة","Note")}</th><th>${A("الإجراء","Action")}</th></tr></thead><tbody>${st.studs.map(s=>`<tr><td>${esc(s.name)}</td><td dir="ltr">${esc(s.email)}</td><td>${esc(s.phone)}</td><td>${esc(s.major)}</td><td>${esc(s.uni)}</td><td>${esc(s.note)}</td><td><button type="button" class="btn g" style="padding:4px 10px" data-a="delStud" data-p="${esc(s.id)}">🗑 ${A("حذف الطالب","Delete student")}</button></td></tr>`).join("")||`<tr><td colspan="7">${A("لا يوجد طلاب بعد","No students yet")}</td></tr>`}</tbody></table></div>
+  <h2>${A("طلبات التسجيل","Registrations")} (${r.length})</h2>
+  <select data-c="filt" style="margin-bottom:8px"><option value="">${A("الكل","All")}</option>${st.items.map(i=>`<option value="${i.id}"${st.filt==i.id?" selected":""}>${esc(i.t)}</option>`).join("")}</select>
+  <div class="card scroll"><table><thead><tr><th>${A("الاسم","Name")}</th><th>${A("الهاتف","Phone")}</th><th>${A("البند","Item")}</th><th>${A("الحالة","Status")}</th><th>${A("الإجراء","Action")}</th></tr></thead><tbody>${r.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.phone)}</td><td>${esc(x.title)}</td><td>${tag(x.status||"pending")}</td><td>${["ok","done"].includes(x.status)?`<button type="button" class="btn t" style="padding:4px 10px" data-a="st" data-p="${x.uid}|${x.item}|done">${A("مكتمل","Done")}</button>`:`<button type="button" class="btn t" style="padding:4px 10px" data-a="st" data-p="${x.uid}|${x.item}|ok">${A("قبول","Accept")}</button>`} <button type="button" class="btn g" style="padding:4px 10px" data-a="st" data-p="${x.uid}|${x.item}|pending">${A("إلغاء القبول","Unaccept")}</button> <button type="button" class="btn g" style="padding:4px 10px" data-a="delReg" data-p="${x.uid}|${x.item}">🗑</button></td></tr>`).join("")}</tbody></table></div>
+  <h2>${A("المراجعات","Reviews")}</h2><div class="grid">${st.revs.map(v=>`<div class="card"><b>${esc(v.n)}</b> · ${stars(v.s)}<p>${esc(v.c)}</p>${v.ok?"":`<button type="button" class="btn t" data-a="rev" data-p="${v.id}">${A("اعتماد","Approve")}</button>`} <button type="button" class="btn g" data-a="delRev" data-p="${v.id}">${A("حذف","Delete")}</button></div>`).join("")||none()}</div>
+  <h2>${A("عن النور","About")}</h2><div class="card"><textarea id="ab">${esc(about())}</textarea><button type="button" class="btn t" data-a="about">${A("حفظ","Save")}</button></div>
+  <h2>${A("مؤسسو منصة النور","Al-Noor Founders")}</h2>${f("team","image/*")}`}
 
 function setMenuOpen(open){
   st.menuOpen=!!open;
   const drawer=$("nav-drawer"),backdrop=$("drawer-backdrop"),btn=$("menu-btn");
   if(drawer){drawer.classList.toggle("open",st.menuOpen);drawer.setAttribute("aria-hidden",st.menuOpen?"false":"true")}
-  if(backdrop)backdrop.classList.toggle("open",st.menuOpen);
-  if(btn)btn.setAttribute("aria-expanded",st.menuOpen?"true":"false");
+  if(backdrop){backdrop.classList.toggle("open",st.menuOpen)}
+  if(btn){btn.setAttribute("aria-expanded",st.menuOpen?"true":"false")}
+  document.body.style.overflow=st.menuOpen?"hidden":"";
 }
 
-function draw(){const r=route(),d=document.documentElement;
- updateInboxBadge();if($("inbox-label"))$("inbox-label").textContent=A("الرسائل","Messages");
- if($("onboard-help"))$("onboard-help").textContent=A("دليل المنصة","Platform guide");
- if($("menu-label"))$("menu-label").textContent=A("القائمة","Menu");
- if($("drawer-brand"))$("drawer-brand").textContent=A("أقسام منصة النور","Al-Noor Sections");
- const chatInput=$("z-chat-in"),chatDraft=chatInput?.value||"",chatFocused=document.activeElement===chatInput,chatCursor=chatInput?.selectionStart;
- d.lang=st.lang;d.dir=st.lang=="ar"?"rtl":"ltr";if($("bn"))$("bn").textContent=A("منصة النور","Al-Noor Platform");if($("lg"))$("lg").textContent=A("English","العربية");if($("lo")){$("lo").textContent=A("خروج","Logout");$("lo").style.display=st.user?"":"none"}if($("ft"))$("ft").textContent=A("© منصة النور · جميع الحقوق محفوظة","© Al-Noor Platform · All rights reserved");document.title=$("bn")?.textContent||"منصة النور";
- applyTheme(d.getAttribute("data-theme")||"light");
- const lt=Math.max(0,...ads().map(a=>a.ts||0)),nw=r!="ads"&&lt>+(ls("seen")||0);if(r=="ads")ls("seen",lt);
- if($("menu-dot"))$("menu-dot").hidden=!(nw||unreadMessages()>0);
+function renderNavDrawer(){
+  const nav=$("nav"),menuLbl=$("menu-label"),drawerBrand=$("drawer-brand"),menuDot=$("menu-dot");
+  if(menuLbl)menuLbl.textContent=A("القائمة","Menu");
+  if(drawerBrand)drawerBrand.textContent=A("أقسام المنصة","Sections");
+  if(!nav)return;
 
- const unread=unreadMessages();
- const groups=st.user?[
-   {title:A("البرامج والمهارات","Programs & Skills"),links:[
-     {id:"skills",ico:"⚡",label:"Skills · "+A("المهارات","Skills"),badge:A("جديد","New")},
-     {id:"courses",ico:"🎓",label:A("الدورات الوجاهية","Courses")},
-     {id:"volunteering",ico:"🤝",label:A("التطوعات","Volunteering")},
-     {id:"lectures",ico:"📚",label:A("المحاضرات","Lectures")},
-     {id:"ads",ico:"📢",label:A("الإعلانات","Ads"),badge:nw?A("جديد","New"):""}
-   ]},
-   {title:A("حسابي والبث المباشر","My Account & Live"),links:[
-     {id:"dashboard",ico:"👤",label:A("لوحتي","My space")},
-     {id:"inbox",ico:"✉",label:A("صندوق الرسائل","Inbox"),badge:unread?String(unread):""},
-     {id:"zoom-alnoor",ico:"🎥",label:"ZOOM · "+A("المحاضرة المباشرة","Live")}
-   ]},
-   {title:A("المنصة والإدارة","Platform & Admin"),links:[
-     {id:"about",ico:"✚",label:A("عن النور","About")},
-     {id:"feedback",ico:"★",label:A("الفيدباك","Feedback")},
-     ...(st.adm?[{id:"admin-secret-portal",ico:"⚙️",label:A("لوحة الإدارة","Admin")}]:[])
-   ]}
- ]:[
-   {title:A("التصفح العام","Explore"),links:[
-     {id:"dashboard",ico:"🔐",label:A("تسجيل الدخول / إنشاء حساب","Sign in / Register")},
-     {id:"ads",ico:"📢",label:A("الإعلانات","Ads"),badge:nw?A("جديد","New"):""}
-   ]}
- ];
- if($("nav"))$("nav").innerHTML=groups.map(g=>`<div><div class="drawer-sec-lbl">${g.title}</div><div class="drawer-group">${g.links.map(x=>`<a href="#${x.id}" data-a="navSelect" data-p="${x.id}" class="drawer-link${r==x.id?" on":""}"><span class="dl-main"><span class="dl-ico">${x.ico}</span><span>${x.label}</span></span>${x.badge?`<span class="drawer-pill">${x.badge}</span>`:""}</a>`).join("")}</div></div>`).join("");
- setMenuOpen(st.menuOpen);
-
- let v;if(!st.ready)v=`<p class="sub">…</p>`;else if(r=="ads")v=vAds();else if(!st.user)v=vLogin();else v=({dashboard:vDash,inbox:vInbox,skills:()=>vItems("s"),volunteering:()=>vItems("v"),courses:()=>vItems("c"),"zoom-alnoor":vZm,lectures:vLectureRegistration,feedback:vFb,about:vAbout,"admin-secret-portal":()=>st.adm?vCommunicationAdmin()+vAdm():vAdm()}[r]||vDash)();
-  if(ZS.vidEl&&ZS.vidEl.parentNode)ZS.vidEl.remove();if($("app"))$("app").innerHTML=(ok?"":`<section class="card" role="status"><h2>${A("ربط مشروع Firebase","Connect your Firebase project")}</h2><p>${A("ضع إعداد مشروعك الأصلي في firebase-config.json بجانب هذا الملف على الاستضافة، حسب دليل الحزمة. لم نضمّن مفتاحك في النسخة المسلّمة. لا ترسل مفاتيح في الدردشة.","Place your original project's settings in firebase-config.json beside this page, following the package instructions. Your key is not embedded in the delivered HTML. Never send keys in chat.")}</p><button type="button" class="btn t" onclick="location.reload()">${A("فحص الربط وإعادة المحاولة","Check configuration and retry")}</button></section>`)+v;
- Object.keys(st.crops).forEach(syncCropPreview);
- if(r==="admin-secret-portal"&&st.adm){
-   const filter=document.querySelector('select[data-c="filt"]');
-   if(filter){for(const lecture of st.lecs){const option=document.createElement("option");option.value="lec_"+lecture.id;option.textContent=A("محاضرة: ","Lecture: ")+lecture.title;filter.appendChild(option)}filter.value=st.filt}
- }
- if($("z-chat-in")){$("z-chat-in").value=chatDraft;if(chatFocused){$("z-chat-in").focus({preventScroll:true});try{$("z-chat-in").setSelectionRange(chatCursor,chatCursor)}catch(e){}}}
- if(ZS.side==="chat")scrollChatToBottom(true);
- if(r=="zoom-alnoor"&&st.user){
-   startZoomRealtimeSubs();
-   if(inRoom())joinRoom();
-   attachMediaElements();
-   if(ZS.micStream&&ZS.micStream.active&&!ZS.audioCtx)startAudioMeter(ZS.micStream);
- }
- if(r!="ads")clearTimeout(AT);else adShow(AI);
- maybeStartOnboarding()}
-addEventListener("hashchange",()=>{setMenuOpen(false);if(route()!="zoom-alnoor")zStop();draw()});
-
-let dragCrop=null;
-document.addEventListener("pointerdown",e=>{const stage=e.target.closest(".crop-stage");if(!stage)return;const id=stage.dataset.cropId,cr=st.crops[id];if(!cr)return;stage.setPointerCapture?.(e.pointerId);dragCrop={id,sx:e.clientX,sy:e.clientY,ox:cr.x,oy:cr.y}});
-document.addEventListener("pointermove",e=>{if(!dragCrop)return;const cr=st.crops[dragCrop.id];if(!cr)return;cr.x=Math.max(-75,Math.min(75,Math.round(dragCrop.ox+(e.clientX-dragCrop.sx))));cr.y=Math.max(-75,Math.min(75,Math.round(dragCrop.oy+(e.clientY-dragCrop.sy))));const sx=$(`crop-sliders-${dragCrop.id}-x`);if(sx)sx.value=cr.x;syncCropPreview(dragCrop.id)});
-document.addEventListener("pointerup",()=>{dragCrop=null});
-
-async function openMicFast(){
-  if(!canPresent()&&!ZS.roomCtrl.allowMic){
-    toast("🔇 "+A("الإدارة أغلقت المايك حالياً","Host muted microphones"));
-    return false;
-  }
-  if(ZS.micStream&&ZS.micStream.getAudioTracks().some(t=>t.readyState==="live")){
-    ZS.mic=1;
-    ZS.micStream.getAudioTracks().forEach(t=>{t.enabled=true});
-    zs(A("المايك شغال","Mic on"));
-    startAudioMeter(ZS.micStream);
-    syncTracksToPeers();
-    return true;
-  }
-  try{
-    const epoch=ZS.sfuEpoch;
-    const audioOpts={
-      echoCancellation:true,
-      noiseSuppression:true,
-      autoGainControl:true,
-      ...(deviceChoice.mic?{deviceId:{ideal:deviceChoice.mic}}:{})
-    };
-    const stream=await navigator.mediaDevices.getUserMedia({audio:audioOpts,video:false});
-    if(!ZS.joined||epoch!==ZS.sfuEpoch){stream.getTracks().forEach(t=>t.stop());return false}
-    ZS.micStream=stream;
-    ZS.mic=1;
-    stream.getAudioTracks().forEach(t=>{
-      t.enabled=true;
-      t.onended=()=>{ZS.mic=0;syncTracksToPeers();scheduleRtcRedraw();toast(A("انقطع المايكروفون؛ اختره من فحص الأجهزة","Microphone disconnected; select a device in diagnostics"))};
-    });
-    zs(A("المايك شغال","Mic on"));
-    startAudioMeter(stream);
-    syncTracksToPeers();
-    return true;
-  }catch(e){
-    ZS.mic=0;
-    toast("⚠️ "+mediaErrorMsg(e,"mic"));
-    return false;
-  }
-}
-
-async function startFullScreenShare(){
-  if(!canPresent()){
-    toast("⚠️ "+A("المشاركة متاحة للإدارة والمسؤول فقط","Sharing is for host and presenter only"));
+  if(!st.user){
+    if(menuDot)menuDot.hidden=true;
+    nav.innerHTML=`<div class="drawer-sec-lbl">${A("الصفحات العامة","Public pages")}</div>
+      <div class="drawer-group">
+        <a class="drawer-link${route()=="login"?" on":""}" data-a="goRoute" data-p="login"><span class="dl-main"><span class="dl-ico">🔐</span><span>${A("تسجيل الدخول","Sign in")}</span></span></a>
+        <a class="drawer-link${route()=="about"?" on":""}" data-a="goRoute" data-p="about"><span class="dl-main"><span class="dl-ico">ℹ</span><span>${A("عن النور","About")}</span></span></a>
+      </div>`;
     return;
   }
-  const getDisp=
-    (navigator.mediaDevices&&typeof navigator.mediaDevices.getDisplayMedia==="function")?navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices):
-    (typeof navigator.getDisplayMedia==="function")?navigator.getDisplayMedia.bind(navigator):
-    (navigator.mediaDevices&&typeof navigator.mediaDevices.webkitGetDisplayMedia==="function")?navigator.mediaDevices.webkitGetDisplayMedia.bind(navigator.mediaDevices):
-    (typeof navigator.webkitGetDisplayMedia==="function")?navigator.webkitGetDisplayMedia.bind(navigator):null;
-  try{
-    const epoch=ZS.sfuEpoch;
-    let stream=null;
-    const candidates=[
-      {
-        video:{displaySurface:"monitor",frameRate:{ideal:20,max:30}},
-        audio:!!ZS.shareAudio,
-        preferCurrentTab:false,
-        selfBrowserSurface:"include",
-        surfaceSwitching:"include",
-        systemAudio:ZS.shareAudio?"include":"exclude"
-      },
-      {video:{displaySurface:"monitor"},audio:!!ZS.shareAudio},
-      {video:true,audio:!!ZS.shareAudio},
-      {video:true,audio:false},
-      {}
-    ];
-    let lastErr=null;
-    if(getDisp){
-      for(const opts of candidates){
-        try{
-          stream=await getDisp(opts);
-          if(stream)break;
-        }catch(err){
-          lastErr=err;
-          if(err?.name==="NotAllowedError"||err?.name==="AbortError")break;
-        }
-      }
-    }
-    if(!stream&&navigator.mediaDevices&&typeof navigator.mediaDevices.getUserMedia==="function"){
-      try{
-        stream=await navigator.mediaDevices.getUserMedia({video:{cursor:"always"},audio:!!ZS.shareAudio});
-      }catch(_gmErr){
-        if(!getDisp&&lastErr)throw lastErr;
-        if(!getDisp)throw new Error("Display capture attempted");
-      }
-    }
-    if(!stream){
-      throw (lastErr||new Error("Display capture unavailable"));
-    }
-    if(!ZS.joined||epoch!==ZS.sfuEpoch){stream.getTracks().forEach(t=>t.stop());return}
-    if(ZS.scr)ZS.scr.getTracks().forEach(t=>t.stop());
-    ZS.scr=stream;
-    ZS.screenActive=1;
-    ZS.audioOnly=0;
-    ZS.menu=null;
-    if(!st.adm)claimStageOverride();
 
-    const vTrack=stream.getVideoTracks()[0];
-    if(vTrack){
-      vTrack.contentHint="detail";
-      vTrack.onended=()=>{
-        if(ZS.scr===stream){
-          ZS.scr=null;
-          ZS.screenActive=0;
-          if(!st.adm)releaseStageOverrideIfOwner();
-          stopLiveFrameSync();
-          syncTracksToPeers();
-          syncStageToCloud({screenActive:false,liveFrameUrl:""});
-          if(route()==="zoom-alnoor")draw();
-        }
-      };
-    }
+  const unread=unreadMessages();
+  if(menuDot)menuDot.hidden=!unread;
 
-    await syncTracksToPeers();
-    startLiveFrameSync();
-    syncStageToCloud({screenActive:true});
-    draw();
-    toast("📱 "+A("تم بدء مشاركة الشاشة بالكامل! يمكنك الآن التنقل بين جميع تطبيقات جهازك وستظهر للجميع.","Full screen sharing started! Switch to any app on your device and everyone will see it."));
-  }catch(e){
-    if(e?.name!=="AbortError"&&e?.name!=="NotAllowedError"){
-      toast("⚠️ "+A("تعذرت مشاركة الشاشة: تأكد من السماح للمتصفح بالتسجيل/العرض فوق التطبيقات","Screen share failed: allow browser screen recording/overlay permission"));
-    }else if(e?.name==="NotAllowedError"){
-      toast("⚠️ "+A("تم إلغاء مشاركة الشاشة أو لم يُمنح الإذن من النظام","Screen share cancelled or system permission denied"));
-    }
+  const mainItems=[
+    ["dashboard","🏠",A("لوحتي","My space"),""],
+    ["inbox","✉",A("الرسائل","Messages"),unread>0?String(unread):""],
+    ["skills","⚡",A("المهارات · Skills","Skills"),""],
+    ["courses","📚",A("الدورات","Courses"),""],
+    ["volunteering","🤝",A("التطوعات","Volunteering"),""],
+    ["ads","📢",A("الإعلانات","Announcements"),""],
+    ["lectures","🎓",A("المحاضرات","Lectures"),""],
+    ["zoom-alnoor","🎥","ZOOM ALNOOR",st.zoom?A("مباشر","Live"):""],
+    ["feedback","⭐",A("الفيدباك","Feedback"),""],
+    ["about","ℹ",A("عن النور","About"),""]
+  ];
+
+  let html=`<div class="drawer-sec-lbl">${A("الأقسام الرئيسية","Main sections")}</div><div class="drawer-group">`;
+  html+=mainItems.map(([r,ico,lbl,badge])=>`<a class="drawer-link${route()==r?" on":""}" data-a="goRoute" data-p="${r}">
+    <span class="dl-main"><span class="dl-ico">${ico}</span><span>${lbl}</span></span>
+    ${badge?`<span class="drawer-pill">${esc(badge)}</span>`:""}
+  </a>`).join("");
+  html+=`</div>`;
+
+  if(st.adm){
+    html+=`<div class="drawer-sec-lbl" style="margin-top:8px">${A("الإدارة","Administration")}</div><div class="drawer-group">
+      <a class="drawer-link${route()=="admin-secret-portal"?" on":""}" data-a="goRoute" data-p="admin-secret-portal">
+        <span class="dl-main"><span class="dl-ico">⚙</span><span>${A("لوحة الإدارة","Admin")}</span></span>
+      </a>
+    </div>`;
   }
+  nav.innerHTML=html;
 }
 
-async function ensureMic(){
-  if(ZS.micStream&&ZS.micStream.active)return ZS.micStream;
-  if(!navigator.mediaDevices?.getUserMedia)throw new Error("Unsupported");
-  const epoch=ZS.sfuEpoch;
-  const s=await navigator.mediaDevices.getUserMedia({
-    audio:{...(deviceChoice.mic?{deviceId:{exact:deviceChoice.mic}}:{}),echoCancellation:true,noiseSuppression:true,autoGainControl:false,channelCount:{ideal:1},sampleRate:{ideal:48000},sampleSize:{ideal:16}},
-    video:false
-  });
-  if(!ZS.joined||epoch!==ZS.sfuEpoch){s.getTracks().forEach(t=>t.stop());throw new Error("Session ended")}
-  ZS.micStream=s;
-  s.getAudioTracks()[0].onended=()=>{ZS.mic=0;syncTracksToPeers();scheduleRtcRedraw();toast(A("انقطع المايكروفون؛ اختره من فحص الأجهزة","Microphone disconnected; select a device in diagnostics"))};
-  startAudioMeter(s);
-  return s;
+function chrome(){
+  const t=A("منصة النور","Al-Noor");
+  document.title=t;$("bn").textContent=t;$("ft").textContent=t+" — "+A("منصة تطوعية وتعليمية","Volunteering & learning platform");
+  $("lg").textContent=st.lang=="ar"?"EN":"عربي";$("lo").textContent=st.user?A("خروج","Sign out"):A("دخول","Sign in");
+  $("lo").style.display="";
+  const h=$("onboard-help");if(h)h.textContent=A("دليل المنصة","Platform guide");
+  const il=$("inbox-label");if(il)il.textContent=A("الرسائل","Messages");
+  updateInboxBadge();
+  renderNavDrawer();
 }
-async function ensureCam(){
-  if(ZS.cam&&ZS.cam.active)return ZS.cam;
-  if(!navigator.mediaDevices?.getUserMedia)throw new Error("Unsupported");
-  const epoch=ZS.sfuEpoch;
-  const h=ZS.batterySaver?360:720,w=ZS.batterySaver?640:1280,fps=ZS.batterySaver?15:24;
-  const s=await navigator.mediaDevices.getUserMedia({
-    video:{...(deviceChoice.cam?{deviceId:{exact:deviceChoice.cam}}:{facingMode:"user"}),width:{ideal:w},height:{ideal:h},frameRate:{ideal:fps}},
-    audio:false
-  });
-  if(!ZS.joined||epoch!==ZS.sfuEpoch){s.getTracks().forEach(t=>t.stop());throw new Error("Session ended")}
-  ZS.cam=s;
-  s.getVideoTracks()[0].onended=()=>{ZS.cam1=0;syncTracksToPeers();scheduleRtcRedraw()};
-  return s;
+
+function draw(){
+  chrome();
+  if(!st.ready){$("app").innerHTML=`<p class="sub">${A("جاري التحميل…","Loading…")}</p>`;return}
+  let r=route();
+  if(!st.user){if(r!=="about"&&r!=="admin-secret-portal")r="login";$("app").innerHTML=r=="about"?vAbout():vLogin();return}
+  if(r=="login"||r=="admin-secret-portal"&&!st.adm){history.replaceState(null,"","#dashboard");r="dashboard"}
+  if(r=="zoom-alnoor"&&inRoom()&&!ZS.joined)joinRoom();
+  if(r=="zoom-alnoor"&&inRoom())startZoomRealtimeSubs();
+  $("app").innerHTML=r=="courses"?vItems("c"):r=="skills"?vItems("s"):r=="volunteering"?vItems("v"):r=="ads"?vAds():r=="lectures"?vLec():r=="inbox"?vInbox():r=="feedback"?vFb():r=="about"?vAbout():r=="zoom-alnoor"?vZm():r=="admin-secret-portal"&&st.adm?vAdm():vDash();
+  if(r=="ads")adShow(AI);
+  if(r=="zoom-alnoor"&&$("zr"))attachMediaElements();
+  if(r=="zoom-alnoor"&&ZS.side==="chat")scrollChatToBottom(true);
+}
+
+const ONBOARD_STEPS=[
+  {icon:"✚",arTitle:"أهلاً بك في منصة النور",enTitle:"Welcome to Al-Noor",arBody:"منصة تطوعية وتعليمية تجمع الطلاب في مكان واحد؛ تطوّع في الحملات، طوّر مهاراتك، وتابع المحاضرات بوضوح وسهولة.",enBody:"A volunteering and learning space for students; join campaigns, build skills, and follow lectures clearly.",arNote:"كل حساب طالب مستقل ومحفوظ مرتبط ببريدك ورمزك السري.",enNote:"Each student account is private and linked to your email and PIN."},
+  {icon:"👤",arTitle:"ملفك الشخصي ونشاطاتك",enTitle:"Your profile & activity",arBody:"أكمل بياناتك الشخصية وصورتك في «لوحتي» لسرعة اعتماد طلباتك، وتابع حالة تسجيلك في الدورات والتطوعات والمهارات لحظة بلحظة.",enBody:"Complete your profile and photo in My Space for faster review, and track your course, volunteering, and skill registrations.",arNote:"يمكنك تحديث بياناتك وملاحظاتك في أي وقت.",enNote:"You can update your profile and notes anytime."},
+  {icon:"✉",arTitle:"صندوق الرسائل والتنبيهات",enTitle:"Inbox & notifications",arBody:"تصلك رسائل القبول وروابط المجموعات والإعلانات مباشرة في «الرسائل»، مع إمكانية تفعيل تنبيهات الجهاز.",enBody:"Receive acceptance messages, group links, and announcements in Messages, and enable device alerts when supported.",arNote:"رسائلك محفوظة داخل الصندوق حتى لو لم تفعّل إشعارات الجهاز.",enNote:"Your messages stay saved in your inbox even without device alerts."},
+  {icon:"🎥",arTitle:"قاعة المحاضرات والتحديد المباشر",enTitle:"Lectures & live annotation",arBody:"ادخل قاعة البث المباشر بكود المحاضرة لتتابع مشاركة الشاشة والملفات والتحديد والكتابة المباشرة والمحادثة الفورية.",enBody:"Join the live room with the lecture code to follow screen sharing, files, live annotation, and chat.",arNote:"استخدم سماعات لتجنب الصدى واختبر الصوت والكاميرا قبل بدء المحاضرة.",enNote:"Use headphones to avoid echo and test audio and camera before class."}
+];
+let onboardIndex=0,onboardReturnFocus=null;
+function closeOnboarding(){const d=$("alnoor-onboard");if(d?.open)d.close();if(d)d.remove()}
+function openOnboarding(startAt=0){
+  onboardReturnFocus=document.activeElement;closeOnboarding();
+  onboardIndex=Math.max(0,Math.min(ONBOARD_STEPS.length-1,startAt));
+  const dialog=document.createElement("dialog");dialog.id="alnoor-onboard";dialog.className="onboard-dialog";
+  dialog.setAttribute("aria-labelledby","onboard-title");dialog.setAttribute("aria-describedby","onboard-desc");
+  dialog.innerHTML=`<div class="onboard-head"><span id="onboard-brand">✚ ${esc(A("منصة النور","Al-Noor"))}</span><button type="button" class="onboard-skip" id="onboard-skip">${esc(A("تخطي","Skip"))}</button></div>
+    <div class="onboard-art"><div class="onboard-symbol" id="onboard-symbol" aria-hidden="true">✚</div><svg viewBox="0 0 320 32" fill="none" aria-hidden="true"><path d="M0 18 Q40 6 80 18 T160 18 T240 18 T320 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><circle cx="80" cy="18" r="4" fill="currentColor"/><circle cx="160" cy="18" r="5" fill="currentColor"/><circle cx="240" cy="18" r="4" fill="currentColor"/></svg></div>
+    <div class="onboard-body"><h2 id="onboard-title" tabindex="-1"></h2><p id="onboard-desc"></p><div class="onboard-note" id="onboard-note"></div></div>
+    <ol class="onboard-progress" id="onboard-progress">${ONBOARD_STEPS.map((_,i)=>`<li></li>`).join("")}</ol>
+    <div class="onboard-foot"><button type="button" class="btn g" id="onboard-prev">${esc(A("السابق","Back"))}</button><span class="onboard-count" id="onboard-count"></span><button type="button" class="btn t" id="onboard-next"></button></div>`;
+  document.body.appendChild(dialog);dialog.showModal();
+  const renderStep=()=>{
+    const step=ONBOARD_STEPS[onboardIndex],last=onboardIndex===ONBOARD_STEPS.length-1;
+    $("onboard-symbol").textContent=step.icon;$("onboard-title").textContent=A(step.arTitle,step.enTitle);
+    $("onboard-desc").textContent=A(step.arBody,step.enBody);$("onboard-note").textContent=A(step.arNote,step.enNote);
+    $("onboard-count").textContent=`${onboardIndex+1} / ${ONBOARD_STEPS.length}`;
+    $("onboard-prev").disabled=onboardIndex===0;$("onboard-next").textContent=last?A("ابدأ الآن","Get started"):A("التالي","Next");
+    [...$("onboard-progress").children].forEach((li,i)=>{li.className=i<onboardIndex?"complete":"";if(i===onboardIndex)li.setAttribute("aria-current","step");else li.removeAttribute("aria-current")});
+    $("onboard-title").focus();
+  };
+  const finish=()=>{ls("alnoor_onboard_v1","1");closeOnboarding();if(onboardReturnFocus?.isConnected)onboardReturnFocus.focus()};
+  $("onboard-prev").onclick=()=>{if(onboardIndex>0){onboardIndex--;renderStep()}};
+  $("onboard-next").onclick=()=>{if(onboardIndex<ONBOARD_STEPS.length-1){onboardIndex++;renderStep()}else finish()};
+  $("onboard-skip").onclick=finish;dialog.addEventListener("cancel",e=>{e.preventDefault();finish()});dialog.addEventListener("click",e=>{if(e.target===dialog)finish()});renderStep();
 }
 
 const ACT={
- toggleMenu(){setMenuOpen(!st.menuOpen)},
- closeMenu(){setMenuOpen(false)},
- navSelect(p,b){
-  const target=p||b?.getAttribute("href")?.replace(/^#/,"")||"dashboard";
-  go(target);
- },
- async delMessageAll(id){
-  if(!st.adm||!id)return;
-  if(!confirm(A("حذف هذه الرسالة نهائيًا من صندوق جميع الطلاب؟","Permanently delete this message from all students' inboxes?")))return;
-  await run(()=>deleteDoc(doc(db,"notifications",id)),A("تم حذف الرسالة عند الجميع","Message deleted for everyone"));
- },
- async setupPush(){
-  if(!st.adm)return;
-  try{
-    const [{getApp},{getFunctions,httpsCallable}]=await Promise.all([import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),import("https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js")]);
-    await httpsCallable(getFunctions(getApp()),"publishPushSettings")({});
-    toast(A("نُشرت إعدادات الإشعارات. فعّلها من صندوق الرسائل على كل جهاز.","Push settings published. Enable notifications from Inbox on each device."));
-  }catch(e){toast(A("الخدمة غير منشورة أو صلاحيات الإدارة غير مضبوطة. راجع ملف إعداد الإشعارات.","Service not deployed or server admin permissions not configured. See push setup instructions."))}
- },
- async enableNotifications(){await enableDeviceNotifications()},
- async disableNotifications(){try{await detachDeviceNotifications();draw();toast(A("أوقفت الإشعارات على هذا الجهاز فقط؛ رسائلك تبقى محفوظة بالصندوق.","Notifications disabled on this device only; messages stay in your inbox."))}catch(e){toast(A("تعذر إيقاف التسجيل؛ حاول قبل تسجيل الخروج.","Could not unregister this device; retry before signing out."))}},
- async readMessage(id){if(st.user&&st.inbox.some(n=>n.id===id)){await setDoc(doc(db,"notificationReads",st.user.uid,"messages",id),{readAt:Date.now()});st.readMessages.add(id);draw()}},
- async readAllMessages(){if(!st.user)return;const batch=writeBatch(db);st.inbox.forEach(n=>batch.set(doc(db,"notificationReads",st.user.uid,"messages",n.id),{readAt:Date.now()}));await batch.commit();st.inbox.forEach(n=>st.readMessages.add(n.id));draw()},
- async acceptAll(){await acceptFilteredRegistrations()},
- async broadcast(){
-  if(!st.adm)return;
-  const title=$("broadcast-title")?.value.trim(),text=$("broadcast-text")?.value.trim(),raw=$("broadcast-url")?.value.trim();
-  if(!title||!text)return toast(A("اكتب عنوانًا ونصًا للرسالة.","Enter a title and message."));
-  if(raw&&!safeHttpLink(raw))return toast(A("الرابط غير صالح.","Invalid link."));
-  if(!confirm(A("إرسال هذه الرسالة لجميع الطلاب؟","Send this message to every student?")))return;
-  await run(()=>addDoc(collection(db,"notifications"),{...notificationBody(title,text,raw),type:"broadcast",route:"inbox"}),A("أُرسلت الرسالة للصناديق.","Message sent to inboxes."));
- },
- async assignPresenter(){
-  if(!st.adm||!st.zoom)return;
-  const uid=$("lecture-presenter")?.value,student=st.studs.find(s=>s.id===uid);if(!student)return;
-  await run(()=>setDoc(doc(db,"lecturePresenters",uid),{uid,name:student.name||student.email||"",roomId:String(st.zoom.ts),enabled:true,assignedBy:st.user.uid,ts:Date.now()}),A("تم تعيين مسؤول شرح للمحاضرة فقط.","Presenter assigned to this lecture only."));
- },
- async saveCoPresenters(){
-  if(!st.adm||!st.zoom)return;
-  const parsed=parseCoPresenterNames($("co-pres-1")?.value,$("co-pres-2")?.value,$("co-pres-3")?.value);
-  if(!parsed.ok)return toast("⚠️ "+parsed.error);
-  const roomId=String(st.zoom.ts);
-  st.coPresenters=parsed.names;
-  await run(async()=>{
-    await setDoc(doc(db,"site","zoom_co_presenters"),{
-      roomId,
-      names:parsed.names,
-      primaryName:parsed.names[0],
-      updatedBy:st.user.uid,
-      ts:Date.now()
-    },{merge:true});
-    const matchedStudents=st.studs.filter(s=>parsed.names.some(nm=>String(s.name||"").trim().toLowerCase()===String(nm||"").trim().toLowerCase()));
-    for(const student of matchedStudents){
-      await setDoc(doc(db,"lecturePresenters",student.id),{
-        uid:student.id,
-        name:student.name||"",
-        roomId,
-        enabled:true,
-        assignedBy:st.user.uid,
-        ts:Date.now()
-      },{merge:true});
-    }
-  },A("تم اعتماد مسؤولي مشاركة الشاشة للمحاضرة الحالية.","Co-presenters saved for this lecture."));
-  draw();
- },
- async clearCoPresenters(){
-  if(!st.adm)return;
-  st.coPresenters=[];
-  await run(async()=>{
-    await setDoc(doc(db,"site","zoom_co_presenters"),{
-      roomId:String(st.zoom?.ts||""),
-      names:[],
-      primaryName:"",
-      updatedBy:st.user.uid,
-      ts:Date.now()
-    },{merge:true});
-    releaseStageOverrideIfOwner();
-  },A("تم مسح قائمة مسؤولي الشاشة.","Co-presenters list cleared."));
-  draw();
- },
- async removePresenter(uid){if(st.adm)await run(()=>runTransaction(db,async transaction=>{
-   const stageRef=doc(db,"site","zoom_stage"),stage=await transaction.get(stageRef);
-   transaction.delete(doc(db,"lecturePresenters",uid));
-   transaction.set(doc(db,"zoom_presence",uid),{uid,roomId:String(st.zoom?.ts||""),isPresenter:false,active:false},{merge:true});
-   if(stage.exists()&&stage.data().senderUid===uid)transaction.set(stageRef,{roomId:String(st.zoom?.ts||""),senderUid:st.user.uid,sharedType:"",sharedImg:"",pageDataUrl:"",screenActive:false,liveFrameUrl:"",ts:Date.now()},{merge:true});
- }),A("تم إلغاء صلاحية الشرح.","Presenter access revoked."))},
- regLecture(id){
-  const lecture=st.lecs.find(l=>l.id===id),m=st.me;if(!st.user||!lecture)return;
-  if(!m.name||!m.phone){toast(A("أكمل اسمك ورقمك أولًا.","Complete your name and phone first."));return go("dashboard")}
-  return run(()=>setDoc(doc(db,"regs",st.user.uid),{name:m.name,phone:m.phone,email:st.user.email||"",lastApplicationKey:"lec_"+id,list:{["lec_"+id]:{entityId:id,title:lecture.title,kind:"l",price:0,ts:Date.now(),status:"pending"}}},{merge:true}),A("تم إرسال طلب المحاضرة.","Lecture application submitted."));
- },
- onboard(){openOnboarding()},
- async zdevices(){await openDeviceTest()},
- async zreconnect(){
-  if(!ZS.joined)return toast(A("افتح محاضرة وادخل أولًا","Open and join a lecture first"));
-  if(useSFU()){
-   if(ZS.sfu?.state==="connected"){await syncSfuTracks();syncAudioElements();return toast(A("الاتصال قائم","Already connected"))}
-   await connectSfu();
-  }else{
-   ZS.peers.forEach(c=>{if(c.caller)c.pc.restartIce()});touchPresence(true);connectToPresentPeers();
-  }
-  unlockRemoteAudioOnGesture();
- },
- async zpurgechat(){
-  if(!st.adm||!db)return;
-  if(!confirm(A("حذف سجل الشات القديم المحفوظ في قاعدة البيانات نهائيًا؟ هذا لا يحذف رسائل الآخرين من شاشتهم الحالية.","Permanently delete the old saved chat archive? This does not remove messages already on others' screens.")))return;
-  await run(async()=>{
-   let removed=0;
-   for(let page=0;page<20;page++){
-    const snap=await getDocs(query(collection(db,"zoom_chat"),limit(400)));
-    if(snap.empty)break;
-    const batch=writeBatch(db);snap.docs.forEach(d=>batch.delete(d.ref));await batch.commit();removed+=snap.size;
-   }
-   toast(A("حُذف الأرشيف القديم. أعد العملية إذا كان أكبر من 8000 رسالة.","Old archive deleted. Repeat if it contained over 8,000 messages."));
-  },A("تم تنظيف الشات القديم","Legacy chat cleaned"));
- },
- home(){go("dashboard")},
- goRoute(r){go(r||"dashboard")},
- lang(){st.lang=st.lang=="ar"?"en":"ar";ls("lang",st.lang);draw()},
- theme(){const isDark=document.documentElement.getAttribute("data-theme")==="dark";applyTheme(isDark?"light":"dark");toast(isDark?A("تم التفعيل: وضع النهار","Light mode enabled"):A("تم التفعيل: وضع الليل","Dark mode enabled"))},
- async out(){try{await detachDeviceNotifications()}catch(e){return toast(A("تعذر فصل إشعارات هذا الجهاز؛ أعد المحاولة لحماية رسائلك قبل الخروج.","Could not unlink this device's notifications. Retry before signing out."))}zStop();setMenuOpen(false);if(ok)await signOut(auth);go("dashboard");toast(A("تم تسجيل الخروج","Signed out"))},
- togglemode(v){st.regMode=v=="1";draw()},
- cropReset(id){if(st.crops[id]){st.crops[id].x=0;st.crops[id].y=0;st.crops[id].zoom=1;draw()}},
- delStudPhoto(b){
-  if(!st.user)return;
-  delete st.crops.me;
-  run(()=>setDoc(doc(db,"students",st.user.uid),{photo:""},{merge:true}),A("تمت إزالة الصورة","Photo removed"),b);
- },
- async studin(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));const e=$("se")?.value.trim()||"",p=$("sp")?.value.trim()||"";
-  if(!e||!pin6(p))return toast(A("أدخل البريد الإلكتروني ورمزاً من 6 أرقام","Enter email and a 6-digit PIN"));
-  try{await pers;await signInWithEmailAndPassword(auth,e,p);go("dashboard")}catch(err){toast("⚠️ "+A("تعذر الدخول: ","Sign-in failed: ")+(err.code||err.message))}},
- async studreg(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));const e=$("se")?.value.trim()||"",p=$("sp")?.value.trim()||"",p2=$("sp2")?.value.trim()||"";
-  if(!e||!pin6(p))return toast(A("أدخل بريداً صحيحاً ورمزاً مكوناً من 6 أرقام","Enter a valid email and a 6-digit PIN"));
-  if(p!==p2)return toast(A("تأكيد الرمز غير مطابق للرمز الأول","PIN confirmation does not match"));
-  try{await pers;await createUserWithEmailAndPassword(auth,e,p);st.regMode=false;go("dashboard");toast("✅ "+A("تم إنشاء الحساب وتسجيل الدخول","Account created and signed in"))}catch(err){toast("⚠️ "+A("تعذر إنشاء الحساب: ","Sign-up failed: ")+(err.code||err.message))}},
- async adminin(){if(!ok)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));try{await pers;await signInWithEmailAndPassword(auth,$("ae")?.value.trim()||"",$("ac2")?.value||"");go("admin-secret-portal")}catch(e){toast("⚠️ "+A("البريد أو الرمز غير صحيح","Wrong email or password"))}},
- saveP(b){
-  const d={email:st.user?.email||"",last:Date.now(),note:$("p_note")?.value?.trim()||""};
-  ["name","phone","major","uni"].forEach(k=>d[k]=$(`p_${k}`)?.value.trim()||"");
-  run(async()=>{
-    if(st.crops.me){
-      d.photo=await renderCroppedAvatar(st.crops.me);
-      delete st.crops.me;
-    }
-    await setDoc(doc(db,"students",st.user.uid),d,{merge:true});
-  },A("تم حفظ بياناتك","Profile saved"),b);
- },
- reg(id,b){const it=st.items.find(x=>x.id==id),m=st.me;if(!it)return;if(!m.name||!m.phone){toast(A("أكمل اسمك ورقم هاتفك في لوحتي أولاً","Add your name and phone in My space first"));return go("dashboard")}
-  run(()=>setDoc(doc(db,"regs",st.user.uid),{name:m.name,phone:m.phone,email:st.user.email||"",lastApplicationKey:id,list:{[id]:{title:it.t,kind:it.kind,price:+it.price||0,ts:Date.now(),status:"pending"}}},{merge:true}),A("تم إرسال طلبك؛ القرار سيصلك بصندوق الرسائل.","Application submitted; the decision will arrive in your inbox."),b)},
- ad(i){adShow(+i)},mute(b){const v=b.parentNode?.querySelector("video");if(!v)return;v.muted=!v.muted;b.textContent=v.muted?"🔇":"🔊"},
- star(i){if($("fc"))st.fc=$("fc").value;st.rs=+i;draw()},
- sfb(b){if(!st.rs)return toast(A("اختر عدد النجوم","Pick a star rating"));const c=$("fc")?.value.trim()||"";run(async()=>{await addDoc(collection(db,"reviews"),{uid:st.user.uid,n:st.me.name||st.user.email||"",s:st.rs,c,ok:false,ts:Date.now()});st.rs=0;st.fc=""},A("سيظهر تقييمك بعد موافقة الإدارة","Your review appears after admin approval"),b)},
- saveA(b){if(st.adm)return run(()=>setDoc(doc(db,"site","about"),{text:$("ab")?.value||""}),null,b)},
- async save(p,b){
-  if(!st.adm)return toast("⚠️ "+A("يجب تسجيل الدخول كإدارة أولاً","Please sign in as admin first"));
-  const[c,id]=p.split("|"),d=rdF(`e-${c}-${id}`,c),f=$(`e-${c}-${id}-file`)?.files[0];
-  if(!(d.t||d.title||d.name||c=="ads"))return toast(A("العنوان مطلوب","Title is required"));
-  run(async()=>{
-    if(c=="team"&&st.crops[id]){Object.assign(d,await fdata(c,id));delete st.crops[id]}
-    else if(f){Object.assign(d,await fdata(c,f))}
-    const payload=c=="team"?{id,name:d.name||"",ig:d.ig||"",...(d.photo!==undefined?{photo:d.photo}:{})}:d;
-    const batch=writeBatch(db);batch.set(doc(db,colOf(c),id),payload,{merge:true});
-    if(["courses","vols","skills","lecs"].includes(c))batch.set(doc(db,"messageTemplates",c==="lecs"?"lec_"+id:id),readTemplate(`e-${c}-${id}`));
-    if(["ads","courses","vols","skills","lecs"].includes(c))addAnnouncementToBatch(batch,"update_"+id+"_"+Date.now(),A("تحديث: ","Updated: ")+(d.t||d.title||A("إعلان","Announcement")),d.desc||A("راجع المنصة للاطلاع على التفاصيل.","Open the platform for details."),c==="vols"?"volunteering":c==="lecs"?"lectures":c);
-    await batch.commit();
-    if(c=="team")await setDoc(doc(db,"site","meta"),{seeded:true},{merge:true}).catch(()=>{});
-  },A("تم حفظ التعديل","Changes saved"),b);
- },
- async add(c,b){
-  if(!st.adm)return toast("⚠️ "+A("يجب تسجيل الدخول كإدارة أولاً","Please sign in as admin first"));
-  const d=rdF(`n-${c}`,c),f=$(`n-${c}-file`)?.files[0];
-  if(!(d.t||d.title||d.desc||f))return toast(A("أدخل محتوى الإعلان أو اختر ملفاً","Enter ad content or pick a file"));
-  d.ts=Date.now();if(c=="ads")d.type="text";
-  run(async()=>{
-    if(f)Object.assign(d,await fdata(c,f));
-    const id=crypto.randomUUID(),batch=writeBatch(db);batch.set(doc(db,colOf(c),id),d);
-    if(["courses","vols","skills","lecs"].includes(c))batch.set(doc(db,"messageTemplates",c==="lecs"?"lec_"+id:id),readTemplate(`n-${c}`));
-    if(["ads","courses","vols","skills","lecs"].includes(c))addAnnouncementToBatch(batch,"new_"+id,A("جديد: ","New: ")+(d.t||d.title||A("إعلان","Announcement")),d.desc||A("افتح المنصة للتفاصيل والتسجيل.","Open the platform for details and registration."),c==="vols"?"volunteering":c==="lecs"?"lectures":c);
-    await batch.commit();FS(c).forEach(([k])=>{const el=$(`n-${c}-${k}`);if(el&&el.type!="hidden")el.value=""});for(const field of ["acceptMessage","acceptLink"]){const el=$(`n-${c}-${field}`);if(el)el.value=""}if(f)$(`n-${c}-file`).value="";
-  },A("تمت الإضافة وإرسال الإعلان.","Added and announced."),b);
- },
- del(p,b){if(!st.adm)return toast("⚠️ "+A("يجب تسجيل الدخول كإدارة أولاً","Please sign in as admin first"));const[c,id]=p.split("|");if(confirm(A("تأكيد الحذف؟","Confirm delete?")))run(()=>deleteDoc(doc(db,colOf(c),id)),A("تم الحذف","Deleted"),b)},
- rdel(p,b){if(!st.adm)return;const[u,i]=p.split("|");if(confirm(A("تأكيد الحذف؟","Confirm delete?")))run(()=>updateDoc(doc(db,"regs",u),{["list."+i]:deleteField()}),A("تم الحذف","Deleted"),b)},
- rv(p,b){if(!st.adm)return;const[id,v]=p.split("|");run(()=>updateDoc(doc(db,"reviews",id),{ok:v=="1"}),null,b)},
- csv(){const q=s=>'"'+String(s??"").replace(/"/g,'""')+'"',rows=st.all.filter(r=>!st.filt||r.item==st.filt),c="\ufeff"+"name,phone,email,type,title,price,status,date\n"+rows.map(r=>[r.name,r.phone,r.email,r.kind=="v"?"volunteering":r.kind=="s"?"skill":"course",r.title,r.price,r.status||"pending",new Date(r.ts).toISOString()].map(q).join(",")).join("\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([c],{type:"text/csv"}));a.download="alnoor-registrations.csv";document.body.appendChild(a);a.click();a.remove()},
- async zenter(){const v=$("zin")?.value.trim().toUpperCase()||"";if(v&&await sha("zoom|"+v)==st.zoom?.h){st.zok=st.zoom.ts;draw()}else toast(A("الكود غير صحيح","Wrong code"))},
- async zcreate(b){if(!st.adm)return;let v=$("zc")?.value.trim().toUpperCase()||"";if(!v){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";v=[...crypto.getRandomValues(new Uint8Array(8))].map(x=>c[x%c.length]).join("")}run(async()=>{await setDoc(doc(db,"site","zoom"),{h:await sha("zoom|"+v),ts:Date.now()});await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:true,ts:Date.now()},{merge:true});ls("zc",v)},null,b)},
- zclose(b){if(!st.adm)return;ls("zc","");run(()=>deleteDoc(doc(db,"site","zoom")),A("تم إغلاق المحاضرة","Lecture closed"),b)},
+  toggleMenu:()=>setMenuOpen(!st.menuOpen),
+  closeMenu:()=>setMenuOpen(false),
+  goRoute:b=>{const r=b.dataset.p;if(!r)return;go(r)},
+  onboard:()=>openOnboarding(0),
+  home:()=>go(st.user?"dashboard":"login"),
+  lang:()=>{st.lang=st.lang=="ar"?"en":"ar";ls("lang",st.lang);document.documentElement.lang=st.lang;document.documentElement.dir=st.lang=="ar"?"rtl":"ltr";draw()},
+  theme:()=>{const cur=document.documentElement.getAttribute("data-theme")==="dark"?"dark":"light";applyTheme(cur==="dark"?"light":"dark")},
+  out:()=>{if(!st.user)return go("login");if(auth)signOut(auth);go("login")},
+  togglemode:b=>{st.regMode=b.dataset.p==="1";draw()},
+  studin:async b=>{const e=$("se").value.trim(),p=$("sp").value.trim();if(!e||!pin6(p))return toast("⚠️ "+A("أدخل بريداً صحيحاً ورمزاً من 6 أرقام","Enter a valid email and 6-digit PIN"));if(!db)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));b.disabled=true;try{await pers;await signInWithEmailAndPassword(auth,e,"Noor#"+p);go("dashboard")}catch(err){toast("⚠️ "+A("تعذر الدخول: ","Sign in failed: ")+(err.code||err.message))}finally{b.disabled=false}},
+  studreg:async b=>{const e=$("se").value.trim(),p=$("sp").value.trim(),p2=$("sp2")?.value.trim();if(!e||!pin6(p))return toast("⚠️ "+A("أدخل بريداً صحيحاً ورمزاً من 6 أرقام","Enter a valid email and 6-digit PIN"));if(p!==p2)return toast("⚠️ "+A("رمزا التأكيد غير متطابقين","The two PINs do not match"));if(!db)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));b.disabled=true;try{await pers;const cred=await createUserWithEmailAndPassword(auth,e,"Noor#"+p);await setDoc(doc(db,"students",cred.user.uid),{email:e,created:Date.now(),last:Date.now()},{merge:true});go("dashboard");toast("✅ "+A("تم إنشاء الحساب وتسجيل الدخول","Account created and signed in"))}catch(err){toast("⚠️ "+A("تعذر إنشاء الحساب: ","Sign up failed: ")+(err.code||err.message))}finally{b.disabled=false}},
+  adminin:async b=>{const e=$("ae").value.trim(),p=$("ac2").value;if(!e||!p)return toast("⚠️ "+A("أدخل البريد والرمز","Enter email and password"));if(!db)return toast("⚠️ "+A("لم يتم ضبط مفاتيح Firebase بعد","Firebase keys are not set"));b.disabled=true;try{await pers;const cred=await signInWithEmailAndPassword(auth,e,p);if((cred.user.email||"").toLowerCase()!=ADMIN_EMAIL.toLowerCase()){await signOut(auth);return toast("⚠️ "+A("هذا الحساب ليس حساب الإدارة","This account is not the admin account"))}go("admin-secret-portal")}catch(err){toast("⚠️ "+A("تعذر دخول الإدارة: ","Admin sign in failed: ")+(err.code||err.message))}finally{b.disabled=false}},
+  saveP:b=>{const d={name:$("p_name").value.trim(),phone:$("p_phone").value.trim(),major:$("p_major").value.trim(),uni:$("p_uni").value.trim(),note:$("p_note")?.value.trim()||"",last:Date.now()};run(async()=>{if(st.crops["me"]){d.photo=await renderCroppedAvatar(st.crops["me"])}await setDoc(doc(db,"students",st.user.uid),d,{merge:true});delete st.crops["me"];draw()},A("تم حفظ بياناتك","Profile saved"),b)},
+  delStudPhoto:b=>run(async()=>{await updateDoc(doc(db,"students",st.user.uid),{photo:deleteField()});delete st.crops["me"];draw()},A("تمت إزالة الصورة","Photo removed"),b),
+  reg:b=>{const it=st.items.find(x=>x.id==b.dataset.p);if(!it)return;if(!st.me.name||!st.me.phone){toast("⚠️ "+A("أكمل اسمك ورقم هاتفك في لوحتي أولاً","Complete your name and phone in My space first"));return go("dashboard")}
+    run(()=>setDoc(doc(db,"regs",st.user.uid),{name:st.me.name,phone:st.me.phone,email:st.user.email||"",list:{[it.id]:{title:it.t,kind:it.kind,status:"pending",ts:Date.now()}}},{merge:true}),A("تم إرسال طلب التسجيل","Application sent"),b)},
+  ad:b=>adShow(+b.dataset.p),
+  mute:b=>{const v=b.parentElement.querySelector("video");if(!v)return;v.muted=!v.muted;b.textContent=v.muted?"🔇":"🔊"},
+  star:b=>{st.rs=+b.dataset.p;draw()},
+  sfb:b=>{const c=$("fc").value.trim();if(!st.rs||!c)return toast("⚠️ "+A("اختر التقييم واكتب تعليقاً","Pick rating and comment"));run(async()=>{await addDoc(collection(db,"reviews"),{n:st.me.name||st.user.email||A("طالب","Student"),s:st.rs,c,ok:false,ts:Date.now()});st.rs=0;st.fc="";draw()},A("تم الإرسال للمراجعة","Submitted for review"),b)},
+  seed:b=>{st.seeding=1;run(async()=>{const g=await getDocs(query(collection(db,"ads"),limit(1)));if(!g.empty){await setDoc(doc(db,"site","meta"),{seeded:true});return}const b2=writeBatch(db);DEF_ADS.forEach(({id,...d})=>b2.set(doc(db,"ads",id),d));DEF_TEAM.forEach(({id,...d})=>b2.set(doc(db,"team",id),d));b2.set(doc(db,"site","about"),{text:DEF_ABOUT});b2.set(doc(db,"site","meta"),{seeded:true});await b2.commit()},A("تم تحميل البيانات الأولية","Starter data loaded"),b)},
+  add:async b=>{const c=b.dataset.p,d=rdF("n-"+c,c);if(c=="ads"&&!d.title&&!d.desc)return toast("⚠️ "+A("أدخل عنواناً أو شرحاً","Enter title or description"));if(c!="ads"&&c!="team"&&!d.t&&!d.title)return toast("⚠️ "+A("أدخل العنوان","Enter title"));
+    const fl=$(`n-${c}-file`)?.files[0];if(c=="ads"&&!fl&&!d.title&&!d.desc)return toast("⚠️ "+A("اختر صورة أو فيديو أو أدخل نصاً","Choose an image/video or text"));
+    let tpl=null;try{tpl=readTemplate(`n-${c}`)}catch(e){return toast("⚠️ "+e.message)}
+    run(async()=>{let extra={};if(fl)extra=await fdata(c,fl);if(c=="ads")extra.type=extra.type||"text";const ref=await addDoc(collection(db,colOf(c)),{...d,...extra,ts:Date.now()});if(tpl){const key=c==="lecs"?"lec_"+ref.id:ref.id;await setDoc(doc(db,"messageTemplates",key),tpl)}},A("تمت الإضافة","Added"),b)},
+  save:async b=>{const[c,id]=b.dataset.p.split("|"),d=rdF(`e-${c}-${id}`,c),fl=$(`e-${c}-${id}-file`)?.files[0];
+    let tpl=null;try{tpl=readTemplate(`e-${c}-${id}`)}catch(e){return toast("⚠️ "+e.message)}
+    run(async()=>{let extra={};if(fl||(c=="team"&&st.crops[id]))extra=await fdata(c,fl||id);if(c=="team"){await setDoc(doc(db,"team",id),{...d,...extra},{merge:true});delete st.crops[id]}else{await setDoc(doc(db,colOf(c),id),{...d,...extra},{merge:true})}if(tpl){const key=c==="lecs"?"lec_"+id:id;await setDoc(doc(db,"messageTemplates",key),tpl)}},A("تم الحفظ","Saved"),b)},
+  del:b=>{const[c,id]=b.dataset.p.split("|");if(!confirm(A("تأكيد الحذف؟","Confirm delete?")))return;run(()=>deleteDoc(doc(db,colOf(c),id)),A("تم الحذف","Deleted"),b)},
+  st:b=>{const[u,it,s]=b.dataset.p.split("|");run(()=>changeRegistrationStatus(u,it,s),A("تم التحديث","Updated"),b)},
+  delReg:b=>{const[u,it]=b.dataset.p.split("|");if(!confirm(A("حذف هذا الطلب؟","Delete this registration?")))return;run(()=>updateDoc(doc(db,"regs",u),{["list."+it]:deleteField()}),A("تم حذف الطلب","Registration deleted"),b)},
+  delStud:b=>{const u=b.dataset.p;if(!u||!confirm(A("حذف حساب الطالب هذا نهائياً؟","Delete this student account permanently?")))return;run(async()=>{await deleteDoc(doc(db,"students",u));await deleteDoc(doc(db,"regs",u)).catch(()=>{})},A("تم حذف الطالب","Student deleted"),b)},
+  rev:b=>run(()=>updateDoc(doc(db,"reviews",b.dataset.p),{ok:true}),A("تم الاعتماد","Approved"),b),
+  delRev:b=>run(()=>deleteDoc(doc(db,"reviews",b.dataset.p)),A("تم الحذف","Deleted"),b),
+  about:b=>run(()=>setDoc(doc(db,"site","about"),{text:$("ab").value}),A("تم حفظ نبذة المنصة","About saved"),b),
+  cropReset:b=>{const id=b.dataset.p;if(!st.crops[id])return;st.crops[id]={...st.crops[id],zoom:1,x:0,y:0};syncCropPreview(id);const s=document.querySelectorAll(`[data-crop-slider^="${id}|"]`);s.forEach(inp=>{const k=inp.dataset.cropSlider.split("|")[1];inp.value=st.crops[id][k]})},
 
- zexpand(){ZS.expanded=ZS.expanded?0:1;ZS.menu=null;ZS.side=null;draw()},
- zmenu(m){ZS.menu=ZS.menu===m?null:m;draw()},
- zside(s){ZS.side=ZS.side===s?null:s;ZS.menu=null;draw();if(ZS.side==="chat")scrollChatToBottom(true)},
- zscrollchat(){scrollChatToBottom(true)},
- zviewmode(m){
-  ZS.audioOnly=m==="audio"?1:0;
-  ZS.menu=null;
-  syncTracksToPeers();
-  draw();
- },
- ztoggleopt(k){
-  ZS[k]=ZS[k]?0:1;
-  if(k==="speaker"){
-    syncAudioElements();
-  }else if(k==="shareAudio"){
-    syncTracksToPeers();
-  }
-  draw();
- },
- zmuteall(){
-  if(!st.adm)return;
-  ZS.roomCtrl.allowMic=0;
-  if(db)setDoc(doc(db,"site","zoom_ctrl"),{allowMic:false,ts:Date.now()},{merge:true}).catch(()=>{});
-  draw();
-  toast("🔇");
- },
- zunmuteall(){
-  if(!st.adm)return;
-  ZS.roomCtrl.allowMic=1;
-  if(db)setDoc(doc(db,"site","zoom_ctrl"),{allowMic:true,ts:Date.now()},{merge:true}).catch(()=>{});
-  draw();
-  toast("🎙");
- },
- zsendreact(em){
-  ZS.menu=null;
-  const who=displayName();
-  if(em==="✋"){
-    ZS.hand=ZS.hand?0:1;
-    if(db&&st.user){
-      setDoc(doc(db,"zoom_hands",st.user.uid),{
-        roomId:ZS.roomId,
-        uid:st.user.uid,
-        name:who,
-        raised:!!ZS.hand,
-        ts:Date.now()
-      },{merge:true}).catch(()=>{});
-    }
-  }
-  if(db&&st.user){
-    addDoc(collection(db,"zoom_reactions"),{
-      roomId:ZS.roomId,
-      uid:st.user.uid,
-      who,
-      emoji:em,
-      ts:Date.now()
-    }).catch(()=>{});
-  }else{
-    ZS.reactions.push({who,emoji:em,ts:Date.now()});
-  }
-  draw();
- },
- zlowerhand(uid){
-  if(!st.adm||!db||!uid)return;
-  setDoc(doc(db,"zoom_hands",uid),{raised:false,ts:Date.now()},{merge:true}).catch(()=>{});
-  if(uid===st.user?.uid)ZS.hand=0;
-  draw();
- },
- zinvite(){
-  navigator.clipboard?.writeText(location.href).catch(()=>{});
-  toast("✅");
- },
- zreport(){ZS.menu=null;toast("✅")},
- async zsendmsg(){
-  const inp=$("z-chat-in");if(!inp)return;
-  const text=inp.value.trim().slice(0,1500);if(!text)return;
-  if(Date.now()-(ZS.lastChatSent||0)<800)return;
-  ZS.lastChatSent=Date.now();
-  try{await sendEphemeralChat(text);inp.value="";renderChatPanel()}
-  catch(e){toast("⚠️ "+e.message)}
- },
- zpickmedia(accept){
-  if(!canPresent())return;
-  const fi=$("z-media-input");if(!fi)return;
-  fi.accept=accept||"*/*";
-  fi.onchange=async()=>{dropVidEl();
-    const file=fi.files?.[0];if(!file)return;
-    const realName=String(file.name||"").split(/[/\\]/).pop()||"";
-    ZS.menu=null;ZS.audioOnly=0;
-    ZS.sharedImg="";ZS.pageDataUrl="";ZS.liveFrameUrl="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedType="";
-    if(ZS.vidShareStream){ZS.vidShareStream.getTracks().forEach(t=>t.stop());ZS.vidShareStream=null}
-    ZS.pdfDoc=null;ZS.pdfNumPages=1;ZS.pdfPage=1;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";
-    pdfPageCache.clear();pdfPrefetching.clear();
-    try{
-      if(/^image\//.test(file.type)){
-        const compressed=await compressToDataUrl(file,1400,900,580000);
-        ZS.sharedImg=compressed;
-        ZS.sharedUrl=compressed;
-        ZS.sharedType="img";
-        draw();
-        syncStageToCloud();
-      }else if(/^video\//.test(file.type)){
-        const v=document.createElement("video");
-        v.id="z-shared-vid";v.controls=true;v.playsInline=true;v.preload="auto";
-        v.src=URL.createObjectURL(file);
-        ZS.vidEl=v;
-        ZS.sharedVid=v.src;
-        ZS.sharedUrl=v.src;
-        ZS.sharedType="video";
-        v.addEventListener("loadedmetadata",startVidCapture);
-        v.addEventListener("playing",startVidCapture);
-        draw();
-        v.play().catch(()=>{});
-        startLiveFrameSync();
-        syncStageToCloud();
-      }else if(/pdf/i.test(file.type)||/\.pdf$/i.test(realName)){
-        ZS.sharedType="pdf";
-        ZS.sharedUrl=URL.createObjectURL(file);
-        const pdfjs=await loadPdfJs();
-        const buf=await file.arrayBuffer();
-        ZS.pdfDoc=await pdfjs.getDocument({data:buf}).promise;
-        ZS.pdfNumPages=ZS.pdfDoc.numPages||1;
-        ZS.pdfPage=1;
-        draw();
-        await renderPdfPageToCanvas(1,true);
-      }else if(/\.pptx$/i.test(realName)||/presentationml/i.test(file.type)){
-        ZS.sharedType="pptx";
-        ZS.sharedUrl=URL.createObjectURL(file);
-        ZS.slides=await parsePptxSlides(file);
-        ZS.slideIdx=1;
-        draw();
-        syncStageToCloud();
-      }else if(/\.ppt$/i.test(realName)||/ms-powerpoint/i.test(file.type)){
-        ZS.sharedType="pptx";
-        ZS.sharedUrl=URL.createObjectURL(file);
-        ZS.slides=[{index:1,text:""}];
-        ZS.slideIdx=1;
-        draw();
-        syncStageToCloud();
-      }else if(/^(text\/|application\/(json|xml|javascript))|\.(txt|csv|md|json|html|log)$/i.test(file.type+" "+realName)){
-        ZS.sharedType="text";
-        ZS.sharedUrl=URL.createObjectURL(file);
-        ZS.textContent=(await file.text()).slice(0,12000);
-        draw();
-        syncStageToCloud();
-      }else{
-        ZS.sharedType="other";
-        ZS.sharedUrl=URL.createObjectURL(file);
-        draw();
-        syncStageToCloud();
-      }
-      toast("✅");
-    }catch(err){
-      console.error(err);
-      ZS.sharedType="other";
-      ZS.sharedUrl=URL.createObjectURL(file);
+  regLecture:b=>{const l=st.lecs.find(x=>x.id===b.dataset.p);if(!l)return;if(!st.me.name||!st.me.phone){toast("⚠️ "+A("أكمل اسمك ورقم هاتفك في لوحتي أولاً","Complete your name and phone in My space first"));return go("dashboard")}
+    run(()=>setDoc(doc(db,"regs",st.user.uid),{name:st.me.name,phone:st.me.phone,email:st.user.email||"",list:{["lec_"+l.id]:{title:l.title,kind:"l",status:"pending",ts:Date.now()}}},{merge:true}),A("تم تسجيل طلب المحاضرة","Lecture application sent"),b)},
+  acceptAll:acceptFilteredRegistrations,
+  broadcast:b=>{const title=$("broadcast-title")?.value.trim(),text=$("broadcast-text")?.value.trim(),url=$("broadcast-url")?.value.trim();if(!title||!text)return toast(A("أدخل العنوان والنص","Enter title and text"));if(url&&!safeHttpLink(url))return toast(A("استخدم رابط HTTP أو HTTPS صالحًا","Use a valid HTTP or HTTPS link"));
+    run(async()=>{await addDoc(collection(db,"notifications"),{...notificationBody(title,text,url,"all"),type:"broadcast",route:"inbox"});$("broadcast-title").value="";$("broadcast-text").value="";$("broadcast-url").value=""},A("تم إرسال الرسالة للجميع","Sent to everyone"),b)},
+  delMessageAll:b=>{const id=b.dataset.p;if(!st.adm||!id)return;if(!confirm(A("حذف هذه الرسالة نهائياً عند الجميع؟","Delete this message permanently for everyone?")))return;
+    run(()=>deleteDoc(doc(db,"notifications",id)),A("تم حذف الرسالة عند الجميع","Message deleted for everyone"),b)},
+  readMessage:b=>run(()=>setDoc(doc(db,"notificationReads",st.user.uid,"messages",b.dataset.p),{readAt:Date.now()}),A("تم التعليم كمقروء","Marked as read"),b),
+  readAllMessages:async b=>{const unread=st.inbox.filter(n=>!st.readMessages.has(n.id));if(!unread.length)return;b.disabled=true;
+    try{for(let i=0;i<unread.length;i+=400){const batch=writeBatch(db);unread.slice(i,i+400).forEach(n=>batch.set(doc(db,"notificationReads",st.user.uid,"messages",n.id),{readAt:Date.now()}));await batch.commit()}toast(A("تم تعليم الكل كمقروء","All marked as read"))}
+    catch(e){toast(A("تعذر تعليم الكل كمقروء","Could not mark all as read"))}finally{b.disabled=false}},
+  enableNotifications:enableDeviceNotifications,
+  disableNotifications:()=>run(detachDeviceNotifications,A("تم إيقاف إشعارات هذا الجهاز","Notifications disabled on this device")),
+  setupPush:b=>{const key=prompt(A("الصق المفتاح العام لخدمة الإشعارات","Paste the push service public key"));if(!key)return;run(()=>setDoc(doc(db,"pushConfig","public"),{publicKey:key.trim(),updatedAt:Date.now()}),A("تم نشر إعدادات الإشعارات","Push settings published"),b)},
+  saveCoPresenters:b=>{
+    if(!st.adm)return;
+    const n1=$("co-pres-1")?.value||"",n2=$("co-pres-2")?.value||"",n3=$("co-pres-3")?.value||"";
+    const parsed=parseCoPresenterNames(n1,n2,n3);
+    if(!parsed.ok)return toast("⚠️ "+parsed.error);
+    const roomId=String(st.zoom?.ts||"");
+    run(async()=>{
+      st.coPresenters=parsed.names;
+      await setDoc(doc(db,"site","zoom_co_presenters"),{roomId,names:parsed.names,updatedAt:Date.now()});
       draw();
-      syncStageToCloud();
-      toast("⚠️");
-    }
-    fi.value="";
-  };
-  fi.click();
- },
- async zpdfpage(step){
-  if(!canPresent()||!ZS.pdfDoc)return;
-  const next=Math.max(1,Math.min(ZS.pdfNumPages,ZS.pdfPage+(+step||1)));
-  if(next===ZS.pdfPage)return;
-  ZS.pdfPage=next;
-  const lbl=$("z-pdf-page-lbl");
-  if(lbl)lbl.textContent=`${ZS.pdfPage} / ${ZS.pdfNumPages}`;
-  await renderPdfPageToCanvas(next,true);
- },
- zslide(step){
-  if(!canPresent())return;
-  const maxS=Math.max(1,ZS.slides.length||1);
-  ZS.slideIdx=Math.max(1,Math.min(maxS,ZS.slideIdx+(+step||1)));
-  draw();
-  syncStageToCloud({slideIdx:ZS.slideIdx});
- },
- zclearshare(){
-  if(!canPresent())return;dropVidEl();
-  stopLiveFrameSync();
-  if(ZS.scr){ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null}
-  if(ZS.vidShareStream){ZS.vidShareStream.getTracks().forEach(t=>t.stop());ZS.vidShareStream=null}
-  if(ZS.sharedUrl&&ZS.sharedUrl.startsWith("blob:")){try{URL.revokeObjectURL(ZS.sharedUrl)}catch(e){}}
-  ZS.sharedImg="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedType="";
-  ZS.pageDataUrl="";ZS.liveFrameUrl="";ZS.pdfDoc=null;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";ZS.screenActive=0;
-  pdfPageCache.clear();pdfPrefetching.clear();
-  ZS.menu=null;
-  syncTracksToPeers();
-  draw();
-  syncStageToCloud({sharedType:"",sharedImg:"",pageDataUrl:"",liveFrameUrl:"",sharedVid:"",sharedUrl:"",screenActive:false});
- },
+    },A("تم اعتماد مسؤولي الشاشة","Co-presenters saved"),b);
+  },
+  clearCoPresenters:b=>{
+    if(!st.adm)return;
+    const roomId=String(st.zoom?.ts||"");
+    run(async()=>{
+      st.coPresenters=[];
+      await setDoc(doc(db,"site","zoom_co_presenters"),{roomId,names:[],updatedAt:Date.now()});
+      draw();
+    },A("تم مسح قائمة مسؤولي الشاشة","Co-presenters cleared"),b);
+  },
+  assignPresenter:b=>{const uid=$("lecture-presenter")?.value,student=st.studs.find(s=>s.id===uid);if(!uid||!st.zoom)return toast(A("اختر حسابًا","Choose an account"));
+    run(()=>setDoc(doc(db,"lecturePresenters",uid),{uid,name:student?.name||student?.email||uid,enabled:true,roomId:String(st.zoom.ts),updatedAt:Date.now()}),A("تم تعيين المسؤول للمحاضرة الحالية","Assigned presenter to current lecture"),b)},
+  removePresenter:b=>run(()=>deleteDoc(doc(db,"lecturePresenters",b.dataset.p)),A("تم إلغاء صلاحية الشرح","Presenter role revoked"),b),
+  zreconnect:async b=>{
+    if(!st.user||!inRoom())return;
+    b.disabled=true;
+    try{
+      ZS.sfuEpoch++;
+      if(ZS.sfu){await ZS.sfu.disconnect().catch(()=>{});ZS.sfu=null;ZS.sfuTracks.clear()}
+      ZS.peers.forEach(c=>{try{c.pc.close()}catch(e){}});
+      ZS.peers.clear();ZS.remoteStreams.clear();
+      syncAudioElements();
+      ZS.joined=0;joinRoom();
+      if(canPresent())syncStageToCloud();
+      toast("✅ "+A("تمت إعادة الاتصال","Reconnected"));
+    }finally{b.disabled=false;draw()}
+  },
 
- async zt(k){
-  if(!ZS.joined)joinRoom();
-  if(!ZS.joined)return;
-  if(k=="mic"){
-    if(!ZS.mic){
-      if(await openMicFast())draw();
-    }else{
-      ZS.mic=0;
-      if(ZS.micStream)ZS.micStream.getAudioTracks().forEach(t=>t.enabled=false);
-      zs(A("المايك مطفي","Mic off"));
+  // Live Stage Annotation & Floating Note Board Actions
+  annToggleMode:()=>{LIVE.drawMode=!LIVE.drawMode;draw()},
+  annTool:b=>{LIVE.tool=b.dataset.p;LIVE.drawMode=true;draw()},
+  annColor:b=>{LIVE.color=b.dataset.p;if(LIVE.tool==="eraser")LIVE.tool="highlighter";draw()},
+  annUndo:()=>{if(!LIVE.strokes.length)return;LIVE.redoStack.push(LIVE.strokes.pop());paintAnnOverlay();emitLiveAnnotation()},
+  annClear:()=>{LIVE.redoStack=[...LIVE.strokes];LIVE.strokes=[];LIVE.activeStroke=null;LIVE.notes=[];LIVE.laser=null;draw();emitLiveAnnotation()},
+  annBoardToggle:()=>{LIVE.boardOpen=!LIVE.boardOpen;LIVE.boardMinimized=false;draw();emitLiveAnnotation()},
+  annAddNote:()=>{
+    const id="ann_"+Date.now()+"_"+Math.random().toString(36).slice(2,5);
+    LIVE.notes.push({id,x:28+(LIVE.notes.length*20)%160,y:34+(LIVE.notes.length*20)%110,text:"",color:LIVE.color});
+    draw();emitLiveAnnotation();
+    document.querySelector(`[data-ann-note-in="${id}"]`)?.focus();
+  },
+  annDelNote:b=>{LIVE.notes=LIVE.notes.filter(n=>n.id!==b.dataset.p);draw();emitLiveAnnotation()},
+  bannTool:b=>{LIVE.boardTool=b.dataset.p;draw()},
+  bannColor:b=>{LIVE.boardColor=b.dataset.p;if(LIVE.boardTool==="eraser")LIVE.boardTool="pen";draw()},
+  bannDark:()=>{LIVE.boardDark=!LIVE.boardDark;draw();emitLiveAnnotation()},
+  bannUndo:()=>{if(!LIVE.boardStrokes.length)return;LIVE.boardRedo.push(LIVE.boardStrokes.pop());paintAnnBoard();emitLiveAnnotation()},
+  bannClear:()=>{LIVE.boardStrokes=[];LIVE.boardActive=null;LIVE.boardNotes=[];draw();emitLiveAnnotation()},
+  bannAddNote:()=>{
+    const id="bann_"+Date.now()+"_"+Math.random().toString(36).slice(2,5);
+    LIVE.boardNotes.push({id,x:18+(LIVE.boardNotes.length*16)%100,y:18+(LIVE.boardNotes.length*16)%70,text:"",color:LIVE.boardColor==="#ffffff"&&!LIVE.boardDark?"#0f172a":LIVE.boardColor});
+    draw();emitLiveAnnotation();
+    document.querySelector(`[data-bann-note-in="${id}"]`)?.focus();
+  },
+  bannDelNote:b=>{LIVE.boardNotes=LIVE.boardNotes.filter(n=>n.id!==b.dataset.p);draw();emitLiveAnnotation()},
+  bannMin:()=>{LIVE.boardMinimized=!LIVE.boardMinimized;draw();emitLiveAnnotation()},
+  bannClose:()=>{LIVE.boardOpen=false;draw();emitLiveAnnotation()},
+
+  zcreate:async b=>{let c=$("zc").value.trim().toUpperCase();if(!c)c=Math.random().toString(36).slice(2,8).toUpperCase();
+    const ts=Date.now();
+    await run(async()=>{
+      await setDoc(doc(db,"site","zoom"),{h:await sha(c),ts});
+      await setDoc(doc(db,"site","zoom_stage"),{roomId:String(ts),sharedType:"",sharedImg:"",pageDataUrl:"",liveFrameUrl:"",sharedVid:"",sharedUrl:"",slides:[],slideIdx:1,textContent:"",screenActive:false,ts}).catch(()=>{});
+      await setDoc(doc(db,"site","zoom_stage_owner"),{roomId:String(ts),name:"",uid:"",isAdmin:false,active:false,ts}).catch(()=>{});
+      await setDoc(doc(db,"site","zoom_co_presenters"),{roomId:String(ts),names:st.coPresenters||[],updatedAt:ts}).catch(()=>{});
+      await setDoc(doc(db,"site","zoom_ctrl"),{allowMic:true,ts}).catch(()=>{});
+      ls("zc",c);st.zoom={h:"",ts};st.zok=ts;ZS.joined=0;joinRoom();draw()
+    },A("تم إنشاء المحاضرة بكود: ","Lecture created with code: ")+c,b)},
+  zenter:async b=>{if(!st.zoom)return;const c=$("zin").value.trim().toUpperCase();if(!c)return toast("⚠️ "+A("أدخل الكود","Enter code"));
+    b.disabled=true;try{if(await sha(c)!=st.zoom.h)return toast("⚠️ "+A("الكود غير صحيح","Wrong code"));st.zok=st.zoom.ts;joinRoom();draw()}finally{b.disabled=false}},
+  zclose:b=>{if(!confirm(A("إغلاق المحاضرة؟","Close lecture?")))return;run(async()=>{
+    const rid=String(st.zoom?.ts||"");
+    zStop();
+    await deleteDoc(doc(db,"site","zoom"));
+    await deleteDoc(doc(db,"site","zoom_stage")).catch(()=>{});
+    await deleteDoc(doc(db,"site","zoom_stage_owner")).catch(()=>{});
+    await deleteDoc(doc(db,"site","zoom_co_presenters")).catch(()=>{});
+    if(rid){
+      const handsSnap=await getDocs(query(collection(db,"zoom_hands"),where("roomId","==",rid))).catch(()=>null);
+      handsSnap?.forEach(d=>deleteDoc(d.ref).catch(()=>{}));
+      const presSnap=await getDocs(query(collection(db,"zoom_presence"),where("roomId","==",rid))).catch(()=>null);
+      presSnap?.forEach(d=>deleteDoc(d.ref).catch(()=>{}));
+    }
+    st.zoom=null;st.zok=0;st.coPresenters=[];st.stageOwner={name:"",uid:"",isAdmin:false,active:false,ts:0};ls("zc","");draw()
+  },A("تم إغلاق المحاضرة","Lecture closed"),b)},
+
+  zmenu:b=>{const m=b.dataset.p;ZS.menu=ZS.menu===m?null:m;draw()},
+  zside:b=>{const s=b.dataset.p||null;ZS.side=ZS.side===s?null:s;ZS.menu=null;draw();if(ZS.side==="chat")scrollChatToBottom(true)},
+  zscrollchat:()=>scrollChatToBottom(true),
+  zexpand:()=>{ZS.expanded=ZS.expanded?0:1;ZS.menu=null;draw()},
+  zinvite:()=>{if(navigator.clipboard)navigator.clipboard.writeText(location.href).catch(()=>{});toast("🔗 "+A("تم نسخ رابط المحاضرة","Invite link copied"))},
+  zviewmode:b=>{const m=b.dataset.p;ZS.audioOnly=m==="audio"?1:0;ZS.menu=null;draw()},
+  ztoggleopt:b=>{
+    const k=b.dataset.p;
+    if(k==="shareAudio"){
+      ZS.shareAudio=ZS.shareAudio?0:1;
       syncTracksToPeers();
+    }else if(k==="speaker"){
+      ZS.speaker=ZS.speaker?0:1;
+      syncAudioElements();
+    }else if(k==="batterySaver"){
+      ZS.batterySaver=ZS.batterySaver?0:1;
+    }else if(k==="captions"){
+      ZS.captions=ZS.captions?0:1;
+    }
+    ZS.menu=null;draw();
+  },
+  zquickmic:async()=>{
+    if(!ZS.joined)joinRoom();
+    if(ZS.micStream){
+      ZS.mic=1;
+      ZS.micStream.getAudioTracks().forEach(t=>t.enabled=true);
+      startAudioMeter(ZS.micStream);
+      await syncTracksToPeers();
+      zs(A("المايك شغال","Mic on"));draw();return;
+    }
+    if(!navigator.mediaDevices?.getUserMedia)return toast("⚠️ "+mediaErrorMsg(null,"mic"));
+    try{
+      const audioSpec=deviceChoice.mic?{deviceId:{exact:deviceChoice.mic},echoCancellation:true,noiseSuppression:true,autoGainControl:true}:{echoCancellation:true,noiseSuppression:true,autoGainControl:true};
+      ZS.micStream=await navigator.mediaDevices.getUserMedia({audio:audioSpec,video:false});
+      ZS.mic=1;
+      startAudioMeter(ZS.micStream);
+      await syncTracksToPeers();
+      zs(A("المايك شغال","Mic on"));draw();
+    }catch(e){console.error(e);toast("⚠️ "+mediaErrorMsg(e,"mic"))}
+  },
+  zquickcam:async()=>{
+    if(!ZS.joined)joinRoom();
+    if(ZS.cam&&ZS.cam.getTracks().some(t=>t.readyState==="live")){
+      ZS.cam1=1;ZS.audioOnly=0;
+      ZS.cam.getVideoTracks().forEach(t=>t.enabled=true);
+      await syncTracksToPeers();
+      touchPresence(true);draw();return;
+    }
+    if(!navigator.mediaDevices?.getUserMedia)return toast("⚠️ "+mediaErrorMsg(null,"cam"));
+    try{
+      const [w,h]=ZQ[document.querySelector('[data-c="zq"]')?.value||"720"]||[1280,720];
+      const vSpec=deviceChoice.cam?{deviceId:{exact:deviceChoice.cam},width:{ideal:w},height:{ideal:h}}:{width:{ideal:w},height:{ideal:h}};
+      ZS.cam=await navigator.mediaDevices.getUserMedia({video:vSpec,audio:false});
+      ZS.cam1=1;ZS.audioOnly=0;
+      ZS.cam.getVideoTracks()[0].onended=()=>{ZS.cam1=0;ZS.cam=null;syncTracksToPeers();touchPresence(true);draw()};
+      await syncTracksToPeers();
+      touchPresence(true);draw();
+    }catch(e){console.error(e);toast("⚠️ "+mediaErrorMsg(e,"cam"))}
+  },
+  zt:async b=>{
+    if(!ZS.joined)joinRoom();
+    const k=b.dataset.p;
+    if(k=="mic"){
+      if(!canPresent()&&!ZS.roomCtrl.allowMic){
+        return toast("🔇 "+A("الإدارة أوقفت المايكروفون مؤقتاً","Microphone is muted by host"));
+      }
+      if(!ZS.micStream){
+        await ACT.zquickmic();
+        return;
+      }
+      ZS.mic=ZS.mic?0:1;
+      ZS.micStream.getAudioTracks().forEach(t=>t.enabled=!!ZS.mic);
+      if(ZS.mic)startAudioMeter(ZS.micStream);
+      else{stopAudioMeter();const bar=$("z-mic-bar");if(bar)bar.style.width="0%"}
+      await syncTracksToPeers();
+      zs(ZS.mic?A("المايك شغال","Mic on"):A("المايك مطفي","Mic off"));
       draw();
     }
-  }else{
-    try{
+    if(k=="cam1"){
       if(!ZS.cam1){
-        await ensureCam();
-        ZS.cam1=1;
-        ZS.audioOnly=0;
-        await syncTracksToPeers();
-        draw();
-      }else{
-        ZS.cam1=0;
-        if(ZS.cam){ZS.cam.getTracks().forEach(t=>t.stop());ZS.cam=null}
-        await syncTracksToPeers();
-        draw();
+        await ACT.zquickcam();
+        return;
       }
-    }catch(e){toast("⚠️ "+mediaErrorMsg(e,"cam"))}
-  }
- },
- async zquickmic(){
-  if(!ZS.joined)joinRoom();
-  if(!ZS.joined)return;
-  if(await openMicFast())draw();
- },
- async zquickcam(){
-  if(!ZS.joined)joinRoom();
-  if(!ZS.joined)return;
-  try{
-    await ensureCam();
-    ZS.cam1=1;ZS.audioOnly=0;
-    await syncTracksToPeers();
-    draw();
-  }catch(e){toast("⚠️ "+mediaErrorMsg(e,"cam"))}
- },
- async zscr(){
-  if(!canPresent())return;
-  ZS.menu=null;
-  if(ZS.scr){
-    ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null;ZS.screenActive=0;
-    if(!st.adm)releaseStageOverrideIfOwner();
+      ZS.cam1=0;
+      ZS.cam?.getTracks().forEach(t=>t.stop());ZS.cam=null;
+      await syncTracksToPeers();
+      touchPresence(true);draw();
+    }
+  },
+  zscr:async()=>{
+    if(!canPresent())return;
+    if(!ZS.joined)joinRoom();
+    ZS.menu=null;
+    if(ZS.scr){
+      ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null;ZS.screenActive=0;
+      stopLiveFrameSync();
+      if(!ZS.sharedType)releaseStageOverrideIfOwner();
+      await syncTracksToPeers();
+      syncStageToCloud({screenActive:false});
+      draw();return;
+    }
+    if(!navigator.mediaDevices?.getDisplayMedia)return toast("⚠️ "+A("مشاركة الشاشة غير مدعومة في هذا المتصفح","Screen share is not supported in this browser"));
+    try{
+      const [w,h]=ZQ[document.querySelector('[data-c="zq"]')?.value||"720"]||[1280,720];
+      ZS.scr=await navigator.mediaDevices.getDisplayMedia({video:{width:{ideal:w},height:{ideal:h},frameRate:{ideal:24}},audio:!!ZS.shareAudio});
+      ZS.screenActive=1;ZS.audioOnly=0;
+      if(!st.adm)claimStageOverride();
+      ZS.scr.getVideoTracks()[0].onended=()=>{
+        ZS.scr=null;ZS.screenActive=0;
+        stopLiveFrameSync();
+        if(!ZS.sharedType)releaseStageOverrideIfOwner();
+        syncTracksToPeers();
+        syncStageToCloud({screenActive:false});
+        draw();
+      };
+      await syncTracksToPeers();
+      startLiveFrameSync();
+      syncStageToCloud({screenActive:true});
+      draw();
+    }catch(e){console.error(e);toast("⚠️ "+A("تعذر مشاركة الشاشة","Could not share screen"))}
+  },
+  zpickmedia:b=>{
+    if(!canPresent())return;
+    const inp=$("z-media-input");
+    if(!inp)return;
+    inp.accept=b.dataset.p||"*/*";
+    ZS.menu=null;
+    inp.value="";
+    inp.click();
+  },
+  zclearshare:()=>{
+    if(!canPresent())return;
+    dropVidEl();
+    if(ZS.vidShareStream){ZS.vidShareStream.getTracks().forEach(t=>t.stop());ZS.vidShareStream=null}
+    if(ZS.scr){ZS.scr.getTracks().forEach(t=>t.stop());ZS.scr=null}
     stopLiveFrameSync();
-    await syncTracksToPeers();
+    ZS.sharedImg="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedType="";ZS.pageDataUrl="";ZS.liveFrameUrl="";ZS.pdfDoc=null;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";ZS.screenActive=0;
+    pdfPageCache.clear();pdfPrefetching.clear();
+    releaseStageOverrideIfOwner();
+    syncTracksToPeers();
+    syncStageToCloud({sharedType:"",sharedImg:"",pageDataUrl:"",liveFrameUrl:"",sharedVid:"",sharedUrl:"",slides:[],slideIdx:1,textContent:"",screenActive:false});
+    ZS.menu=null;draw();
+  },
+  zpdfpage:async b=>{
+    if(!canPresent()||!ZS.pdfDoc)return;
+    const delta=Number(b.dataset.p||0);
+    const next=Math.max(1,Math.min(ZS.pdfNumPages||1,ZS.pdfPage+delta));
+    await renderPdfPageToCanvas(next,true);
+  },
+  zslide:b=>{
+    if(!canPresent()||!ZS.slides.length)return;
+    const delta=Number(b.dataset.p||0);
+    ZS.slideIdx=Math.max(1,Math.min(ZS.slides.length,ZS.slideIdx+delta));
     draw();
-    syncStageToCloud({screenActive:false,liveFrameUrl:""});
-    return;
-  }
-  await startFullScreenShare();
- },
- zrec(){
-  if(!st.adm)return;
-  if(ZS.rec&&ZS.rec.state!=="inactive"){ZS.rec.stop();ZS.rec=null;const b=$("zrb");if(b){b.classList.remove("off");b.textContent="⏺"}return}
-  const tracks=[];
-  if(ZS.scr)tracks.push(...ZS.scr.getVideoTracks());
-  else if(ZS.cam&&ZS.cam1)tracks.push(...ZS.cam.getVideoTracks());
-  if(ZS.micStream)tracks.push(...ZS.micStream.getAudioTracks());
-  if(ZS.scr)tracks.push(...ZS.scr.getAudioTracks());
-  if(!tracks.length)return toast(A("فعّل المايك أو الكاميرا أو مشاركة الشاشة أولاً للتسجيل","Enable mic, camera, or screen share first to record"));
-  const stream=new MediaStream(tracks);
-  const mr=new MediaRecorder(stream);ZS.rec=mr;const b=$("zrb");if(b){b.classList.add("off");b.textContent="⏹"}
-  mr.ondataavailable=e=>{if(e.data.size)ZS.ch.push(e.data)};
-  mr.onstop=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(ZS.ch,{type:"video/webm"}));ZS.ch=[];a.download="alnoor-lecture.webm";document.body.appendChild(a);a.click();a.remove()};
-  mr.start();
- },
- zleave(){zStop();if(!st.adm)st.zok=0;go("dashboard")}
+    syncStageToCloud({slideIdx:ZS.slideIdx});
+  },
+  zsendreact:b=>{
+    if(!ZS.joined||!db||!st.user)return;
+    const emoji=b.dataset.p||"👍";
+    ZS.menu=null;
+    if(emoji==="✋"){
+      ZS.hand=ZS.hand?0:1;
+      setDoc(doc(db,"zoom_hands",st.user.uid),{uid:st.user.uid,name:displayName(),roomId:ZS.roomId,raised:!!ZS.hand,ts:Date.now()},{merge:true}).catch(()=>{});
+    }
+    addDoc(collection(db,"zoom_reactions"),{roomId:ZS.roomId,uid:st.user.uid,who:displayName(),emoji,ts:Date.now()}).catch(()=>{});
+    draw();
+  },
+  zlowerhand:b=>{
+    if(!st.adm||!b.dataset.p)return;
+    updateDoc(doc(db,"zoom_hands",b.dataset.p),{raised:false}).catch(()=>{});
+  },
+  zmuteall:()=>{
+    if(!st.adm)return;
+    ZS.roomCtrl.allowMic=0;
+    setDoc(doc(db,"site","zoom_ctrl"),{allowMic:false,ts:Date.now()},{merge:true}).catch(()=>{});
+    toast("🔇 "+A("تم كتم صوت الطلاب","Student microphones muted"));
+    draw();
+  },
+  zunmuteall:()=>{
+    if(!st.adm)return;
+    ZS.roomCtrl.allowMic=1;
+    setDoc(doc(db,"site","zoom_ctrl"),{allowMic:true,ts:Date.now()},{merge:true}).catch(()=>{});
+    toast("🎙 "+A("تم السماح للطلاب بالتحدث","Student microphones allowed"));
+    draw();
+  },
+  zsendmsg:async()=>{
+    const inp=$("z-chat-in");if(!inp)return;
+    const txt=inp.value.trim();if(!txt)return;
+    inp.value="";
+    try{await sendEphemeralChat(txt)}
+    catch(e){toast("⚠️ "+(e.message||A("تعذر إرسال الرسالة","Could not send message")))}
+  },
+  zpurgechat:async()=>{
+    if(!st.adm)return;
+    if(!confirm(A("حذف أرشيف الشات القديم من قاعدة البيانات؟","Delete legacy chat archive from database?")))return;
+    try{
+      const snap=await getDocs(query(collection(db,"zoom_chat"),limit(100)));
+      const batch=writeBatch(db);
+      snap.forEach(d=>batch.delete(d.ref));
+      await batch.commit();
+      toast("✅ "+A("تم حذف الأرشيف القديم","Legacy archive deleted"));
+    }catch(e){toast("⚠️ "+e.message)}
+  },
+  zdevices:openDeviceTest,
+  zreport:()=>toast("⚠ "+A("تم تسجيل البلاغ للإدارة","Report noted for administration")),
+  zrec:()=>{if(!st.adm)return;if(ZS.rec){ZS.rec.stop();return}
+    const s=ZS.scr||ZS.cam||ZS.micStream;if(!s)return toast("⚠️ "+A("شغّل الشاشة أو الكاميرا أو المايك أولاً","Turn on screen, camera or mic first"));
+    const ch=[];try{ZS.rec=new MediaRecorder(s)}catch(e){return toast("⚠️ "+A("التسجيل غير مدعوم","Recording not supported"))}
+    ZS.rec.ondataavailable=e=>{if(e.data.size)ch.push(e.data)};
+    ZS.rec.onstop=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(ch));a.download="alnoor-lecture.webm";a.click();ZS.rec=null;draw()};
+    ZS.rec.start();draw()},
+  zleave:()=>{zStop();if(st.adm){st.zok=0;draw()}else go("dashboard")}
 };
 
-document.addEventListener("click",e=>{
- unlockRemoteAudioOnGesture();
- if(ZS.menu&&!e.target.closest("[data-zpop]")&&!e.target.closest('[data-a="zmenu"]')){ZS.menu=null;draw()}
- const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a;if(ACT[a])ACT[a](b.dataset.p,b)
-});
-document.addEventListener("keydown",e=>{
- if(e.key==="Escape"&&st.menuOpen){setMenuOpen(false);return}
- if(e.key=="Enter"&&e.target.dataset.e){e.preventDefault();ACT[e.target.dataset.e]?.()}
-});
-document.addEventListener("change",e=>{const t=e.target;
- if(t.id==="p-photo-file"){
-  const file=t.files?.[0];
-  if(!file)return;
-  compressToDataUrl(file,900,900,520000).then(src=>{
-    st.crops.me={src,x:0,y:0,zoom:1};
-    draw();
-  }).catch(err=>toast("⚠️ "+err.message));
-  t.value="";return;
- }
- if(t.id.endsWith("-file")&&t.id.startsWith("e-team-")){
-  const id=t.id.slice("e-team-".length,-"-file".length);
-  const file=t.files?.[0];
-  if(!file)return;
-  compressToDataUrl(file,900,900,520000).then(src=>{
-    st.crops[id]={src,x:0,y:0,zoom:1};
-    draw();
-  }).catch(err=>toast("⚠️ "+err.message));
-  return;
- }
- const c=t.dataset.c;if(!c)return;
- if(c=="filt"){st.filt=t.value;draw()}
- if(c=="rst"){const[u,i]=t.dataset.p.split("|");changeRegistrationStatus(u,i,t.value).then(()=>toast("✅ "+A("تم تحديث الحالة وحفظ الرسالة بالصندوق","Status updated and message saved to inbox"))).catch(err=>toast("⚠️ "+err.message))}
- if(c=="zq"){const[w,h]=ZQ[t.value]||ZQ["720"];if(ZS.cam)ZS.cam.getVideoTracks().forEach(tr=>tr.applyConstraints({width:{ideal:w},height:{ideal:h}}).catch(()=>{}));if(ZS.scr)ZS.scr.getVideoTracks().forEach(tr=>tr.applyConstraints({width:{ideal:w},height:{ideal:h}}).catch(()=>{}))}
+document.addEventListener("pointerdown",e=>{
+  unlockRemoteAudioOnGesture();
+  const cropStage=e.target.closest("[data-crop-id]");
+  if(cropStage){
+    const id=cropStage.dataset.cropId,cr=st.crops[id];if(!cr)return;
+    e.preventDefault();cropStage.setPointerCapture?.(e.pointerId);
+    const sx=e.clientX,sy=e.clientY,ox=cr.x,oy=cr.y;
+    const onMove=ev=>{cr.x=Math.max(-75,Math.min(75,Math.round(ox+(ev.clientX-sx))));cr.y=Math.max(-75,Math.min(75,Math.round(oy+(ev.clientY-sy))));syncCropPreview(id);const ix=document.querySelector(`[data-crop-slider="${id}|x"]`),iy=document.querySelector(`[data-crop-slider="${id}|y"]`);if(ix)ix.value=cr.x;if(iy)iy.value=cr.y};
+    const onUp=()=>{cropStage.removeEventListener("pointermove",onMove);cropStage.removeEventListener("pointerup",onUp)};
+    cropStage.addEventListener("pointermove",onMove);cropStage.addEventListener("pointerup",onUp);return;
+  }
+  if(ZS.menu&&!e.target.closest('[data-zpop="1"]')&&!e.target.closest('[data-a="zmenu"]')){ZS.menu=null;draw()}
 });
 document.addEventListener("input",e=>{
- const sl=e.target.dataset.cropSlider;
- if(!sl)return;
- const[id,prop]=sl.split("|");
- const cr=st.crops[id];
- if(!cr)return;
- cr[prop]=parseFloat(e.target.value)||0;
- syncCropPreview(id);
+  const sl=e.target.dataset?.cropSlider;
+  if(sl){const[id,k]=sl.split("|");if(st.crops[id]){st.crops[id][k]=+e.target.value;syncCropPreview(id)}}
 });
-setInterval(()=>{const e=$("z-duration");if(e)e.textContent=ZS.joined?new Date(Math.max(0,Date.now()-ZS.enteredAt)).toISOString().slice(11,19):"00:00:00"},1000);
-document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="visible"){
-    requestWakeLock();
-    if(ZS.joined){touchPresence(true);connectToPresentPeers()}
-    syncAudioElements();
-  }else{
-    if(ZS.joined){touchPresence(true)}
-    if(!ZS.scr)releaseWakeLock();
+document.addEventListener("change",async e=>{
+  if(e.target.id==="p-photo-file"){
+    const f=e.target.files?.[0];if(!f)return;
+    try{const src=await compressToDataUrl(f,900,900,520000);st.crops["me"]={src,zoom:1,x:0,y:0};draw();syncCropPreview("me")}
+    catch(err){toast("⚠️ "+err.message)}
+    return;
+  }
+  const id=e.target.id;
+  if(id&&id.startsWith("e-team-")&&id.endsWith("-file")){
+    const fid=id.slice("e-team-".length,-"-file".length);
+    const f=e.target.files?.[0];if(!f)return;
+    try{const src=await compressToDataUrl(f,900,900,520000);st.crops[fid]={src,zoom:1,x:0,y:0};draw();syncCropPreview(fid)}
+    catch(err){toast("⚠️ "+err.message)}
+    return;
+  }
+  if(e.target.id==="z-media-input"){
+    const f=e.target.files?.[0];if(!f||!canPresent())return;
+    if(!ZS.joined)joinRoom();
+    dropVidEl();
+    if(ZS.vidShareStream){ZS.vidShareStream.getTracks().forEach(t=>t.stop());ZS.vidShareStream=null}
+    ZS.sharedImg="";ZS.sharedVid="";ZS.sharedUrl="";ZS.sharedType="";ZS.pageDataUrl="";ZS.pdfDoc=null;ZS.slides=[];ZS.slideIdx=1;ZS.textContent="";
+    pdfPageCache.clear();pdfPrefetching.clear();
+    if(!st.adm)claimStageOverride();
+    const isPdf=f.type==="application/pdf"||/\.pdf$/i.test(f.name);
+    const isPptx=/\.pptx$/i.test(f.name)||/presentationml\.presentation/i.test(f.type);
+    if(isPdf){
+      try{
+        const pdfjs=await loadPdfJs();
+        const buf=new Uint8Array(await f.arrayBuffer());
+        const docPdf=await pdfjs.getDocument({data:buf}).promise;
+        ZS.pdfDoc=docPdf;ZS.pdfNumPages=docPdf.numPages||1;ZS.pdfPage=1;ZS.sharedType="pdf";ZS.audioOnly=0;
+        draw();
+        await renderPdfPageToCanvas(1,true);
+      }catch(err){console.error(err);toast("⚠️ "+A("تعذر فتح ملف PDF","Could not open PDF file"))}
+    }else if(isPptx){
+      try{
+        const slides=await parsePptxSlides(f);
+        if(!slides.length)return toast("⚠️ "+A("لم يتم العثور على شرائح في الملف","No slides found in presentation"));
+        ZS.slides=slides;ZS.slideIdx=1;ZS.sharedType="pptx";ZS.audioOnly=0;
+        draw();
+        syncStageToCloud({sharedType:"pptx",slides:ZS.slides,slideIdx:1});
+      }catch(err){console.error(err);toast("⚠️ "+A("تعذر قراءة ملف PowerPoint","Could not read PowerPoint file"))}
+    }else if(/^image\//.test(f.type)){
+      try{
+        const imgUrl=await compressToDataUrl(f,1440,900,560000);
+        ZS.sharedImg=imgUrl;ZS.sharedType="image";ZS.audioOnly=0;
+        draw();
+        syncStageToCloud({sharedType:"image",sharedImg:ZS.sharedImg});
+      }catch(err){console.error(err);toast("⚠️ "+err.message)}
+    }else if(/^video\//.test(f.type)){
+      const url=URL.createObjectURL(f);
+      const v=document.createElement("video");
+      v.id="z-shared-vid";v.src=url;v.controls=true;v.autoplay=true;v.playsinline=true;
+      v.style.cssText="width:100%;height:100%;max-height:78svh;object-fit:contain;background:#090a0d;border-radius:8px";
+      v.onloadedmetadata=()=>{startVidCapture();syncStageToCloud({sharedType:"video",screenActive:true})};
+      ZS.vidEl=v;ZS.sharedVid=url;ZS.sharedType="video";ZS.audioOnly=0;
+      draw();
+      syncStageToCloud({sharedType:"video",screenActive:true});
+    }else{
+      let txt="";
+      if(f.size<250000&&(f.type.startsWith("text/")||/\.(txt|md|csv|json|xml|html)$/i.test(f.name))){
+        txt=(await f.text()).slice(0,12000);
+      }
+      ZS.textContent=txt||A("تمت مشاركة الملف: ","Shared file: ")+f.name;
+      ZS.sharedType="text";ZS.audioOnly=0;
+      draw();
+      syncStageToCloud({sharedType:"text",textContent:ZS.textContent});
+    }
+    return;
+  }
+  const c=e.target.dataset.c;if(!c)return;
+  if(c=="filt"){st.filt=e.target.value;draw()}
+  if(c=="zq"){
+    const[w,h]=ZQ[e.target.value]||[1280,720];
+    if(ZS.cam)ZS.cam.getVideoTracks()[0]?.applyConstraints({width:{ideal:w},height:{ideal:h}}).catch(()=>{});
+    if(ZS.scr)ZS.scr.getVideoTracks()[0]?.applyConstraints({width:{ideal:w},height:{ideal:h}}).catch(()=>{});
   }
 });
-
+document.addEventListener("click",e=>{unlockRemoteAudioOnGesture();const b=e.target.closest("[data-a]");if(!b)return;const f=ACT[b.dataset.a];if(f)f(b)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&st.menuOpen)setMenuOpen(false);if(e.key=="Enter"&&e.target.dataset.e){e.preventDefault();const f=ACT[e.target.dataset.e];if(f)f(e.target)}});
+window.addEventListener("hashchange",()=>{if(route()!="zoom-alnoor")zStop();setMenuOpen(false);draw()});
+window.addEventListener("resize",()=>{paintAnnOverlay();paintAnnBoard();updateAnnLaserDot();applyAnnBoardGeometry()});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")requestWakeLock();else releaseWakeLock()});
+window.addEventListener("pagehide",zStop);
 initTheme();
-draw();
+document.documentElement.lang=st.lang;document.documentElement.dir=st.lang=="ar"?"rtl":"ltr";draw();
 </script>
 </body>
-  </html>
+</html>
